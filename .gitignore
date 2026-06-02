@@ -1,8 +1,8 @@
 *.zip
-!dataset/.gitkeep
 dataset/*
-!ocr_output/.gitkeep
+!dataset/.gitkeep
 ocr_output/*
+!ocr_output/.gitkeep
 venv/
 __pycache__/
 .DS_Store
