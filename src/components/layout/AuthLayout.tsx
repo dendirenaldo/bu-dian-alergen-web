@@ -1,0 +1,29 @@
+import { ReactNode } from 'react';
+import { APP_NAME } from '@/lib/constants';
+
+interface AuthLayoutProps {
+  children: ReactNode;
+}
+
+export default function AuthLayout({ children }: AuthLayoutProps) {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-surface-50 px-4 py-12 dark:bg-surface-950">
+      <div className="w-full max-w-md">
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary-600 text-white font-bold text-lg">
+            BD
+          </div>
+          <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
+            {APP_NAME}
+          </h1>
+          <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+            Sistem Deteksi Alergen Makanan
+          </p>
+        </div>
+        <div className="rounded-2xl border border-surface-200 bg-white p-6 shadow-card dark:border-surface-800 dark:bg-surface-900">
+          {children}
+        </div>
+      </div>
+    </div>
+  );
+}

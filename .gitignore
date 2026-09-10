@@ -1,8 +1,43 @@
-*.zip
-dataset/*
-!dataset/.gitkeep
-ocr_output/*
-!ocr_output/.gitkeep
-venv/
-__pycache__/
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Next.js
+.next/
+out/
+
+# Build
+dist/
+build/
+
+# Runtime
+*.js.map
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Vercel
+.vercel/
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
+Thumbs.db
+
+# Misc
+*.tsbuildinfo

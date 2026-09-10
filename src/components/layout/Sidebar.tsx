@@ -1,0 +1,88 @@
+import { ReactNode, useState } from 'react';
+import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { ChevronLeft } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { APP_NAME, sidebarLinks } from '@/lib/constants';
+
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onCollapse?: () => void;
+}
+
+export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProps) {
+  const router = useRouter();
+
+  return (
+    <aside
+      className={cn(
+        'hidden lg:flex flex-col h-screen border-r border-surface-200 bg-white dark:border-surface-800 dark:bg-surface-950 transition-all duration-300',
+        isCollapsed ? 'w-20' : 'w-64'
+      )}
+    >
+      <div className="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-800">
+        {!isCollapsed && (
+          <Link href="/admin" className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">
+              BD
+            </div>
+            <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
+              {APP_NAME}
+            </span>
+          </Link>
+        )}
+        {onCollapse && (
+          <button
+            onClick={onCollapse}
+            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="rounded-lg p-1.5 text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800"
+          >
+            <ChevronLeft
+              className={cn('h-5 w-5 transition-transform', isCollapsed && 'rotate-180')}
+            />
+          </button>
+        )}
+      </div>
+
+      <nav className="flex-1 space-y-1 px-3 py-4">
+        {sidebarLinks.map((link) => {
+          const isActive =
+            link.href === '/admin'
+              ? router.pathname === '/admin'
+              : router.pathname.startsWith(link.href);
+
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              className={cn(
+                'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
+                isActive
+                  ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/20 dark:text-primary-400'
+                  : 'text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800',
+                isCollapsed && 'justify-center'
+              )}
+              title={isCollapsed ? link.label : undefined}
+            >
+              <link.icon className="h-5 w-5 flex-shrink-0" />
+              {!isCollapsed && <span>{link.label}</span>}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="border-t border-surface-200 p-3 dark:border-surface-800">
+        <Link
+          href="/"
+          className={cn(
+            'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800 transition-colors',
+            isCollapsed && 'justify-center'
+          )}
+        >
+          <ChevronLeft className="h-5 w-5 flex-shrink-0" />
+          {!isCollapsed && <span>Back to Site</span>}
+        </Link>
+      </div>
+    </aside>
+  );
+}
