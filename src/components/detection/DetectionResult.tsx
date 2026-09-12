@@ -3,6 +3,7 @@
 import { Detection } from '@/types';
 import { formatDate } from '@/lib/utils';
 import { ShieldCheck, ShieldAlert, Clock } from 'lucide-react';
+import Card from '@/components/ui/Card';
 import AllergenTag from './AllergenTag';
 
 interface DetectionResultProps {
@@ -13,7 +14,7 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
   const isSafe = detection.result === 'safe';
 
   return (
-    <div className="rounded-2xl border border-surface-200 bg-white p-6 dark:border-surface-800 dark:bg-surface-900">
+    <Card padding="md">
       <div className="mb-4 flex items-center gap-3">
         <div
           className={`flex h-10 w-10 items-center justify-center rounded-xl ${
@@ -89,6 +90,6 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
           </p>
         </div>
       )}
-    </div>
+    </Card>
   );
 }

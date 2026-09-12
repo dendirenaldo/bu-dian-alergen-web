@@ -106,6 +106,7 @@ export default function RegisterWizard() {
           data={personalInfo}
           errors={errors}
           onChange={(field, value) => setPersonalInfo({ ...personalInfo, [field]: value })}
+          onError={(field, error) => setErrors(prev => ({ ...prev, [field]: error || '' }))}
         />
       )}
 
@@ -114,6 +115,7 @@ export default function RegisterWizard() {
           data={credentials}
           errors={errors}
           onChange={(field, value) => setCredentials({ ...credentials, [field]: value })}
+          onError={(field, error) => setErrors(prev => ({ ...prev, [field]: error || '' }))}
         />
       )}
 

@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { APP_NAME } from '@/lib/constants';
+import Card from '@/components/ui/Card';
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -20,9 +21,9 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             Sistem Deteksi Alergen Makanan
           </p>
         </div>
-        <div className="rounded-2xl border border-surface-200 bg-white p-6 shadow-card dark:border-surface-800 dark:bg-surface-900">
+        <Card padding="md">
           {children}
-        </div>
+        </Card>
       </div>
     </div>
   );

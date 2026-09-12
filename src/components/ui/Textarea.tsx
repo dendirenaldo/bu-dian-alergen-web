@@ -2,7 +2,7 @@ import { TextareaHTMLAttributes, forwardRef } from 'react';
 import { cn } from '@/lib/utils';
 
 interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
-  label?: string;
+  label: string;
   error?: string;
   helperText?: string;
 }
@@ -18,6 +18,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5"
           >
             {label}
+            {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <textarea

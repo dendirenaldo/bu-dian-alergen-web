@@ -12,6 +12,7 @@ import { DashboardStats, ApiResponse } from '@/types';
 import { Package, AlertTriangle, Users, ScanSearch } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Card from '@/components/ui/Card';
+import Skeleton from '@/components/ui/Skeleton';
 
 export default function AdminDashboard() {
   const { token } = useAuth();
@@ -46,18 +47,34 @@ export default function AdminDashboard() {
           </h1>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
-              <StatsCard icon={Package} value={stats?.totalProducts || 0} label="Produk" color="primary" />
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-              <StatsCard icon={AlertTriangle} value={stats?.totalAllergens || 0} label="Alergen" color="warning" />
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
-              <StatsCard icon={Users} value={stats?.totalUsers || 0} label="Pengguna" color="success" />
-            </motion.div>
-            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
-              <StatsCard icon={ScanSearch} value={stats?.totalDetections || 0} label="Deteksi" color="danger" />
-            </motion.div>
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <Card key={i} padding="md">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-2">
+                      <Skeleton width="4rem" height="1.75rem" />
+                      <Skeleton width="5rem" height="0.875rem" />
+                    </div>
+                    <Skeleton variant="rectangular" width="3rem" height="3rem" className="rounded-xl" />
+                  </div>
+                </Card>
+              ))
+            ) : (
+              <>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }}>
+                  <StatsCard icon={Package} value={stats?.totalProducts || 0} label="Produk" color="primary" />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
+                  <StatsCard icon={AlertTriangle} value={stats?.totalAllergens || 0} label="Alergen" color="warning" />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                  <StatsCard icon={Users} value={stats?.totalUsers || 0} label="Pengguna" color="success" />
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
+                  <StatsCard icon={ScanSearch} value={stats?.totalDetections || 0} label="Deteksi" color="danger" />
+                </motion.div>
+              </>
+            )}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-2">

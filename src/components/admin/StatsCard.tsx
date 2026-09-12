@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react';
 import { LucideIcon } from 'lucide-react';
+import Card from '@/components/ui/Card';
 
 interface StatsCardProps {
   icon: LucideIcon;
@@ -19,7 +20,7 @@ const colorMap = {
 
 export default function StatsCard({ icon: Icon, value, label, color = 'primary' }: StatsCardProps) {
   return (
-    <div className="rounded-2xl border border-surface-200 bg-white p-6 shadow-card dark:border-surface-800 dark:bg-surface-900">
+    <Card padding="md">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-2xl font-bold text-surface-900 dark:text-surface-100">{value}</p>
@@ -29,6 +30,6 @@ export default function StatsCard({ icon: Icon, value, label, color = 'primary' 
           <Icon className="h-6 w-6" />
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

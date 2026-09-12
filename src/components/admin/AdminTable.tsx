@@ -3,6 +3,7 @@
 import { useState, useEffect, ReactNode } from 'react';
 import { Search, Plus, Edit2, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import Skeleton from '@/components/ui/Skeleton';
 import Modal from '@/components/ui/Modal';
 
 interface Column<T> {
@@ -89,14 +90,20 @@ export default function AdminTable<T extends { id: number }>({
           </thead>
           <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
             {isLoading ? (
-              <tr>
-                <td
-                  colSpan={columns.length + (onEdit || onDelete ? 1 : 0)}
-                  className="px-4 py-8 text-center"
-                >
-                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" />
-                </td>
-              </tr>
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  {columns.map((col) => (
+                    <td key={col.key} className="px-4 py-3">
+                      <Skeleton width="6rem" height="1rem" />
+                    </td>
+                  ))}
+                  {(onEdit || onDelete) && (
+                    <td className="px-4 py-3">
+                      <Skeleton width="4rem" height="1rem" />
+                    </td>
+                  )}
+                </tr>
+              ))
             ) : data.length === 0 ? (
               <tr>
                 <td

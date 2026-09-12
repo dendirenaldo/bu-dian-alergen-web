@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Camera, Zap, History } from 'lucide-react';
+import Card from '@/components/ui/Card';
 
 const features = [
   {
@@ -48,8 +49,8 @@ export default function FeaturesSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="rounded-2xl border border-surface-200 bg-white p-8 shadow-card transition-shadow hover:shadow-card-hover dark:border-surface-800 dark:bg-surface-950"
             >
+              <Card padding="lg" hover className="dark:bg-surface-950">
               <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">
                 <feature.icon className="h-6 w-6" />
               </div>
@@ -59,6 +60,7 @@ export default function FeaturesSection() {
               <p className="text-surface-600 dark:text-surface-400">
                 {feature.description}
               </p>
+              </Card>
             </motion.div>
           ))}
         </div>

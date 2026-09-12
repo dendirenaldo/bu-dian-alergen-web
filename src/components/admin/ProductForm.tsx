@@ -25,6 +25,23 @@ export default function ProductForm({ isOpen, onClose, product, onSubmit }: Prod
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleBlur = (field: string, value: string) => {
+    let result;
+    if (field === 'name') result = validators.required('Nama Produk')(value);
+    if (field === 'barcode' && value && !/^[0-9]+$/.test(value)) {
+      result = { valid: false, error: 'Barcode harus berupa angka' };
+    }
+    if (result && !result.valid) {
+      setErrors(prev => ({ ...prev, [field]: result!.error! }));
+    } else {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   useEffect(() => {
     if (product) {
       setForm({
@@ -78,6 +95,7 @@ export default function ProductForm({ isOpen, onClose, product, onSubmit }: Prod
           placeholder="Masukkan nama produk"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onBlur={(e) => handleBlur('name', e.target.value)}
           error={errors.name}
           required
         />
@@ -92,6 +110,7 @@ export default function ProductForm({ isOpen, onClose, product, onSubmit }: Prod
           placeholder="Masukkan barcode"
           value={form.barcode}
           onChange={(e) => setForm({ ...form, barcode: e.target.value })}
+          onBlur={(e) => handleBlur('barcode', e.target.value)}
           error={errors.barcode}
         />
         <Textarea

@@ -8,6 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { formatDate } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import Skeleton from '@/components/ui/Skeleton';
 import DetectionDetail from './DetectionDetail';
 import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 
@@ -42,8 +43,39 @@ export default function DetectionHistoryTable() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" />
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-surface-200 dark:border-surface-800">
+              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
+                Tanggal
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
+                Produk
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
+                Alergen
+              </th>
+              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
+                Status
+              </th>
+              <th className="pb-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">
+                Aksi
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <tr key={i}>
+                <td className="py-3"><Skeleton width="6rem" height="1rem" /></td>
+                <td className="py-3"><Skeleton width="8rem" height="1rem" /></td>
+                <td className="py-3"><Skeleton width="4rem" height="1.25rem" /></td>
+                <td className="py-3"><Skeleton width="4rem" height="1.25rem" /></td>
+                <td className="py-3 text-right"><Skeleton width="3rem" height="1rem" /></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     );
   }

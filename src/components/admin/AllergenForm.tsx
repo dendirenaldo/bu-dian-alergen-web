@@ -40,6 +40,21 @@ export default function AllergenForm({ isOpen, onClose, allergen, onSubmit }: Al
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleBlur = (field: string, value: string) => {
+    let result;
+    if (field === 'name') result = validators.required('Nama Alergen')(value);
+    if (field === 'code') result = validators.required('Kode')(value);
+    if (result && !result.valid) {
+      setErrors(prev => ({ ...prev, [field]: result!.error! }));
+    } else {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   useEffect(() => {
     if (allergen) {
       setForm({
@@ -96,6 +111,7 @@ export default function AllergenForm({ isOpen, onClose, allergen, onSubmit }: Al
           placeholder="Masukkan nama alergen"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onBlur={(e) => handleBlur('name', e.target.value)}
           error={errors.name}
           required
         />
@@ -104,6 +120,7 @@ export default function AllergenForm({ isOpen, onClose, allergen, onSubmit }: Al
           placeholder="Masukkan kode (contoh: GLU)"
           value={form.code}
           onChange={(e) => setForm({ ...form, code: e.target.value })}
+          onBlur={(e) => handleBlur('code', e.target.value)}
           error={errors.code}
           required
         />

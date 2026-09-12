@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 const stats = [
   { value: 1500, suffix: '+', label: 'Produk Dianalisis' },
@@ -14,9 +15,15 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const isInView = useInView(ref, { once: true });
+  const prefersReduced = useMediaQuery('(prefers-reduced-motion: reduce)');
 
   useEffect(() => {
     if (!isInView) return;
+
+    if (prefersReduced) {
+      setCount(target);
+      return;
+    }
 
     let start = 0;
     const duration = 2000;
@@ -33,7 +40,7 @@ function Counter({ target, suffix }: { target: number; suffix: string }) {
     }, 16);
 
     return () => clearInterval(timer);
-  }, [isInView, target]);
+  }, [isInView, target, prefersReduced]);
 
   return (
     <span ref={ref}>

@@ -2,6 +2,7 @@ import { ReactElement } from 'react';
 import Head from 'next/head';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
+import Card from '@/components/ui/Card';
 import { ShieldCheck, Users, Target, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -34,7 +35,7 @@ export default function AboutPage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="space-y-8"
             >
-              <div className="rounded-2xl border border-surface-200 bg-white p-8 shadow-card dark:border-surface-800 dark:bg-surface-900">
+              <Card padding="lg">
                 <h2 className="mb-4 text-xl font-semibold text-surface-900 dark:text-surface-100">
                   Misi Kami
                 </h2>
@@ -43,7 +44,7 @@ export default function AboutPage() {
                   makanan dengan lebih mudah dan akurat. Kami menggunakan teknologi kecerdasan
                   buatan untuk mendeteksi potensi alergen dari label produk makanan.
                 </p>
-              </div>
+              </Card>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 {[
@@ -57,8 +58,8 @@ export default function AboutPage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 + index * 0.1 }}
-                    className="rounded-2xl border border-surface-200 bg-white p-6 shadow-card dark:border-surface-800 dark:bg-surface-900"
                   >
+                    <Card padding="md">
                     <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">
                       <item.icon className="h-5 w-5" />
                     </div>
@@ -68,6 +69,7 @@ export default function AboutPage() {
                     <p className="text-sm text-surface-600 dark:text-surface-400">
                       {item.desc}
                     </p>
+                    </Card>
                   </motion.div>
                 ))}
               </div>

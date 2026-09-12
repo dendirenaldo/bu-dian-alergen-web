@@ -17,6 +17,21 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
+  const handleBlur = (field: string, value: string) => {
+    let result;
+    if (field === 'email') result = validators.email(value);
+    if (field === 'password') result = validators.required('Password')(value);
+    if (result && !result.valid) {
+      setErrors(prev => ({ ...prev, [field]: result!.error! }));
+    } else {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
@@ -62,7 +77,9 @@ export default function LoginForm() {
         leftIcon={<Mail className="h-4 w-4" />}
         value={form.email}
         onChange={(e) => setForm({ ...form, email: e.target.value })}
+        onBlur={(e) => handleBlur('email', e.target.value)}
         error={errors.email}
+        autoComplete="email"
       />
 
       <Input
@@ -72,7 +89,9 @@ export default function LoginForm() {
         leftIcon={<Lock className="h-4 w-4" />}
         value={form.password}
         onChange={(e) => setForm({ ...form, password: e.target.value })}
+        onBlur={(e) => handleBlur('password', e.target.value)}
         error={errors.password}
+        autoComplete="current-password"
       />
 
       <Button type="submit" isLoading={isLoading} className="w-full">

@@ -37,6 +37,27 @@ export default function UserForm({ isOpen, onClose, user, onSubmit }: UserFormPr
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleBlur = (field: string, value: string) => {
+    let result;
+    if (field === 'name') result = validators.required('Nama')(value);
+    if (field === 'email') {
+      const emailReq = validators.required('Email')(value);
+      if (!emailReq.valid) result = emailReq;
+      else result = validators.email(value);
+    }
+    if (field === 'phone' && value) result = validators.phone(value);
+    if (field === 'password' && !user && value) result = validators.password(value);
+    if (result && !result.valid) {
+      setErrors(prev => ({ ...prev, [field]: result!.error! }));
+    } else {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   useEffect(() => {
     if (user) {
       setForm({
@@ -105,8 +126,10 @@ export default function UserForm({ isOpen, onClose, user, onSubmit }: UserFormPr
           placeholder="Masukkan nama"
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onBlur={(e) => handleBlur('name', e.target.value)}
           error={errors.name}
           required
+          autoComplete="name"
         />
         <Input
           label="Email"
@@ -114,15 +137,19 @@ export default function UserForm({ isOpen, onClose, user, onSubmit }: UserFormPr
           placeholder="Masukkan email"
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onBlur={(e) => handleBlur('email', e.target.value)}
           error={errors.email}
           required
+          autoComplete="email"
         />
         <Input
           label="Telepon"
           placeholder="Masukkan nomor telepon"
           value={form.phone}
           onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          onBlur={(e) => handleBlur('phone', e.target.value)}
           error={errors.phone}
+          autoComplete="tel"
         />
         <Select
           label="Role"
@@ -136,8 +163,10 @@ export default function UserForm({ isOpen, onClose, user, onSubmit }: UserFormPr
           placeholder="Masukkan password"
           value={form.password}
           onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onBlur={(e) => handleBlur('password', e.target.value)}
           error={errors.password}
           required={!user}
+          autoComplete="new-password"
         />
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose}>

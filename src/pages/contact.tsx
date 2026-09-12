@@ -2,6 +2,7 @@ import { ReactElement, useState } from 'react';
 import Head from 'next/head';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
+import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
@@ -13,6 +14,27 @@ export default function ContactPage() {
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleBlur = (field: string, value: string) => {
+    let result;
+    if (field === 'name') result = validators.required('Nama')(value);
+    if (field === 'email') {
+      const emailReq = validators.required('Email')(value);
+      if (!emailReq.valid) result = emailReq;
+      else result = validators.email(value);
+    }
+    if (field === 'subject') result = validators.required('Subjek')(value);
+    if (field === 'message') result = validators.required('Pesan')(value);
+    if (result && !result.valid) {
+      setErrors(prev => ({ ...prev, [field]: result!.error! }));
+    } else {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
 
   const validate = () => {
     const errs: Record<string, string> = {};
@@ -74,9 +96,10 @@ export default function ContactPage() {
                   { icon: Phone, label: 'Telepon', value: '+62 123 456 789' },
                   { icon: MapPin, label: 'Alamat', value: 'Jakarta, Indonesia' },
                 ].map((item) => (
-                  <div
+                  <Card
                     key={item.label}
-                    className="flex items-start gap-4 rounded-2xl border border-surface-200 bg-white p-4 shadow-card dark:border-surface-800 dark:bg-surface-900"
+                    padding="sm"
+                    className="flex items-start gap-4"
                   >
                     <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 text-primary-600 dark:bg-primary-900/30 dark:text-primary-400">
                       <item.icon className="h-5 w-5" />
@@ -87,7 +110,7 @@ export default function ContactPage() {
                       </p>
                       <p className="text-surface-900 dark:text-surface-100">{item.value}</p>
                     </div>
-                  </div>
+                  </Card>
                 ))}
               </motion.div>
 
@@ -97,7 +120,7 @@ export default function ContactPage() {
                 transition={{ duration: 0.5, delay: 0.2 }}
                 className="lg:col-span-2"
               >
-                <div className="rounded-2xl border border-surface-200 bg-white p-6 shadow-card dark:border-surface-800 dark:bg-surface-900">
+                <Card padding="md">
                   {isSubmitted ? (
                     <div className="py-12 text-center">
                       <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
@@ -118,8 +141,10 @@ export default function ContactPage() {
                           placeholder="Masukkan nama"
                           value={form.name}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
+                          onBlur={(e) => handleBlur('name', e.target.value)}
                           error={errors.name}
                           required
+                          autoComplete="name"
                         />
                         <Input
                           label="Email"
@@ -127,8 +152,10 @@ export default function ContactPage() {
                           placeholder="Masukkan email"
                           value={form.email}
                           onChange={(e) => setForm({ ...form, email: e.target.value })}
+                          onBlur={(e) => handleBlur('email', e.target.value)}
                           error={errors.email}
                           required
+                          autoComplete="email"
                         />
                       </div>
                       <Input
@@ -136,6 +163,7 @@ export default function ContactPage() {
                         placeholder="Masukkan subjek"
                         value={form.subject}
                         onChange={(e) => setForm({ ...form, subject: e.target.value })}
+                        onBlur={(e) => handleBlur('subject', e.target.value)}
                         error={errors.subject}
                         required
                       />
@@ -144,6 +172,7 @@ export default function ContactPage() {
                         placeholder="Tulis pesan Anda..."
                         value={form.message}
                         onChange={(e) => setForm({ ...form, message: e.target.value })}
+                        onBlur={(e) => handleBlur('message', e.target.value)}
                         rows={5}
                         error={errors.message}
                         required
@@ -154,7 +183,7 @@ export default function ContactPage() {
                       </Button>
                     </form>
                   )}
-                </div>
+                </Card>
               </motion.div>
             </div>
           </div>

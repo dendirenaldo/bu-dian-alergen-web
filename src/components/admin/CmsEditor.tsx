@@ -45,6 +45,20 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit }: CmsEdi
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const handleBlur = (field: string, value: string) => {
+    let result;
+    if (field === 'title') result = validators.required('Judul')(value);
+    if (result && !result.valid) {
+      setErrors(prev => ({ ...prev, [field]: result!.error! }));
+    } else {
+      setErrors(prev => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   useEffect(() => {
     if (content) {
       setForm({
@@ -99,6 +113,7 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit }: CmsEdi
           placeholder="Masukkan judul"
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
+          onBlur={(e) => handleBlur('title', e.target.value)}
           error={errors.title}
           required
         />

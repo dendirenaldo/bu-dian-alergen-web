@@ -9,7 +9,7 @@ interface SelectOption {
 }
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
-  label?: string;
+  label: string;
   error?: string;
   helperText?: string;
   options: SelectOption[];
@@ -27,6 +27,7 @@ const Select = forwardRef<HTMLSelectElement, SelectProps>(
             className="block text-sm font-medium text-surface-700 dark:text-surface-300 mb-1.5"
           >
             {label}
+            {props.required && <span className="text-red-500 ml-1">*</span>}
           </label>
         )}
         <div className="relative">
