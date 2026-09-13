@@ -1,8 +1,9 @@
-import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useRef, useState, useCallback, ReactNode } from 'react';
 import { Detection } from '@/types';
-import { api } from '@/lib/api';
+import { api, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { ApiResponse } from '@/types';
+import { unwrapData } from '@/lib/unwrap';
 import { useAuth } from './AuthContext';
 
 interface DetectionContextType {
@@ -10,6 +11,7 @@ interface DetectionContextType {
   isDetecting: boolean;
   detectFromText: (text: string) => Promise<Detection>;
   detectFromImage: (file: File) => Promise<Detection>;
+  cancelDetection: () => void;
   setCurrentDetection: (detection: Detection | null) => void;
 }
 
@@ -18,24 +20,35 @@ const DetectionContext = createContext<DetectionContextType | undefined>(undefin
 export function DetectionProvider({ children }: { children: ReactNode }) {
   const [currentDetection, setCurrentDetection] = useState<Detection | null>(null);
   const [isDetecting, setIsDetecting] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
   const { token } = useAuth();
 
   const detectFromText = useCallback(async (text: string): Promise<Detection> => {
+    if (isDetecting) throw new Error('Deteksi sedang berjalan. Tunggu hingga selesai.');
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     setIsDetecting(true);
     try {
       const res = await api.post<ApiResponse<Detection>>(
         API_ENDPOINTS.DETECTIONS.TEXT,
         { text },
-        token || undefined
+        token || undefined,
+        { signal: ctrl.signal, idempotencyKey: newIdempotencyKey() },
       );
-      setCurrentDetection(res.data);
-      return res.data;
+      const data = unwrapData<Detection>(res);
+      setCurrentDetection(data);
+      return data;
     } finally {
-      setIsDetecting(false);
+      if (abortRef.current === ctrl) { abortRef.current = null; setIsDetecting(false); }
     }
-  }, [token]);
+  }, [token, isDetecting]);
 
   const detectFromImage = useCallback(async (file: File): Promise<Detection> => {
+    if (isDetecting) throw new Error('Deteksi sedang berjalan. Tunggu hingga selesai.');
+    abortRef.current?.abort();
+    const ctrl = new AbortController();
+    abortRef.current = ctrl;
     setIsDetecting(true);
     try {
       const formData = new FormData();
@@ -44,25 +57,20 @@ export function DetectionProvider({ children }: { children: ReactNode }) {
         API_ENDPOINTS.DETECTIONS.UPLOAD,
         formData,
         token || undefined,
-        true
+        { isFormData: true, signal: ctrl.signal, idempotencyKey: newIdempotencyKey() },
       );
-      setCurrentDetection(res.data);
-      return res.data;
+      const data = unwrapData<Detection>(res);
+      setCurrentDetection(data);
+      return data;
     } finally {
-      setIsDetecting(false);
+      if (abortRef.current === ctrl) { abortRef.current = null; setIsDetecting(false); }
     }
-  }, [token]);
+  }, [token, isDetecting]);
+
+  const cancelDetection = useCallback(() => { abortRef.current?.abort(); }, []);
 
   return (
-    <DetectionContext.Provider
-      value={{
-        currentDetection,
-        isDetecting,
-        detectFromText,
-        detectFromImage,
-        setCurrentDetection,
-      }}
-    >
+    <DetectionContext.Provider value={{ currentDetection, isDetecting, detectFromText, detectFromImage, cancelDetection, setCurrentDetection }}>
       {children}
     </DetectionContext.Provider>
   );

@@ -1,4 +1,4 @@
-import { ReactElement, useState } from 'react';
+import { ReactElement, useEffect, useRef, useState } from 'react';
 import Head from 'next/head';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
@@ -6,14 +6,21 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
-import { Mail, Phone, MapPin, Send } from 'lucide-react';
+import Alert from '@/components/ui/Alert';
+import { Mail, Phone, MapPin, Send, User, AtSign, Tag } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { validators } from '@/lib/validation';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export default function ContactPage() {
+  const { t } = useLocale();
   const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSending, setIsSending] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current); }, []);
 
   const handleBlur = (field: string, value: string) => {
     let result;
@@ -55,17 +62,24 @@ export default function ContactPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSending) return;
     const validationErrors = validate();
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 3000);
+    setIsSending(true);
+    // Simulasi kirim + anti double-click; ganti dengan POST /api/v1/contact bila tersedia.
+    timer.current = setTimeout(() => {
+      setIsSending(false);
+      setIsSubmitted(true);
+      setForm({ name: '', email: '', subject: '', message: '' });
+      timer.current = setTimeout(() => setIsSubmitted(false), 5000);
+    }, 800);
   };
 
   return (
     <>
       <Head>
-        <title>Kontak - Bu Dian</title>
+        <title>{`${t('contact.title')} - Bu Dian`}</title>
       </Head>
       <PageTransition>
         <div className="page-container">
@@ -77,10 +91,10 @@ export default function ContactPage() {
               className="mb-12 text-center"
             >
               <h1 className="text-3xl font-bold text-surface-900 dark:text-surface-100 sm:text-4xl">
-                Hubungi Kami
+                {t('contact.title')}
               </h1>
               <p className="mt-4 text-lg text-surface-600 dark:text-surface-400">
-                Punya pertanyaan atau masukan? Kami siap membantu.
+                {t('contact.subtitle')}
               </p>
             </motion.div>
 
@@ -127,48 +141,51 @@ export default function ContactPage() {
                         <Send className="h-6 w-6" />
                       </div>
                       <p className="font-medium text-surface-900 dark:text-surface-100">
-                        Pesan berhasil dikirim!
+                        {t('contact.success')}
                       </p>
                       <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
-                        Kami akan segera menghubungi Anda.
+                        {t('contact.successDesc')}
                       </p>
                     </div>
                   ) : (
                     <form onSubmit={handleSubmit} className="space-y-4">
                       <div className="grid gap-4 sm:grid-cols-2">
                         <Input
-                          label="Nama"
-                          placeholder="Masukkan nama"
+                          label={t('contact.name')}
+                          placeholder="Nama lengkap"
                           value={form.name}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
                           onBlur={(e) => handleBlur('name', e.target.value)}
                           error={errors.name}
                           required
                           autoComplete="name"
+                          leftIcon={<User className="h-4 w-4" />}
                         />
                         <Input
-                          label="Email"
+                          label={t('contact.email')}
                           type="email"
-                          placeholder="Masukkan email"
+                          placeholder="nama@email.com"
                           value={form.email}
                           onChange={(e) => setForm({ ...form, email: e.target.value })}
                           onBlur={(e) => handleBlur('email', e.target.value)}
                           error={errors.email}
                           required
                           autoComplete="email"
+                          leftIcon={<AtSign className="h-4 w-4" />}
                         />
                       </div>
                       <Input
-                        label="Subjek"
-                        placeholder="Masukkan subjek"
+                        label={t('contact.subject')}
+                        placeholder="Topik pesan"
                         value={form.subject}
                         onChange={(e) => setForm({ ...form, subject: e.target.value })}
                         onBlur={(e) => handleBlur('subject', e.target.value)}
                         error={errors.subject}
                         required
+                        leftIcon={<Tag className="h-4 w-4" />}
                       />
                       <Textarea
-                        label="Pesan"
+                        label={t('contact.message')}
                         placeholder="Tulis pesan Anda..."
                         value={form.message}
                         onChange={(e) => setForm({ ...form, message: e.target.value })}
@@ -177,9 +194,9 @@ export default function ContactPage() {
                         error={errors.message}
                         required
                       />
-                      <Button type="submit" className="w-full">
+                      <Button type="submit" className="w-full" isLoading={isSending}>
                         <Send className="mr-2 h-4 w-4" />
-                        Kirim Pesan
+                        {t('contact.send')}
                       </Button>
                     </form>
                   )}

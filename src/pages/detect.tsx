@@ -6,8 +6,11 @@ import ImageUploader from '@/components/detection/ImageUploader';
 import DetectionResult from '@/components/detection/DetectionResult';
 import { useDetection } from '@/contexts/DetectionContext';
 import { ShieldCheck } from 'lucide-react';
+import Alert from '@/components/ui/Alert';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export default function DetectPage() {
+  const { t } = useLocale();
   const { isDetecting, currentDetection, detectFromImage } = useDetection();
   const [error, setError] = useState('');
 
@@ -23,7 +26,7 @@ export default function DetectPage() {
   return (
     <>
       <Head>
-        <title>Deteksi Alergen - Bu Dian</title>
+        <title>{`${t('detect.title')} - Bu Dian`}</title>
       </Head>
       <PageTransition>
         <div className="page-container">
@@ -33,18 +36,18 @@ export default function DetectPage() {
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
-                Deteksi Alergen
+                {t('detect.title')}
               </h1>
               <p className="mt-2 text-surface-600 dark:text-surface-400">
-                Upload foto label produk makanan untuk mendeteksi alergen.
+                {t('detect.subtitle')}
               </p>
             </div>
 
             <ImageUploader onImageSelect={handleImageSelect} isProcessing={isDetecting} />
 
             {error && (
-              <div className="mt-4 rounded-xl bg-red-50 p-4 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
-                {error}
+              <div className="mt-4">
+                <Alert variant="error">{error}</Alert>
               </div>
             )}
 

@@ -1,9 +1,10 @@
 import { ReactNode, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { APP_NAME, sidebarLinks } from '@/lib/constants';
+import { APP_NAME } from '@/lib/constants';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface SidebarProps {
   isCollapsed?: boolean;
@@ -12,6 +13,18 @@ interface SidebarProps {
 
 export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProps) {
   const router = useRouter();
+  const { t } = useLocale();
+
+  const links = [
+    { href: '/admin', label: t('sidebar.dashboard'), icon: LayoutDashboard },
+    { href: '/admin/products', label: t('sidebar.products'), icon: Package },
+    { href: '/admin/categories', label: t('sidebar.categories'), icon: Tags },
+    { href: '/admin/allergens', label: t('sidebar.allergens'), icon: AlertTriangle },
+    { href: '/admin/detections', label: t('sidebar.detections'), icon: ScanSearch },
+    { href: '/admin/users', label: t('sidebar.users'), icon: Users },
+    { href: '/admin/cms', label: t('sidebar.cms'), icon: FileText },
+    { href: '/admin/settings', label: t('sidebar.settings'), icon: Settings },
+  ];
 
   return (
     <aside
@@ -45,7 +58,7 @@ export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProp
       </div>
 
       <nav className="flex-1 space-y-1 px-3 py-4">
-        {sidebarLinks.map((link) => {
+        {links.map((link) => {
           const isActive =
             link.href === '/admin'
               ? router.pathname === '/admin'
@@ -80,7 +93,7 @@ export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProp
           )}
         >
           <ChevronLeft className="h-5 w-5 flex-shrink-0" />
-          {!isCollapsed && <span>Back to Site</span>}
+          {!isCollapsed && <span>{t('sidebar.backToSite')}</span>}
         </Link>
       </div>
     </aside>

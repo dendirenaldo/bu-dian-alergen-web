@@ -3,7 +3,9 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ChevronLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { APP_NAME, sidebarLinks } from '@/lib/constants';
+import { APP_NAME } from '@/lib/constants';
+import { useLocale } from '@/contexts/LocaleContext';
+import { LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings } from 'lucide-react';
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -12,6 +14,17 @@ interface MobileSidebarProps {
 
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const router = useRouter();
+  const { t } = useLocale();
+  const sidebarLinks = [
+    { href: '/admin', label: t('sidebar.dashboard'), icon: LayoutDashboard },
+    { href: '/admin/products', label: t('sidebar.products'), icon: Package },
+    { href: '/admin/categories', label: t('sidebar.categories'), icon: Tags },
+    { href: '/admin/allergens', label: t('sidebar.allergens'), icon: AlertTriangle },
+    { href: '/admin/detections', label: t('sidebar.detections'), icon: ScanSearch },
+    { href: '/admin/users', label: t('sidebar.users'), icon: Users },
+    { href: '/admin/cms', label: t('sidebar.cms'), icon: FileText },
+    { href: '/admin/settings', label: t('sidebar.settings'), icon: Settings },
+  ];
 
   useEffect(() => {
     if (isOpen) {
@@ -19,17 +32,22 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     } else {
       document.body.style.overflow = '';
     }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKey);
     return () => {
       document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKey);
     };
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 lg:hidden">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <aside className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-surface-950 shadow-xl">
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in-0 duration-200" onClick={onClose} />
+      <aside className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-surface-950 shadow-xl animate-in slide-in-from-left duration-200">
         <div className="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-800">
           <Link href="/admin" onClick={onClose} className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">
@@ -80,7 +98,7 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
           >
             <ChevronLeft className="h-5 w-5 flex-shrink-0" />
-            <span>Back to Site</span>
+            <span>{t('sidebar.backToSite')}</span>
           </Link>
         </div>
       </aside>

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
+import Alert from '@/components/ui/Alert';
 import StepIndicator from './StepIndicator';
 import StepPersonalInfo from './StepPersonalInfo';
 import StepCredentials from './StepCredentials';
@@ -77,13 +78,13 @@ export default function RegisterWizard() {
     setIsLoading(true);
     setApiError('');
     try {
-      await register({
+      const user = await register({
         name: personalInfo.name,
         email: credentials.email,
         password: credentials.password,
         phone: personalInfo.phone || undefined,
       });
-      router.push('/');
+      router.push(user?.role === 'admin' ? '/admin' : '/detect');
     } catch (err: any) {
       setApiError(err.message || 'Registrasi gagal. Silakan coba lagi.');
     } finally {
@@ -91,15 +92,20 @@ export default function RegisterWizard() {
     }
   };
 
+  // Enter → lanjut / daftar (dukungan keyboard).
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (step < 3) handleNext();
+      else handleSubmit();
+    }
+  };
+
   return (
-    <div>
+    <form onSubmit={(e) => { e.preventDefault(); step < 3 ? handleNext() : handleSubmit(); }} onKeyDown={handleKeyDown}>
       <StepIndicator currentStep={step} totalSteps={3} />
 
-      {apiError && (
-        <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
-          {apiError}
-        </div>
-      )}
+      {apiError && <div className="mb-4"><Alert variant="error" title="Registrasi gagal">{apiError}</Alert></div>}
 
       {step === 1 && (
         <StepPersonalInfo
@@ -153,6 +159,6 @@ export default function RegisterWizard() {
           Login
         </Link>
       </p>
-    </div>
+    </form>
   );
 }

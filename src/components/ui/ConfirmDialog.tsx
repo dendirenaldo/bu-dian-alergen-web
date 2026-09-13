@@ -22,8 +22,8 @@ export default function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = 'Confirm',
-  cancelLabel = 'Cancel',
+  confirmLabel = 'Ya, lanjutkan',
+  cancelLabel = 'Batal',
   variant = 'danger',
   isLoading = false,
 }: ConfirmDialogProps) {

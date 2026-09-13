@@ -5,12 +5,14 @@ import PageTransition from '@/components/shared/PageTransition';
 import Card from '@/components/ui/Card';
 import DetectionHistoryTable from '@/components/detection/DetectionHistoryTable';
 import { History } from 'lucide-react';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export default function HistoryPage() {
+  const { t } = useLocale();
   return (
     <>
       <Head>
-        <title>Riwayat Deteksi - Bu Dian</title>
+        <title>{`${t('history.title')} - Bu Dian`}</title>
       </Head>
       <PageTransition>
         <div className="page-container">
@@ -21,10 +23,10 @@ export default function HistoryPage() {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
-                  Riwayat Deteksi
+                  {t('history.title')}
                 </h1>
                 <p className="text-surface-500 dark:text-surface-400">
-                  Lihat semua riwayat deteksi alergen yang telah dilakukan.
+                  {t('history.subtitle')}
                 </p>
               </div>
             </div>

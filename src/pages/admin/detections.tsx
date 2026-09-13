@@ -1,119 +1,73 @@
-import { ReactElement, useEffect, useState } from 'react';
+import { ReactElement, useState } from 'react';
 import Head from 'next/head';
+import Link from 'next/link';
 import AdminLayout from '@/components/layout/AdminLayout';
 import PageTransition from '@/components/shared/PageTransition';
 import AdminRoute from '@/components/shared/AdminRoute';
 import AdminTable from '@/components/admin/AdminTable';
 import DetectionDetail from '@/components/detection/DetectionDetail';
-import { Detection, PaginatedResponse } from '@/types';
+import Breadcrumb from '@/components/ui/Breadcrumb';
+import Alert from '@/components/ui/Alert';
+import Badge from '@/components/ui/Badge';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { Detection } from '@/types';
 import { api } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
+import { useAdminList } from '@/hooks/useAdminList';
 import { formatDate } from '@/lib/utils';
-import Badge from '@/components/ui/Badge';
-import { Eye } from 'lucide-react';
 
 export default function AdminDetectionsPage() {
   const { token } = useAuth();
-  const [detections, setDetections] = useState<Detection[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
+  const { toast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
-  const [isLoading, setIsLoading] = useState(true);
   const [selectedDetection, setSelectedDetection] = useState<Detection | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Detection | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    fetchDetections();
-  }, [currentPage, token]);
+  const { items: detections, total, totalPages, isLoading, error, setError, refresh } =
+    useAdminList<Detection>(API_ENDPOINTS.DETECTIONS.LIST, { token, page: currentPage, limit: 10 });
 
-  const fetchDetections = async () => {
-    if (!token) return;
-    setIsLoading(true);
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    setIsDeleting(true);
     try {
-      const res = await api.get<PaginatedResponse<Detection>>(
-        `${API_ENDPOINTS.DETECTIONS.LIST}?page=${currentPage}&limit=10`,
-        token
-      );
-      setDetections(res.data);
-      setTotalPages(res.totalPages);
-    } catch (err) {
-      console.error('Failed to fetch detections:', err);
-    } finally {
-      setIsLoading(false);
-    }
+      await api.delete(API_ENDPOINTS.DETECTIONS.DETAIL(deleteTarget.id), token!);
+      toast('Hasil deteksi dihapus'); setDeleteTarget(null); refresh();
+    } catch (err: any) { setError(err.message || 'Gagal menghapus deteksi'); }
+    finally { setIsDeleting(false); }
   };
 
   const columns = [
-    {
-      key: 'id',
-      label: 'ID',
-      render: (item: Detection) => (
-        <span className="font-mono text-sm">#{item.id}</span>
-      ),
-    },
-    {
-      key: 'product',
-      label: 'Produk',
-      render: (item: Detection) => (
-        <span className="font-medium">{item.product?.name || '-'}</span>
-      ),
-    },
-    {
-      key: 'result',
-      label: 'Hasil',
-      render: (item: Detection) => (
-        <Badge variant={item.result === 'safe' ? 'success' : 'danger'}>
-          {item.result === 'safe' ? 'Aman' : 'Berbahaya'}
-        </Badge>
-      ),
-    },
-    {
-      key: 'confidenceScore',
-      label: 'Confidence',
-      render: (item: Detection) => (
-        <span>{Math.round(item.confidenceScore * 100)}%</span>
-      ),
-    },
-    {
-      key: 'createdAt',
-      label: 'Tanggal',
-      render: (item: Detection) => formatDate(item.createdAt),
-    },
+    { key: 'id', label: 'ID', render: (item: Detection) => <span className="font-mono text-xs">#{item.id}</span> },
+    { key: 'product', label: 'Produk', render: (item: Detection) => <span className="font-medium">{item.product?.name || (item.ocrText ? `${String(item.ocrText).slice(0, 30)}…` : '—')}</span> },
+    { key: 'result', label: 'Hasil', render: (item: Detection) => <Badge variant={item.result === 'safe' ? 'success' : 'danger'}>{item.result === 'safe' ? 'Aman' : 'Berbahaya'}</Badge> },
+    { key: 'confidenceScore', label: 'Keyakinan', render: (item: Detection) => <span>{Math.round((item.confidenceScore || 0) * 100)}%</span> },
+    { key: 'detectionMethod', label: 'Metode', render: (d: Detection) => <span className="text-xs">{d.detectionMethod === 'image_ocr' ? 'Gambar (OCR)' : 'Teks'}</span> },
+    { key: 'createdAt', label: 'Tanggal', render: (item: Detection) => formatDate(item.createdAt) },
   ];
 
   return (
     <AdminRoute>
-      <Head>
-        <title>Deteksi - Admin Bu Dian</title>
-      </Head>
+      <Head><title>Deteksi - Admin Bu Dian</title></Head>
       <PageTransition>
         <div className="space-y-6">
-          <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">
-            Deteksi
-          </h1>
-
-          <AdminTable
-            data={detections}
-            columns={columns}
-            isLoading={isLoading}
-            totalPages={totalPages}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
-            onEdit={(detection) => setSelectedDetection(detection)}
-            searchPlaceholder="Cari deteksi..."
-          />
-
-          {selectedDetection && (
-            <DetectionDetail
-              detection={selectedDetection}
-              onClose={() => setSelectedDetection(null)}
-            />
-          )}
+          <div className="space-y-2">
+            <Breadcrumb items={[{ label: 'Deteksi' }]} />
+            <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">Deteksi</h1>
+            <p className="text-sm text-surface-500 dark:text-surface-400">Klik ikon mata untuk melihat detail. Hapus bila data uji.</p>
+          </div>
+          {error && <Alert variant="error" title="Gagal">{error}</Alert>}
+          <AdminTable data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage}
+            onView={setSelectedDetection} onDelete={setDeleteTarget}
+            emptyTitle="Belum ada deteksi" emptyDescription="Hasil deteksi pengguna akan muncul di sini." />
+          {selectedDetection && <DetectionDetail detection={selectedDetection} onClose={() => setSelectedDetection(null)} />}
+          <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Hapus deteksi?" description="Hapus hasil deteksi ini? Tindakan ini tidak dapat dibatalkan." confirmLabel="Ya, hapus" cancelLabel="Batal" isLoading={isDeleting} />
         </div>
       </PageTransition>
     </AdminRoute>
   );
 }
 
-AdminDetectionsPage.getLayout = (page: ReactElement) => {
-  return <AdminLayout>{page}</AdminLayout>;
-};
+AdminDetectionsPage.getLayout = (page: ReactElement) => <AdminLayout>{page}</AdminLayout>;

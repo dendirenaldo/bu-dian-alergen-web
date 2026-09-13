@@ -5,22 +5,25 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Menu, X, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLocale } from '@/contexts/LocaleContext';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/ThemeToggle';
+import LocaleToggle from '@/components/shared/LocaleToggle';
 import { APP_NAME } from '@/lib/constants';
-
-const navLinks = [
-  { href: '/', label: 'Home' },
-  { href: '/detect', label: 'Detection' },
-  { href: '/history', label: 'History' },
-  { href: '/about', label: 'About' },
-  { href: '/contact', label: 'Contact' },
-];
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
+  const { t } = useLocale();
   const router = useRouter();
+
+  const navLinks = [
+    { href: '/', label: t('nav.home') },
+    { href: '/detect', label: t('nav.detection') },
+    { href: '/history', label: t('nav.history') },
+    { href: '/about', label: t('nav.about') },
+    { href: '/contact', label: t('nav.contact') },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-surface-200 bg-white/80 backdrop-blur-lg dark:border-surface-800 dark:bg-surface-950/80">
@@ -52,6 +55,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
+          <LocaleToggle />
           <ThemeToggle />
           {isAuthenticated ? (
             <div className="flex items-center gap-3">
@@ -59,13 +63,13 @@ export default function Navbar() {
                 href={user?.role === 'admin' ? '/admin' : '/detect'}
                 className="text-sm font-medium text-surface-700 hover:text-primary-600 dark:text-surface-300 dark:hover:text-primary-400"
               >
-                Dashboard
+                {t('nav.dashboard')}
               </Link>
               <button
                 onClick={logout}
                 className="rounded-lg px-3 py-1.5 text-sm font-medium text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800 transition-colors"
               >
-                Logout
+                {t('nav.logout')}
               </button>
             </div>
           ) : (
@@ -75,14 +79,14 @@ export default function Navbar() {
                 className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-surface-700 hover:bg-surface-100 dark:text-surface-300 dark:hover:bg-surface-800 transition-colors"
               >
                 <LogIn className="h-4 w-4" />
-                Login
+                {t('nav.login')}
               </Link>
               <Link
                 href="/register"
                 className="flex items-center gap-1.5 rounded-lg bg-primary-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-primary-700 transition-colors"
               >
                 <UserPlus className="h-4 w-4" />
-                Register
+                {t('nav.register')}
               </Link>
             </div>
           )}
@@ -123,7 +127,7 @@ export default function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="rounded-lg px-3 py-2 text-sm font-medium text-surface-700 hover:bg-surface-100 dark:text-surface-300 dark:hover:bg-surface-800"
                 >
-                  Dashboard
+                  {t('nav.dashboard')}
                 </Link>
                 <button
                   onClick={() => {
@@ -132,7 +136,7 @@ export default function Navbar() {
                   }}
                   className="rounded-lg px-3 py-2 text-left text-sm font-medium text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
                 >
-                  Logout
+                  {t('nav.logout')}
                 </button>
               </div>
             ) : (
@@ -142,14 +146,14 @@ export default function Navbar() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="rounded-lg px-3 py-2 text-sm font-medium text-surface-700 hover:bg-surface-100 dark:text-surface-300 dark:hover:bg-surface-800"
                 >
-                  Login
+                  {t('nav.login')}
                 </Link>
                 <Link
                   href="/register"
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="rounded-lg bg-primary-600 px-3 py-2 text-center text-sm font-medium text-white hover:bg-primary-700"
                 >
-                  Register
+                  {t('nav.register')}
                 </Link>
               </div>
             )}

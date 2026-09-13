@@ -30,11 +30,17 @@ export const API_ENDPOINTS = {
   },
   CONTENTS: {
     LIST: '/api/v1/contents',
+    DETAIL: (id: number) => `/api/v1/contents/${id}`,
     BY_SLUG: (slug: string) => `/api/v1/contents/${slug}`,
+  },
+  SETTINGS: {
+    LIST: '/api/v1/settings',
+    DETAIL: (key: string) => `/api/v1/settings/${key}`,
   },
   DASHBOARD: {
     STATS: '/api/v1/dashboard/stats',
     RECENT: '/api/v1/dashboard/recent',
+    TREND: '/api/v1/dashboard/trend',
   },
 };
 
@@ -48,13 +54,17 @@ import {
   Users,
   FileText,
   ScanSearch,
+  Tags,
+  Settings,
 } from 'lucide-react';
 
 export const sidebarLinks = [
-  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/admin/products', label: 'Products', icon: Package },
-  { href: '/admin/allergens', label: 'Allergens', icon: AlertTriangle },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/cms', label: 'CMS', icon: FileText },
-  { href: '/admin/detections', label: 'Detections', icon: ScanSearch },
+  { href: '/admin', label: 'Dasbor', icon: LayoutDashboard },
+  { href: '/admin/products', label: 'Produk', icon: Package },
+  { href: '/admin/categories', label: 'Kategori', icon: Tags },
+  { href: '/admin/allergens', label: 'Alergen', icon: AlertTriangle },
+  { href: '/admin/detections', label: 'Deteksi', icon: ScanSearch },
+  { href: '/admin/users', label: 'Pengguna', icon: Users },
+  { href: '/admin/cms', label: 'Konten', icon: FileText },
+  { href: '/admin/settings', label: 'Pengaturan', icon: Settings },
 ];

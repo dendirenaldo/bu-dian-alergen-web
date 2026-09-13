@@ -1,45 +1,48 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Detection, PaginatedResponse } from '@/types';
+import { useEffect, useState } from 'react';
+import { Detection } from '@/types';
 import { api } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
+import { unwrapListApi } from '@/lib/unwrap';
 import { formatDate } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import Pagination from '@/components/ui/Pagination';
+import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
+import Alert from '@/components/ui/Alert';
 import DetectionDetail from './DetectionDetail';
-import { ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import { useLocale } from '@/contexts/LocaleContext';
+import { Eye } from 'lucide-react';
 
 export default function DetectionHistoryTable() {
+  const { t } = useLocale();
   const { token } = useAuth();
   const [detections, setDetections] = useState<Detection[]>([]);
+  const [total, setTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDetection, setSelectedDetection] = useState<Detection | null>(null);
 
   useEffect(() => {
-    fetchDetections();
-  }, [currentPage, token]);
-
-  const fetchDetections = async () => {
-    if (!token) return;
+    if (!token) { setIsLoading(false); return; }
+    const ctrl = new AbortController();
     setIsLoading(true);
-    try {
-      const res = await api.get<PaginatedResponse<Detection>>(
-        `${API_ENDPOINTS.DETECTIONS.LIST}?page=${currentPage}&limit=10`,
-        token
-      );
-      setDetections(res.data);
-      setTotalPages(res.totalPages);
-    } catch (err) {
-      console.error('Failed to fetch detections:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    setError(null);
+    api.get(`${API_ENDPOINTS.DETECTIONS.LIST}?page=${currentPage}&limit=10`, token, ctrl.signal)
+      .then((res) => {
+        const u = unwrapListApi<Detection>(res, currentPage, 10);
+        setDetections(u.items);
+        setTotal(u.total);
+        setTotalPages(u.totalPages);
+      })
+      .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || 'Gagal memuat riwayat'); })
+      .finally(() => setIsLoading(false));
+    return () => ctrl.abort();
+  }, [currentPage, token]);
 
   if (isLoading) {
     return (
@@ -82,16 +85,17 @@ export default function DetectionHistoryTable() {
 
   if (detections.length === 0) {
     return (
-      <div className="py-12 text-center">
-        <p className="text-surface-500 dark:text-surface-400">
-          Belum ada riwayat deteksi.
-        </p>
-      </div>
+      <EmptyState
+        title={t('history.empty')}
+        description={t('history.emptyDesc')}
+        action={{ label: t('history.start'), onClick: () => (window.location.href = '/detect') }}
+      />
     );
   }
 
   return (
     <>
+      {error && <div className="mb-4"><Alert variant="error" title="Gagal memuat">{error}</Alert></div>}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -166,28 +170,11 @@ export default function DetectionHistoryTable() {
       </div>
 
       {totalPages > 1 && (
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-surface-500 dark:text-surface-400">
-            Halaman {currentPage} dari {totalPages}
+            {total} data • Halaman {currentPage} dari {totalPages}
           </p>
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setCurrentPage(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>
       )}
 

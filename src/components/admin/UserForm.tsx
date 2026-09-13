@@ -1,75 +1,42 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { User as UserIcon, Mail, Phone, ShieldCheck, Lock } from 'lucide-react';
 import { User } from '@/types';
 import { validators } from '@/lib/validation';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
+import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 
 interface UserFormProps {
   isOpen: boolean;
   onClose: () => void;
   user?: User | null;
-  onSubmit: (data: {
-    name: string;
-    email: string;
-    phone?: string;
-    role: 'admin' | 'user';
-    password?: string;
-  }) => Promise<void>;
+  onSubmit: (data: { name: string; email: string; phone?: string; role: 'admin' | 'user'; password?: string }) => Promise<void>;
+  isSaving?: boolean;
 }
 
 const roleOptions = [
-  { value: 'user', label: 'User' },
+  { value: 'user', label: 'Pengguna' },
   { value: 'admin', label: 'Admin' },
 ];
 
-export default function UserForm({ isOpen, onClose, user, onSubmit }: UserFormProps) {
-  const [form, setForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    role: 'user' as 'admin' | 'user',
-    password: '',
-  });
-  const [isLoading, setIsLoading] = useState(false);
+export default function UserForm({ isOpen, onClose, user, onSubmit, isSaving = false }: UserFormProps) {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'user' as 'admin' | 'user', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const handleBlur = (field: string, value: string) => {
-    let result;
-    if (field === 'name') result = validators.required('Nama')(value);
-    if (field === 'email') {
-      const emailReq = validators.required('Email')(value);
-      if (!emailReq.valid) result = emailReq;
-      else result = validators.email(value);
-    }
-    if (field === 'phone' && value) result = validators.phone(value);
-    if (field === 'password' && !user && value) result = validators.password(value);
-    if (result && !result.valid) {
-      setErrors(prev => ({ ...prev, [field]: result!.error! }));
-    } else {
-      setErrors(prev => {
-        const next = { ...prev };
-        delete next[field];
-        return next;
-      });
-    }
-  };
+  const dirty = useMemo(() => [form.name, form.email, form.phone, form.password].some((v) => v !== ''), [form]);
+  const guard = useUnsavedGuard(isOpen && dirty && !isSaving);
 
   useEffect(() => {
     if (user) {
-      setForm({
-        name: user.name || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        role: user.role || 'user',
-        password: '',
-      });
+      setForm({ name: user.name || '', email: user.email || '', phone: user.phone || '', role: user.role || 'user', password: '' });
     } else {
       setForm({ name: '', email: '', phone: '', role: 'user', password: '' });
     }
+    setErrors({});
   }, [user, isOpen]);
 
   const validate = () => {
@@ -86,7 +53,10 @@ export default function UserForm({ isOpen, onClose, user, onSubmit }: UserFormPr
       const phoneResult = validators.phone(form.phone);
       if (!phoneResult.valid) errs.phone = phoneResult.error!;
     }
-    if (!user && form.password) {
+    // Wajib isi password saat tambah; opsional saat ubah (tetap divalidasi bila diisi).
+    if (!user && !form.password) {
+      errs.password = 'Password wajib diisi';
+    } else if (form.password) {
       const passResult = validators.password(form.password);
       if (!passResult.valid) errs.password = passResult.error!;
     }
@@ -98,83 +68,32 @@ export default function UserForm({ isOpen, onClose, user, onSubmit }: UserFormPr
     const validationErrors = validate();
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
-    setIsLoading(true);
-    try {
-      await onSubmit({
-        name: form.name,
-        email: form.email,
-        phone: form.phone || undefined,
-        role: form.role,
-        password: form.password || undefined,
-      });
-      onClose();
-    } finally {
-      setIsLoading(false);
-    }
+    await onSubmit({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      phone: form.phone.trim() || undefined,
+      role: form.role,
+      password: form.password || undefined,
+    });
+  };
+
+  const handleClose = () => {
+    if (dirty && !isSaving) guard.setShowDialog(true);
+    else onClose();
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={user ? 'Edit User' : 'Tambah User'}
-      size="md"
-    >
+    <Modal isOpen={isOpen} onClose={handleClose} title={user ? 'Ubah Pengguna' : 'Tambah Pengguna'} size="md">
+      <guard.Dialog onClose={onClose} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input
-          label="Nama"
-          placeholder="Masukkan nama"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          onBlur={(e) => handleBlur('name', e.target.value)}
-          error={errors.name}
-          required
-          autoComplete="name"
-        />
-        <Input
-          label="Email"
-          type="email"
-          placeholder="Masukkan email"
-          value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
-          onBlur={(e) => handleBlur('email', e.target.value)}
-          error={errors.email}
-          required
-          autoComplete="email"
-        />
-        <Input
-          label="Telepon"
-          placeholder="Masukkan nomor telepon"
-          value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
-          onBlur={(e) => handleBlur('phone', e.target.value)}
-          error={errors.phone}
-          autoComplete="tel"
-        />
-        <Select
-          label="Role"
-          value={form.role}
-          onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'user' })}
-          options={roleOptions}
-        />
-        <Input
-          label={user ? 'Password Baru (kosongkan jika tidak diubah)' : 'Password'}
-          type="password"
-          placeholder="Masukkan password"
-          value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
-          onBlur={(e) => handleBlur('password', e.target.value)}
-          error={errors.password}
-          required={!user}
-          autoComplete="new-password"
-        />
+        <Input label="Nama" placeholder="Nama lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} required autoComplete="name" leftIcon={<UserIcon className="h-4 w-4" />} />
+        <Input label="Email" type="email" placeholder="nama@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} error={errors.email} required autoComplete="email" leftIcon={<Mail className="h-4 w-4" />} />
+        <Input label="Telepon" placeholder="08xxxxxxxxxx (opsional)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} error={errors.phone} autoComplete="tel" leftIcon={<Phone className="h-4 w-4" />} inputMode="tel" />
+        <Select label="Peran" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'user' })} options={roleOptions} required />
+        <Input label={user ? 'Password Baru (opsional)' : 'Password'} type="password" placeholder={user ? 'Kosongkan bila tidak diubah' : 'Min. 8 karakter, huruf besar + angka'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} error={errors.password} required={!user} autoComplete="new-password" leftIcon={<Lock className="h-4 w-4" />} helperText="Min. 8 karakter, wajib huruf besar dan angka." />
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose}>
-            Batal
-          </Button>
-          <Button type="submit" isLoading={isLoading}>
-            {user ? 'Simpan' : 'Tambah'}
-          </Button>
+          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>Batal</Button>
+          <Button type="submit" isLoading={isSaving}>{user ? 'Simpan' : 'Tambah'}</Button>
         </div>
       </form>
     </Modal>

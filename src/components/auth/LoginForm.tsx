@@ -7,6 +7,7 @@ import { Mail, Lock } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import Alert from '@/components/ui/Alert';
 import { validators } from '@/lib/validation';
 
 export default function LoginForm() {
@@ -53,8 +54,8 @@ export default function LoginForm() {
 
     setIsLoading(true);
     try {
-      await login(form.email, form.password);
-      router.push('/');
+      const user = await login(form.email, form.password);
+      router.push(user?.role === 'admin' ? '/admin' : '/detect');
     } catch (err: any) {
       setApiError(err.message || 'Login gagal. Silakan coba lagi.');
     } finally {
@@ -64,11 +65,7 @@ export default function LoginForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {apiError && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
-          {apiError}
-        </div>
-      )}
+      {apiError && <Alert variant="error" title="Login gagal">{apiError}</Alert>}
 
       <Input
         label="Email"
@@ -79,6 +76,7 @@ export default function LoginForm() {
         onChange={(e) => setForm({ ...form, email: e.target.value })}
         onBlur={(e) => handleBlur('email', e.target.value)}
         error={errors.email}
+        required
         autoComplete="email"
       />
 
@@ -91,6 +89,7 @@ export default function LoginForm() {
         onChange={(e) => setForm({ ...form, password: e.target.value })}
         onBlur={(e) => handleBlur('password', e.target.value)}
         error={errors.password}
+        required
         autoComplete="current-password"
       />
 

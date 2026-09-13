@@ -34,8 +34,15 @@ export default function Dropdown({
         setIsOpen(false);
       }
     };
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setIsOpen(false);
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, []);
 
   return (
@@ -55,6 +62,7 @@ export default function Dropdown({
           className={cn(
             'absolute z-50 mt-2 min-w-[12rem] rounded-xl border border-surface-200 bg-white py-1.5 shadow-lg',
             'dark:border-surface-700 dark:bg-surface-900',
+            'animate-in fade-in-0 zoom-in-95 duration-150',
             align === 'right' ? 'right-0' : 'left-0'
           )}
         >

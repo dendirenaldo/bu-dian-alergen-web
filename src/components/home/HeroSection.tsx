@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight, ShieldCheck } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export default function HeroSection() {
+  const { t } = useLocale();
   return (
     <section className="relative overflow-hidden bg-white px-4 py-20 dark:bg-surface-950 sm:px-6 lg:px-8 lg:py-32">
       <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-surface-50 dark:from-primary-950/20 dark:via-surface-950 dark:to-surface-950" />
@@ -20,29 +22,28 @@ export default function HeroSection() {
           >
             <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-50 px-4 py-1.5 text-sm font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-400">
               <ShieldCheck className="h-4 w-4" />
-              AI-Powered Detection
+              {t('home.heroBadge')}
             </div>
             <h1 className="text-4xl font-bold tracking-tight text-surface-900 dark:text-surface-100 sm:text-5xl lg:text-6xl">
-              Deteksi Alergen{' '}
+{t('home.heroTitleA')}{' '}
               <span className="text-primary-600 dark:text-primary-400">
-                Makanan
+                {t('home.heroTitleB')}
               </span>{' '}
-              dengan Mudah
+              {t('home.heroTitleC')}
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-surface-600 dark:text-surface-400">
-              Upload foto produk makanan dan dapatkan hasil deteksi alergen secara instan.
-              Teknologi Word2Vec &amp; BiLSTM untuk akurasi tinggi.
+{t('home.heroDesc')}
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <Link href="/detect">
                 <Button size="lg" className="w-full sm:w-auto">
-                  Mulai Deteksi
+                  {t('home.heroStart')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
               <Link href="/about">
                 <Button variant="secondary" size="lg" className="w-full sm:w-auto">
-                  Pelajari Lebih Lanjut
+                  {t('home.heroLearn')}
                 </Button>
               </Link>
             </div>

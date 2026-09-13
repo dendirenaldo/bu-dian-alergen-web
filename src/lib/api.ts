@@ -5,6 +5,21 @@ interface RequestOptions {
   body?: any;
   token?: string;
   isFormData?: boolean;
+  signal?: AbortSignal;
+  idempotencyKey?: string;
+}
+
+function friendlyMessage(status: number, serverMessage?: string) {
+  if (serverMessage && serverMessage !== 'Request failed') return serverMessage;
+  if (status === 400) return 'Data tidak valid. Periksa kembali isian form.';
+  if (status === 401) return 'Sesi berakhir. Silakan masuk kembali.';
+  if (status === 403) return 'Anda tidak berhak mengakses fitur ini.';
+  if (status === 404) return 'Data tidak ditemukan.';
+  if (status === 409) return 'Data sudah terdaftar (duplikat).';
+  if (status === 413) return 'File terlalu besar.';
+  if (status === 429) return 'Terlalu banyak percobaan. Tunggu sebentar.';
+  if (status >= 500) return 'Server bermasalah. Coba lagi nanti.';
+  return 'Permintaan gagal. Coba lagi.';
 }
 
 class ApiClient {
@@ -15,7 +30,7 @@ class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { method = 'GET', body, token, isFormData = false } = options;
+    const { method = 'GET', body, token, isFormData = false, signal, idempotencyKey } = options;
 
     const headers: Record<string, string> = {};
 
@@ -23,13 +38,18 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    if (body && !isFormData) {
+    if (body && !isFormData && !(body instanceof FormData)) {
       headers['Content-Type'] = 'application/json';
+    }
+
+    if (idempotencyKey && (method === 'POST' || method === 'PUT' || method === 'DELETE')) {
+      headers['Idempotency-Key'] = idempotencyKey;
     }
 
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       method,
       headers,
+      signal,
       body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
     });
 
@@ -37,24 +57,25 @@ class ApiClient {
       const error = await response.json().catch(() => ({ message: 'Request failed' }));
       throw {
         statusCode: response.status,
-        message: error.message || 'Request failed',
+        message: friendlyMessage(response.status, error.message),
         errors: error.errors,
+        raw: error,
       };
     }
 
     return response.json();
   }
 
-  get<T>(endpoint: string, token?: string) {
-    return this.request<T>(endpoint, { token });
+  get<T>(endpoint: string, token?: string, signal?: AbortSignal) {
+    return this.request<T>(endpoint, { token, signal });
   }
 
-  post<T>(endpoint: string, body?: any, token?: string, isFormData?: boolean) {
-    return this.request<T>(endpoint, { method: 'POST', body, token, isFormData });
+  post<T>(endpoint: string, body?: any, token?: string, opts?: { isFormData?: boolean; signal?: AbortSignal; idempotencyKey?: string }) {
+    return this.request<T>(endpoint, { method: 'POST', body, token, ...opts });
   }
 
-  put<T>(endpoint: string, body?: any, token?: string) {
-    return this.request<T>(endpoint, { method: 'PUT', body, token });
+  put<T>(endpoint: string, body?: any, token?: string, opts?: { signal?: AbortSignal; idempotencyKey?: string }) {
+    return this.request<T>(endpoint, { method: 'PUT', body, token, ...opts });
   }
 
   delete<T>(endpoint: string, token?: string) {
@@ -63,3 +84,9 @@ class ApiClient {
 }
 
 export const api = new ApiClient(API_BASE_URL);
+
+export function newIdempotencyKey() {
+  return typeof crypto !== 'undefined' && 'randomUUID' in crypto
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}

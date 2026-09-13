@@ -4,8 +4,10 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import Button from '@/components/ui/Button';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export default function CTASection() {
+  const { t } = useLocale();
   return (
     <section className="bg-surface-50 px-4 py-20 dark:bg-surface-900 sm:px-6 lg:px-8 lg:py-28">
       <div className="mx-auto max-w-7xl">
@@ -18,10 +20,10 @@ export default function CTASection() {
         >
           <div className="mx-auto max-w-2xl text-center">
             <h2 className="text-3xl font-bold text-white sm:text-4xl">
-              Siap Memulai?
+              {t('home.ctaTitle')}
             </h2>
             <p className="mt-4 text-lg text-primary-100">
-              Mulai deteksi alergen pada produk makanan Anda sekarang juga. Gratis dan mudah digunakan.
+              {t('home.ctaDesc')}
             </p>
             <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link href="/register">
@@ -29,7 +31,7 @@ export default function CTASection() {
                   size="lg"
                   className="bg-white text-primary-600 hover:bg-primary-50 w-full sm:w-auto"
                 >
-                  Daftar Sekarang
+                  {t('home.ctaRegister')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
@@ -39,7 +41,7 @@ export default function CTASection() {
                   size="lg"
                   className="border border-white/30 text-white hover:bg-white/10 w-full sm:w-auto"
                 >
-                  Coba Tanpa Daftar
+                  {t('home.ctaTry')}
                 </Button>
               </Link>
             </div>

@@ -54,11 +54,11 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
           }`}
         >
           {isSafe
-            ? '✓ Aman - Tidak ditemukan alergen berbahaya'
-            : '⚠ Berbahaya - Ditemukan alergen pada produk ini'}
+            ? 'Aman — Tidak ditemukan alergen berbahaya'
+            : 'Berbahaya — Ditemukan alergen pada produk ini'}
         </p>
         <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
-          Confidence Score: {Math.round(detection.confidenceScore * 100)}%
+          Skor kepercayaan: {Math.round(detection.confidenceScore * 100)}%
         </p>
       </div>
 

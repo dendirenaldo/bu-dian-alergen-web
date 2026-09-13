@@ -8,8 +8,8 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: { name: string; email: string; password: string; phone?: string }) => Promise<void>;
+  login: (email: string, password: string) => Promise<User>;
+  register: (data: { name: string; email: string; password: string; phone?: string }) => Promise<User>;
   logout: () => void;
 }
 
@@ -42,6 +42,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.data.user);
     setToken(res.data.token);
     localStorage.setItem('token', res.data.token);
+    return res.data.user as User;
   }, []);
 
   const register = useCallback(async (data: { name: string; email: string; password: string; phone?: string }) => {
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res.data.user);
     setToken(res.data.token);
     localStorage.setItem('token', res.data.token);
+    return res.data.user as User;
   }, []);
 
   const logout = useCallback(() => {

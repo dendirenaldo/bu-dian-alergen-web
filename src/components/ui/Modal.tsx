@@ -1,4 +1,4 @@
-import { HTMLAttributes, useEffect, useCallback, useRef } from 'react';
+import { HTMLAttributes, useEffect, useCallback, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 
@@ -28,6 +28,15 @@ export default function Modal({
 
   const modalRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const raf = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf);
+    }
+    setVisible(false);
+  }, [isOpen]);
 
   const handleEscape = useCallback(
     (e: KeyboardEvent) => {
@@ -78,7 +87,10 @@ export default function Modal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+        className={cn(
+          'fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200',
+          visible ? 'opacity-100' : 'opacity-0'
+        )}
         onClick={onClose}
       />
       <div
@@ -88,6 +100,8 @@ export default function Modal({
           'relative z-50 w-full rounded-2xl bg-white p-6 shadow-xl',
           'dark:bg-surface-900',
           'mx-4',
+          'transition-all duration-200',
+          visible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2',
           sizes[size],
           className
         )}
