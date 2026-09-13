@@ -1,10 +1,14 @@
 import { Html, Head, Main, NextScript } from 'next/document';
 
+const THEME_INIT_SCRIPT = `(function(){try{var t=localStorage.getItem('theme')||'system';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.classList.add(r);}catch(e){}})();`;
+const LOCALE_INIT_SCRIPT = `(function(){try{var l=localStorage.getItem('locale');if(l==='en'||l==='id'){document.documentElement.lang=l;}}catch(e){}})();`;
+
 export default function Document() {
   return (
     <Html lang="id">
       <Head />
       <body>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT + LOCALE_INIT_SCRIPT }} />
         <div
           id="preloader"
           style={{

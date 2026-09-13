@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface UserFormProps {
   isOpen: boolean;
@@ -18,12 +19,12 @@ interface UserFormProps {
   isSaving?: boolean;
 }
 
-const roleOptions = [
-  { value: 'user', label: 'Pengguna' },
-  { value: 'admin', label: 'Admin' },
-];
-
 export default function UserForm({ isOpen, onClose, user, onSubmit, isSaving = false }: UserFormProps) {
+  const { t } = useLocale();
+  const roleOptions = [
+    { value: 'user', label: t('admin.form.roleUser') },
+    { value: 'admin', label: t('admin.form.roleAdmin') },
+  ];
   const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'user' as 'admin' | 'user', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -41,9 +42,9 @@ export default function UserForm({ isOpen, onClose, user, onSubmit, isSaving = f
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    const nameResult = validators.required('Nama')(form.name);
+    const nameResult = validators.required(t('admin.form.name'))(form.name);
     if (!nameResult.valid) errs.name = nameResult.error!;
-    const emailRequired = validators.required('Email')(form.email);
+    const emailRequired = validators.required(t('admin.form.email'))(form.email);
     if (!emailRequired.valid) errs.email = emailRequired.error!;
     else {
       const emailFormat = validators.email(form.email);
@@ -55,7 +56,7 @@ export default function UserForm({ isOpen, onClose, user, onSubmit, isSaving = f
     }
     // Wajib isi password saat tambah; opsional saat ubah (tetap divalidasi bila diisi).
     if (!user && !form.password) {
-      errs.password = 'Password wajib diisi';
+      errs.password = t('admin.validation.required', { field: t('admin.form.password') });
     } else if (form.password) {
       const passResult = validators.password(form.password);
       if (!passResult.valid) errs.password = passResult.error!;
@@ -83,17 +84,17 @@ export default function UserForm({ isOpen, onClose, user, onSubmit, isSaving = f
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={user ? 'Ubah Pengguna' : 'Tambah Pengguna'} size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={user ? t('admin.form.editUser') : t('admin.form.addUser')} size="md">
       <guard.Dialog onClose={onClose} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input label="Nama" placeholder="Nama lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} required autoComplete="name" leftIcon={<UserIcon className="h-4 w-4" />} />
-        <Input label="Email" type="email" placeholder="nama@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} error={errors.email} required autoComplete="email" leftIcon={<Mail className="h-4 w-4" />} />
-        <Input label="Telepon" placeholder="08xxxxxxxxxx (opsional)" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} error={errors.phone} autoComplete="tel" leftIcon={<Phone className="h-4 w-4" />} inputMode="tel" />
-        <Select label="Peran" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'user' })} options={roleOptions} required />
-        <Input label={user ? 'Password Baru (opsional)' : 'Password'} type="password" placeholder={user ? 'Kosongkan bila tidak diubah' : 'Min. 8 karakter, huruf besar + angka'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} error={errors.password} required={!user} autoComplete="new-password" leftIcon={<Lock className="h-4 w-4" />} helperText="Min. 8 karakter, wajib huruf besar dan angka." />
+        <Input label={t('admin.form.name')} placeholder="Nama lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} required autoComplete="name" leftIcon={<UserIcon className="h-4 w-4" />} />
+        <Input label={t('admin.form.email')} type="email" placeholder="nama@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} error={errors.email} required autoComplete="email" leftIcon={<Mail className="h-4 w-4" />} />
+        <Input label={t('admin.form.phone')} placeholder={t('admin.form.exPhone')} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} error={errors.phone} autoComplete="tel" leftIcon={<Phone className="h-4 w-4" />} inputMode="tel" />
+        <Select label={t('admin.form.role')} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'user' })} options={roleOptions} required />
+        <Input label={user ? t('admin.form.newPassword') : t('admin.form.password')} type="password" placeholder={user ? t('admin.form.passwordEmpty') : t('admin.form.passwordHint')} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} error={errors.password} required={!user} autoComplete="new-password" leftIcon={<Lock className="h-4 w-4" />} helperText={t('admin.form.passwordHint')} />
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>Batal</Button>
-          <Button type="submit" isLoading={isSaving}>{user ? 'Simpan' : 'Tambah'}</Button>
+          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>{t('common.cancel')}</Button>
+          <Button type="submit" isLoading={isSaving}>{user ? t('admin.form.save') : t('admin.form.add')}</Button>
         </div>
       </form>
     </Modal>

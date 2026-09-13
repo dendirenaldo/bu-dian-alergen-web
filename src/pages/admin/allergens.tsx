@@ -1,8 +1,9 @@
 import { ReactElement, useState } from 'react';
-import Head from 'next/head';
 import AdminLayout from '@/components/layout/AdminLayout';
 import PageTransition from '@/components/shared/PageTransition';
 import AdminRoute from '@/components/shared/AdminRoute';
+import SeoHead from '@/components/shared/SeoHead';
+import { useLocale } from '@/contexts/LocaleContext';
 import AdminTable from '@/components/admin/AdminTable';
 import AllergenForm from '@/components/admin/AllergenForm';
 import Breadcrumb from '@/components/ui/Breadcrumb';
@@ -22,11 +23,12 @@ const severityVariant = (s: string): 'danger' | 'warning' | 'info' | 'default' =
   if (s === 'medium') return 'info';
   return 'default';
 };
-const severityLabel = (s: string) => ({ low: 'Rendah', medium: 'Sedang', high: 'Tinggi', critical: 'Kritis' } as any)[s] ?? s;
+const severityLabel = (s: string, t: (key: string) => string) => ({ low: t('admin.severity.low'), medium: t('admin.severity.medium'), high: t('admin.severity.high'), critical: t('admin.severity.critical') } as any)[s] ?? s;
 
 export default function AdminAllergensPage() {
   const { token } = useAuth();
   const { toast } = useToast();
+  const { t } = useLocale();
   const [currentPage, setCurrentPage] = useState(1);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedAllergen, setSelectedAllergen] = useState<Allergen | null>(null);
@@ -41,8 +43,8 @@ export default function AdminAllergensPage() {
     setError(null); setIsSaving(true);
     try {
       await api.post(API_ENDPOINTS.ALLERGENS.LIST, data, token!, { idempotencyKey: newIdempotencyKey() });
-      toast('Alergen berhasil dibuat'); setIsFormOpen(false); refresh();
-    } catch (err: any) { setError(err.message || 'Gagal membuat alergen'); throw err; }
+      toast(t('toast.created')); setIsFormOpen(false); refresh();
+    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
     finally { setIsSaving(false); }
   };
   const handleUpdate = async (data: any) => {
@@ -50,8 +52,8 @@ export default function AdminAllergensPage() {
     setError(null); setIsSaving(true);
     try {
       await api.put(API_ENDPOINTS.ALLERGENS.DETAIL(selectedAllergen.id), data, token!, { idempotencyKey: newIdempotencyKey() });
-      toast('Perubahan alergen disimpan'); setIsFormOpen(false); setSelectedAllergen(null); refresh();
-    } catch (err: any) { setError(err.message || 'Gagal mengupdate alergen'); throw err; }
+      toast(t('toast.updated')); setIsFormOpen(false); setSelectedAllergen(null); refresh();
+    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
     finally { setIsSaving(false); }
   };
   const handleDelete = async () => {
@@ -59,36 +61,36 @@ export default function AdminAllergensPage() {
     setIsDeleting(true);
     try {
       await api.delete(API_ENDPOINTS.ALLERGENS.DETAIL(deleteTarget.id), token!);
-      toast('Alergen berhasil dihapus'); setDeleteTarget(null); refresh();
-    } catch (err: any) { setError(err.message || 'Gagal menghapus alergen'); }
+      toast(t('toast.deleted')); setDeleteTarget(null); refresh();
+    } catch (err: any) { setError(err.message || t('toast.failed')); }
     finally { setIsDeleting(false); }
   };
 
   const columns = [
-    { key: 'name', label: 'Nama', render: (item: Allergen) => <span className="font-medium">{item.name}</span> },
-    { key: 'code', label: 'Kode', render: (a: Allergen) => <span className="font-mono text-xs">{a.code}</span> },
-    { key: 'severityLevel', label: 'Keparahan', render: (item: Allergen) => <Badge variant={severityVariant(item.severityLevel)}>{severityLabel(item.severityLevel)}</Badge> },
-    { key: 'color', label: 'Warna', render: (a: Allergen) => a.color ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 rounded-full border" style={{ backgroundColor: a.color }} /><span className="font-mono text-xs">{a.color}</span></span> : '—' },
-    { key: 'isActive', label: 'Status', render: (item: Allergen) => <Badge variant={item.isActive === false ? 'default' : 'success'}>{item.isActive === false ? 'Nonaktif' : 'Aktif'}</Badge> },
+    { key: 'name', label: t('admin.table.name'), render: (item: Allergen) => <span className="font-medium">{item.name}</span> },
+    { key: 'code', label: t('admin.table.code'), render: (a: Allergen) => <span className="font-mono text-xs">{a.code}</span> },
+    { key: 'severityLevel', label: t('admin.table.severity'), render: (item: Allergen) => <Badge variant={severityVariant(item.severityLevel)}>{severityLabel(item.severityLevel, t)}</Badge> },
+    { key: 'color', label: t('admin.table.color'), render: (a: Allergen) => a.color ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 rounded-full border" style={{ backgroundColor: a.color }} /><span className="font-mono text-xs">{a.color}</span></span> : '—' },
+    { key: 'isActive', label: t('admin.table.status'), render: (item: Allergen) => <Badge variant={item.isActive === false ? 'default' : 'success'}>{item.isActive === false ? t('admin.status.inactive') : t('admin.status.active')}</Badge> },
   ];
 
   return (
     <AdminRoute>
-      <Head><title>Alergen - Admin Bu Dian</title></Head>
+      <SeoHead title={t('admin.allergens')} description={t('admin.pageDesc.allergens')} path="/admin/allergens" noIndex />
       <PageTransition>
         <div className="space-y-6">
           <div className="space-y-2">
-            <Breadcrumb items={[{ label: 'Alergen' }]} />
-            <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">Alergen</h1>
-            <p className="text-sm text-surface-500 dark:text-surface-400">Kode memakai huruf kapital. Warna format hex (#RRGGBB).</p>
+            <Breadcrumb items={[{ label: t('admin.allergens') }]} />
+            <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">{t('admin.allergens')}</h1>
+            <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.allergens')}</p>
           </div>
-          {error && <Alert variant="error" title="Gagal">{error}</Alert>}
+          {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
           <AdminTable data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage}
             onAdd={() => { setSelectedAllergen(null); setIsFormOpen(true); }}
             onEdit={(a) => { setSelectedAllergen(a); setIsFormOpen(true); }}
-            onDelete={setDeleteTarget} emptyTitle="Belum ada alergen" emptyDescription="Tambahkan master alergen." addLabel="Tambah Alergen" />
+            onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.allergens')} emptyDescription={t('admin.emptyDesc.allergens')} addLabel={t('admin.addLabel.allergens')} />
           <AllergenForm isOpen={isFormOpen} onClose={() => { setIsFormOpen(false); setSelectedAllergen(null); }} allergen={selectedAllergen} onSubmit={selectedAllergen ? handleUpdate : handleCreate} isSaving={isSaving} />
-          <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title="Hapus alergen?" description={deleteTarget ? `Hapus alergen "${deleteTarget.name}"? Tindakan ini tidak dapat dibatalkan.` : undefined} confirmLabel="Ya, hapus" cancelLabel="Batal" isLoading={isDeleting} />
+          <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title={t('delete.title')} description={deleteTarget ? t('delete.allergen', { name: deleteTarget.name }) : undefined} confirmLabel={t('delete.confirm')} cancelLabel={t('delete.cancel')} isLoading={isDeleting} />
         </div>
       </PageTransition>
     </AdminRoute>

@@ -10,6 +10,7 @@ import Textarea from '@/components/ui/Textarea';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface CmsEditorProps {
   isOpen: boolean;
@@ -19,19 +20,19 @@ interface CmsEditorProps {
   isSaving?: boolean;
 }
 
-const typeOptions = [
-  { value: 'page', label: 'Halaman' },
-  { value: 'article', label: 'Artikel' },
-  { value: 'announcement', label: 'Pengumuman' },
-];
-
-const statusOptions = [
-  { value: 'draft', label: 'Draf' },
-  { value: 'published', label: 'Terbit' },
-  { value: 'archived', label: 'Arsip' },
-];
-
 export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving = false }: CmsEditorProps) {
+  const { t } = useLocale();
+  const typeOptions = [
+    { value: 'page', label: t('admin.type.page') },
+    { value: 'article', label: t('admin.type.article') },
+    { value: 'announcement', label: t('admin.type.announcement') },
+  ];
+
+  const statusOptions = [
+    { value: 'draft', label: t('admin.contentStatus.draft') },
+    { value: 'published', label: t('admin.contentStatus.published') },
+    { value: 'archived', label: t('admin.contentStatus.archived') },
+  ];
   const [form, setForm] = useState({ title: '', slug: '', body: '', excerpt: '', type: 'page' as ContentType, status: 'draft' as ContentStatus });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -49,9 +50,9 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    const titleResult = validators.required('Judul')(form.title);
+    const titleResult = validators.required(t('admin.form.title'))(form.title);
     if (!titleResult.valid) errs.title = titleResult.error!;
-    if (form.slug && !/^[a-z0-9-]+$/.test(form.slug.trim())) errs.slug = 'Slug hanya huruf kecil, angka, strip';
+    if (form.slug && !/^[a-z0-9-]+$/.test(form.slug.trim())) errs.slug = t('admin.validation.slugChars');
     return errs;
   };
 
@@ -76,22 +77,22 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={content ? 'Ubah Konten' : 'Tambah Konten'} description="Slug otomatis dari judul bila dikosongkan." size="lg">
+    <Modal isOpen={isOpen} onClose={handleClose} title={content ? t('admin.form.editContent') : t('admin.form.addContent')} description="Slug otomatis dari judul bila dikosongkan." size="lg">
       <guard.Dialog onClose={onClose} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Input label="Judul" placeholder="Judul konten" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} error={errors.title} required leftIcon={<Heading3 className="h-4 w-4" />} />
-          <Input label="Slug (opsional)" placeholder="judul-konten" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} />
+          <Input label={t('admin.form.title')} placeholder="Judul konten" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} error={errors.title} required leftIcon={<Heading3 className="h-4 w-4" />} />
+          <Input label={t('admin.form.slug')} placeholder="judul-konten" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Select label="Tipe" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as ContentType })} options={typeOptions} required />
-          <Select label="Status" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatus })} options={statusOptions} required />
+          <Select label={t('admin.form.type')} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as ContentType })} options={typeOptions} required />
+          <Select label={t('admin.form.status')} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatus })} options={statusOptions} required />
         </div>
-        <Textarea label="Ringkasan" placeholder="Ringkasan singkat (opsional)" value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} rows={2} />
-        <Textarea label="Isi Konten" placeholder="Tulis konten di sini..." value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={8} />
+        <Textarea label={t('admin.form.summary')} placeholder={t('admin.form.summaryOptional')} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} rows={2} />
+        <Textarea label={t('admin.form.content')} placeholder={t('admin.form.contentPh')} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={8} />
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>Batal</Button>
-          <Button type="submit" isLoading={isSaving}>{content ? 'Simpan' : 'Tambah'}</Button>
+          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>{t('common.cancel')}</Button>
+          <Button type="submit" isLoading={isSaving}>{content ? t('admin.form.save') : t('admin.form.add')}</Button>
         </div>
       </form>
     </Modal>

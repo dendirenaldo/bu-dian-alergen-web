@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ChevronLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { APP_NAME } from '@/lib/constants';
+import { useAppName, useAppInitials } from '@/contexts/AppConfigContext';
 import { useLocale } from '@/contexts/LocaleContext';
 import { LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings } from 'lucide-react';
 
@@ -13,6 +13,8 @@ interface MobileSidebarProps {
 }
 
 export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
+  const appName = useAppName();
+  const appInitials = useAppInitials();
   const router = useRouter();
   const { t } = useLocale();
   const sidebarLinks = [
@@ -50,11 +52,9 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
       <aside className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-surface-950 shadow-xl animate-in slide-in-from-left duration-200">
         <div className="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-800">
           <Link href="/admin" onClick={onClose} className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">
-              BD
-            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
             <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
-              {APP_NAME}
+              {appName}
             </span>
           </Link>
           <button

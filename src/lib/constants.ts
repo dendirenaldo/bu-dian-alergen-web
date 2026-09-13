@@ -44,7 +44,7 @@ export const API_ENDPOINTS = {
   },
 };
 
-export const APP_NAME = 'Bu Dian';
+export const APP_NAME = 'Allergen Detector';
 export const APP_DESCRIPTION = 'Sistem Deteksi Alergen Makanan';
 
 import {

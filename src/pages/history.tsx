@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
-import Head from 'next/head';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
+import SeoHead from '@/components/shared/SeoHead';
 import Card from '@/components/ui/Card';
 import DetectionHistoryTable from '@/components/detection/DetectionHistoryTable';
 import { History } from 'lucide-react';
@@ -11,9 +11,7 @@ export default function HistoryPage() {
   const { t } = useLocale();
   return (
     <>
-      <Head>
-        <title>{`${t('history.title')} - Bu Dian`}</title>
-      </Head>
+      <SeoHead title={t('seo.historyTitle')} description={t('seo.historyDesc')} path="/history" />
       <PageTransition>
         <div className="page-container">
           <div className="mb-8">

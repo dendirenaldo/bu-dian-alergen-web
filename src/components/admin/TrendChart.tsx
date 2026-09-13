@@ -21,14 +21,14 @@ import { useLocale } from '@/contexts/LocaleContext';
 import { unwrapData } from '@/lib/unwrap';
 import { TrendApiResponse, TrendPoint } from '@/types/trend';
 
-function shortDate(iso: string) {
+function shortDate(iso: string, locale: string) {
   const d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+  return d.toLocaleDateString(locale === 'en' ? 'en-US' : 'id-ID', { day: 'numeric', month: 'short' });
 }
 
 export default function TrendChart({ days = 14 }: { days?: number }) {
   const { token } = useAuth();
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [data, setData] = useState<TrendPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +39,7 @@ export default function TrendChart({ days = 14 }: { days?: number }) {
     setIsLoading(true);
     api.get<TrendApiResponse>(`${API_ENDPOINTS.DASHBOARD.TREND}?days=${days}`, token, ctrl.signal)
       .then((res) => setData(unwrapData<{ days: number; trend: TrendPoint[] }>(res).trend ?? []))
-      .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || 'Gagal memuat tren'); })
+      .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || t('api.err.loadFail')); })
       .finally(() => setIsLoading(false));
     return () => ctrl.abort();
   }, [token, days]);
@@ -55,7 +55,7 @@ export default function TrendChart({ days = 14 }: { days?: number }) {
     );
   }
 
-  const chartData = data.map((p) => ({ ...p, label: shortDate(p.date) }));
+  const chartData = data.map((p) => ({ ...p, label: shortDate(p.date, locale) }));
 
   return (
     <Card padding="md">

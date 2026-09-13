@@ -1,7 +1,7 @@
 import { ReactElement, useState } from 'react';
-import Head from 'next/head';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
+import SeoHead from '@/components/shared/SeoHead';
 import ImageUploader from '@/components/detection/ImageUploader';
 import DetectionResult from '@/components/detection/DetectionResult';
 import { useDetection } from '@/contexts/DetectionContext';
@@ -19,15 +19,13 @@ export default function DetectPage() {
     try {
       await detectFromImage(file);
     } catch (err: any) {
-      setError(err.message || 'Gagal mendeteksi. Silakan coba lagi.');
+      setError(err.message || t('api.err.failed'));
     }
   };
 
   return (
     <>
-      <Head>
-        <title>{`${t('detect.title')} - Bu Dian`}</title>
-      </Head>
+      <SeoHead title={t('seo.detectTitle')} description={t('seo.detectDesc')} path="/detect" />
       <PageTransition>
         <div className="page-container">
           <div className="mx-auto max-w-2xl">

@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { useLocale } from '@/contexts/LocaleContext';
 
 /**
  * Cegah kehilangan perubahan form saat tombol kembali / navigasi / reload.
  * Pakai: const guard = useUnsavedGuard(dirty); ... <guard.Dialog />
  */
-export function useUnsavedGuard(dirty: boolean, message = 'Perubahan belum disimpan. Yakin ingin keluar?') {
+export function useUnsavedGuard(dirty: boolean, message?: string) {
   const router = useRouter();
+  const { t } = useLocale();
+  const guardMessage = message ?? t('guard.message');
   const [showDialog, setShowDialog] = useState(false);
   const pendingUrl = useRef<string | null>(null);
+  const onConfirmExtraRef = useRef<(() => void) | null>(null);
   const dirtyRef = useRef(dirty);
   dirtyRef.current = dirty;
 
@@ -17,11 +21,11 @@ export function useUnsavedGuard(dirty: boolean, message = 'Perubahan belum disim
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (!dirtyRef.current) return;
       e.preventDefault();
-      e.returnValue = message;
+      e.returnValue = guardMessage;
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [message]);
+  }, [guardMessage]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -42,6 +46,11 @@ export function useUnsavedGuard(dirty: boolean, message = 'Perubahan belum disim
     if (pendingUrl.current) {
       router.push(pendingUrl.current);
       pendingUrl.current = null;
+    } else {
+      // Dipicu dari tombol close modal (bukan navigasi): tutup modal induk
+      // + reset form via callback yang diberikan Dialog.
+      onConfirmExtraRef.current?.();
+      onConfirmExtraRef.current = null;
     }
   }, [router]);
 
@@ -50,19 +59,23 @@ export function useUnsavedGuard(dirty: boolean, message = 'Perubahan belum disim
       <ConfirmDialog
         isOpen={showDialog}
         onClose={() => {
+          // Batal: hanya tutup popup, modal induk TETAP terbuka.
           setShowDialog(false);
           pendingUrl.current = null;
-          extraOnClose?.();
+          onConfirmExtraRef.current = null;
         }}
-        onConfirm={confirmLeave}
-        title="Buang perubahan?"
-        description={message}
-        confirmLabel="Ya, keluar"
-        cancelLabel="Tetap di sini"
+        onConfirm={() => {
+          onConfirmExtraRef.current = extraOnClose ?? null;
+          confirmLeave();
+        }}
+        title={t('guard.title')}
+        description={guardMessage}
+        confirmLabel={t('common.confirm')}
+        cancelLabel={t('common.back')}
         variant="primary"
       />
     ),
-    [showDialog, confirmLeave, message],
+    [showDialog, confirmLeave, guardMessage, t],
   );
 
   return { showDialog, setShowDialog, confirmLeave, Dialog };

@@ -12,8 +12,10 @@ import StepPersonalInfo from './StepPersonalInfo';
 import StepCredentials from './StepCredentials';
 import StepConfirmation from './StepConfirmation';
 import { validators } from '@/lib/validation';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export default function RegisterWizard() {
+  const { t } = useLocale();
   const router = useRouter();
   const { register } = useAuth();
   const [step, setStep] = useState(1);
@@ -33,7 +35,7 @@ export default function RegisterWizard() {
     const newErrors: Record<string, string> = {};
 
     if (step === 1) {
-      const nameResult = validators.required('Nama')(personalInfo.name);
+      const nameResult = validators.required(t('auth.form.name'))(personalInfo.name);
       if (!nameResult.valid) newErrors.name = nameResult.error!;
 
       const phoneResult = validators.phone(personalInfo.phone);
@@ -47,7 +49,7 @@ export default function RegisterWizard() {
       const passwordResult = validators.password(credentials.password);
       if (!passwordResult.valid) newErrors.password = passwordResult.error!;
 
-      const confirmResult = validators.matchField(credentials.password, 'Konfirmasi password')(
+      const confirmResult = validators.matchField(credentials.password, t('auth.form.confirmPassword'))(
         credentials.confirmPassword
       );
       if (!confirmResult.valid) newErrors.confirmPassword = confirmResult.error!;

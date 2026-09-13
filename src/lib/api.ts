@@ -1,4 +1,5 @@
 import { API_BASE_URL } from './constants';
+import { tr } from './i18n';
 
 interface RequestOptions {
   method?: string;
@@ -11,15 +12,15 @@ interface RequestOptions {
 
 function friendlyMessage(status: number, serverMessage?: string) {
   if (serverMessage && serverMessage !== 'Request failed') return serverMessage;
-  if (status === 400) return 'Data tidak valid. Periksa kembali isian form.';
-  if (status === 401) return 'Sesi berakhir. Silakan masuk kembali.';
-  if (status === 403) return 'Anda tidak berhak mengakses fitur ini.';
-  if (status === 404) return 'Data tidak ditemukan.';
-  if (status === 409) return 'Data sudah terdaftar (duplikat).';
-  if (status === 413) return 'File terlalu besar.';
-  if (status === 429) return 'Terlalu banyak percobaan. Tunggu sebentar.';
-  if (status >= 500) return 'Server bermasalah. Coba lagi nanti.';
-  return 'Permintaan gagal. Coba lagi.';
+  if (status === 400) return tr('api.err.invalid');
+  if (status === 401) return tr('api.err.session');
+  if (status === 403) return tr('api.err.forbidden');
+  if (status === 404) return tr('api.err.notFound');
+  if (status === 409) return tr('api.err.conflict');
+  if (status === 413) return tr('api.err.tooLarge');
+  if (status === 429) return tr('api.err.tooMany');
+  if (status >= 500) return tr('api.err.server');
+  return tr('api.err.failed');
 }
 
 class ApiClient {

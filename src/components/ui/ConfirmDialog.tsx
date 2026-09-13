@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { AlertTriangle } from 'lucide-react';
 import Modal from './Modal';
 import Button from './Button';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface ConfirmDialogProps extends HTMLAttributes<HTMLDivElement> {
   isOpen: boolean;
@@ -22,11 +23,14 @@ export default function ConfirmDialog({
   onConfirm,
   title,
   description,
-  confirmLabel = 'Ya, lanjutkan',
-  cancelLabel = 'Batal',
+  confirmLabel,
+  cancelLabel,
   variant = 'danger',
   isLoading = false,
 }: ConfirmDialogProps) {
+  const { t } = useLocale();
+  const confirmText = confirmLabel ?? t('common.confirm');
+  const cancelText = cancelLabel ?? t('common.cancel');
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm">
       <div className="flex flex-col items-center text-center">
@@ -57,14 +61,14 @@ export default function ConfirmDialog({
         )}
         <div className="mt-6 flex gap-3">
           <Button variant="secondary" onClick={onClose} disabled={isLoading}>
-            {cancelLabel}
+            {cancelText}
           </Button>
           <Button
             variant={variant === 'danger' ? 'danger' : 'primary'}
             onClick={onConfirm}
             isLoading={isLoading}
           >
-            {confirmLabel}
+            {confirmText}
           </Button>
         </div>
       </div>

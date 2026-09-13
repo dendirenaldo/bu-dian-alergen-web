@@ -9,8 +9,10 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Alert from '@/components/ui/Alert';
 import { validators } from '@/lib/validation';
+import { useLocale } from '@/contexts/LocaleContext';
 
 export default function LoginForm() {
+  const { t } = useLocale();
   const router = useRouter();
   const { login } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
@@ -21,7 +23,7 @@ export default function LoginForm() {
   const handleBlur = (field: string, value: string) => {
     let result;
     if (field === 'email') result = validators.email(value);
-    if (field === 'password') result = validators.required('Password')(value);
+    if (field === 'password') result = validators.required(t('auth.form.password'))(value);
     if (result && !result.valid) {
       setErrors(prev => ({ ...prev, [field]: result!.error! }));
     } else {
@@ -39,7 +41,7 @@ export default function LoginForm() {
     const emailResult = validators.email(form.email);
     if (!emailResult.valid) newErrors.email = emailResult.error!;
 
-    const passwordResult = validators.required('Password')(form.password);
+    const passwordResult = validators.required(t('auth.form.password'))(form.password);
     if (!passwordResult.valid) newErrors.password = passwordResult.error!;
 
     setErrors(newErrors);
@@ -68,7 +70,7 @@ export default function LoginForm() {
       {apiError && <Alert variant="error" title="Login gagal">{apiError}</Alert>}
 
       <Input
-        label="Email"
+        label={t('auth.form.email')}
         type="email"
         placeholder="Masukkan email"
         leftIcon={<Mail className="h-4 w-4" />}
@@ -81,7 +83,7 @@ export default function LoginForm() {
       />
 
       <Input
-        label="Password"
+        label={t('auth.form.password')}
         type="password"
         placeholder="Masukkan password"
         leftIcon={<Lock className="h-4 w-4" />}

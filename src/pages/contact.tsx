@@ -1,7 +1,7 @@
 import { ReactElement, useEffect, useRef, useState } from 'react';
-import Head from 'next/head';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
+import SeoHead from '@/components/shared/SeoHead';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
@@ -78,9 +78,7 @@ export default function ContactPage() {
 
   return (
     <>
-      <Head>
-        <title>{`${t('contact.title')} - Bu Dian`}</title>
-      </Head>
+      <SeoHead title={t('seo.contactTitle')} description={t('seo.contactDesc')} path="/contact" />
       <PageTransition>
         <div className="page-container">
           <div className="mx-auto max-w-5xl">

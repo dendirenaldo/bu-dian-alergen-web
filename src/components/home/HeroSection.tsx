@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { useLocale } from '@/contexts/LocaleContext';
 
@@ -20,10 +20,6 @@ export default function HeroSection() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6 }}
           >
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full bg-primary-50 px-4 py-1.5 text-sm font-medium text-primary-700 dark:bg-primary-900/20 dark:text-primary-400">
-              <ShieldCheck className="h-4 w-4" />
-              {t('home.heroBadge')}
-            </div>
             <h1 className="text-4xl font-bold tracking-tight text-surface-900 dark:text-surface-100 sm:text-5xl lg:text-6xl">
 {t('home.heroTitleA')}{' '}
               <span className="text-primary-600 dark:text-primary-400">

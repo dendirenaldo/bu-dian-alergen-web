@@ -5,12 +5,14 @@ import { formatDate } from '@/lib/utils';
 import { ShieldCheck, ShieldAlert, Clock } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import AllergenTag from './AllergenTag';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface DetectionResultProps {
   detection: Detection;
 }
 
 export default function DetectionResult({ detection }: DetectionResultProps) {
+  const { t } = useLocale();
   const isSafe = detection.result === 'safe';
 
   return (
@@ -27,7 +29,7 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
         </div>
         <div>
           <h3 className="text-lg font-semibold text-surface-900 dark:text-surface-100">
-            {detection.product?.name || 'Produk Tidak Dikenal'}
+            {detection.product?.name || t('detection.unknownProduct')}
           </h3>
           <div className="flex items-center gap-3 text-sm text-surface-500 dark:text-surface-400">
             <span className="flex items-center gap-1">
@@ -54,18 +56,18 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
           }`}
         >
           {isSafe
-            ? 'Aman — Tidak ditemukan alergen berbahaya'
-            : 'Berbahaya — Ditemukan alergen pada produk ini'}
+            ? t('detection.safeMsg')
+            : t('detection.unsafeMsg')}
         </p>
         <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
-          Skor kepercayaan: {Math.round(detection.confidenceScore * 100)}%
+          {t('detection.confidence')} {Math.round(detection.confidenceScore * 100)}%
         </p>
       </div>
 
       {detection.detectionAllergens && detection.detectionAllergens.length > 0 && (
         <div>
           <h4 className="mb-2 text-sm font-medium text-surface-700 dark:text-surface-300">
-            Alergen Terdeteksi:
+            {t('detection.allergensFound')}
           </h4>
           <div className="flex flex-wrap gap-2">
             {detection.detectionAllergens.map((allergen) => (
@@ -83,7 +85,7 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
       {detection.ocrText && (
         <div className="mt-4">
           <h4 className="mb-2 text-sm font-medium text-surface-700 dark:text-surface-300">
-            Teks OCR:
+            {t('detection.ocrText')}
           </h4>
           <p className="rounded-lg bg-surface-50 p-3 text-sm text-surface-600 dark:bg-surface-800 dark:text-surface-400">
             {detection.ocrText}

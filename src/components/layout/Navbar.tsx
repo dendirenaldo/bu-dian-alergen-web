@@ -9,9 +9,11 @@ import { useLocale } from '@/contexts/LocaleContext';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import LocaleToggle from '@/components/shared/LocaleToggle';
-import { APP_NAME } from '@/lib/constants';
+import { useAppName, useAppInitials } from '@/contexts/AppConfigContext';
 
 export default function Navbar() {
+  const appName = useAppName();
+  const appInitials = useAppInitials();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuth();
   const { t } = useLocale();
@@ -29,11 +31,9 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-surface-200 bg-white/80 backdrop-blur-lg dark:border-surface-800 dark:bg-surface-950/80">
       <nav className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">
-            BD
-          </div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
           <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
-            {APP_NAME}
+            {appName}
           </span>
         </Link>
 

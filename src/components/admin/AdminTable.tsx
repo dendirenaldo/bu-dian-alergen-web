@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input';
 import Skeleton from '@/components/ui/Skeleton';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface Column<T> {
   key: string;
@@ -46,11 +47,16 @@ export default function AdminTable<T extends { id: number }>({
   onEdit,
   onView,
   onDelete,
-  searchPlaceholder = 'Cari...',
-  emptyTitle = 'Belum ada data',
-  emptyDescription = 'Data akan muncul di sini setelah ditambahkan.',
-  addLabel = 'Tambah',
+  searchPlaceholder,
+  emptyTitle,
+  emptyDescription,
+  addLabel,
 }: AdminTableProps<T>) {
+  const { t } = useLocale();
+  const searchPh = searchPlaceholder ?? t('admin.search.default');
+  const emptyT = emptyTitle ?? t('common.empty');
+  const emptyD = emptyDescription ?? '';
+  const addL = addLabel ?? t('common.add');
   const [search, setSearch] = useState('');
 
   const handleSearch = (e: React.FormEvent) => {
@@ -70,9 +76,9 @@ export default function AdminTable<T extends { id: number }>({
                 setSearch(e.target.value);
                 if (e.target.value === '') onSearch('');
               }}
-              placeholder={searchPlaceholder}
+              placeholder={searchPh}
               leftIcon={<Search className="h-4 w-4" />}
-              aria-label={searchPlaceholder}
+              aria-label={searchPh}
             />
           </form>
         ) : (
@@ -81,7 +87,7 @@ export default function AdminTable<T extends { id: number }>({
         {onAdd && (
           <Button onClick={onAdd} size="sm">
             <Plus className="mr-1.5 h-4 w-4" />
-            {addLabel}
+            {addL}
           </Button>
         )}
       </div>
@@ -101,7 +107,7 @@ export default function AdminTable<T extends { id: number }>({
               ))}
               {(onEdit || onDelete || onView) && (
                 <th scope="col" className="px-4 py-3 text-right text-sm font-medium text-surface-600 dark:text-surface-400">
-                  Aksi
+                  {t('admin.table.action')}
                 </th>
               )}
             </tr>
@@ -126,9 +132,9 @@ export default function AdminTable<T extends { id: number }>({
               <tr>
                 <td colSpan={columns.length + (onEdit || onDelete || onView ? 1 : 0)} className="px-4 py-4">
                   <EmptyState
-                    title={emptyTitle}
-                    description={emptyDescription}
-                    action={onAdd ? { label: addLabel, onClick: onAdd } : undefined}
+                    title={emptyT}
+                    description={emptyD}
+                    action={onAdd ? { label: addL, onClick: onAdd } : undefined}
                   />
                 </td>
               </tr>
@@ -151,8 +157,8 @@ export default function AdminTable<T extends { id: number }>({
                         {onView && (
                           <button
                             onClick={() => onView(item)}
-                            aria-label="Lihat detail"
-                            title="Lihat detail"
+                            aria-label={t('common.detail')}
+                            title={t('common.detail')}
                             className="rounded-lg p-1.5 text-surface-400 transition-colors hover:bg-surface-100 hover:text-surface-600 dark:hover:bg-surface-700 dark:hover:text-surface-300"
                           >
                             <Eye className="h-4 w-4" />
@@ -161,8 +167,8 @@ export default function AdminTable<T extends { id: number }>({
                         {onEdit && (
                           <button
                             onClick={() => onEdit(item)}
-                            aria-label="Ubah"
-                            title="Ubah"
+                            aria-label={t('common.edit')}
+                            title={t('common.edit')}
                             className="rounded-lg p-1.5 text-surface-400 transition-colors hover:bg-surface-100 hover:text-surface-600 dark:hover:bg-surface-700 dark:hover:text-surface-300"
                           >
                             <Edit2 className="h-4 w-4" />
@@ -171,8 +177,8 @@ export default function AdminTable<T extends { id: number }>({
                         {onDelete && (
                           <button
                             onClick={() => onDelete(item)}
-                            aria-label="Hapus"
-                            title="Hapus"
+                            aria-label={t('common.delete')}
+                            title={t('common.delete')}
                             className="rounded-lg p-1.5 text-surface-400 transition-colors hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/20 dark:hover:text-red-400"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -191,7 +197,7 @@ export default function AdminTable<T extends { id: number }>({
       {totalPages > 1 && onPageChange && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-surface-500 dark:text-surface-400">
-            {typeof total === 'number' ? `${total} data • ` : ''}Halaman {currentPage} dari {totalPages}
+            {t('admin.table.pageInfo', { total: total ?? data.length, page: currentPage, pages: totalPages })}
           </p>
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
         </div>

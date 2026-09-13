@@ -3,6 +3,7 @@
 import { User, Phone } from 'lucide-react';
 import Input from '@/components/ui/Input';
 import { validators } from '@/lib/validation';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface StepPersonalInfoProps {
   data: { name: string; phone: string };
@@ -12,9 +13,10 @@ interface StepPersonalInfoProps {
 }
 
 export default function StepPersonalInfo({ data, errors, onChange, onError }: StepPersonalInfoProps) {
+  const { t } = useLocale();
   const handleBlur = (field: string, value: string) => {
     let result;
-    if (field === 'name') result = validators.required('Nama')(value);
+    if (field === 'name') result = validators.required(t('auth.form.name'))(value);
     if (field === 'phone') result = validators.phone(value);
     if (result && !result.valid) {
       onError?.(field, result.error!);
@@ -26,7 +28,7 @@ export default function StepPersonalInfo({ data, errors, onChange, onError }: St
   return (
     <div className="space-y-4">
       <Input
-        label="Nama Lengkap"
+        label={t('auth.form.name')}
         placeholder="Masukkan nama lengkap"
         leftIcon={<User className="h-4 w-4" />}
         value={data.name}
@@ -37,7 +39,7 @@ export default function StepPersonalInfo({ data, errors, onChange, onError }: St
         required
       />
       <Input
-        label="Nomor Telepon (Opsional)"
+        label={t('auth.form.phone')}
         placeholder="Masukkan nomor telepon"
         leftIcon={<Phone className="h-4 w-4" />}
         value={data.phone}

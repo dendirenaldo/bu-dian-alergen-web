@@ -1,17 +1,17 @@
 import { ReactElement } from 'react';
-import Head from 'next/head';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
+import SeoHead from '@/components/shared/SeoHead';
+import { useLocale } from '@/contexts/LocaleContext';
 import Card from '@/components/ui/Card';
 import { ShieldCheck, Users, Target, BookOpen } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function AboutPage() {
+  const { t } = useLocale();
   return (
     <>
-      <Head>
-        <title>Tentang Kami - Bu Dian</title>
-      </Head>
+      <SeoHead title={t('seo.aboutTitle')} description={t('seo.aboutDesc')} path="/about" />
       <PageTransition>
         <div className="page-container">
           <div className="mx-auto max-w-3xl">
@@ -25,7 +25,7 @@ export default function AboutPage() {
                 Tentang Kami
               </h1>
               <p className="mt-4 text-lg text-surface-600 dark:text-surface-400">
-                Mengenal lebih dekat Bu Dian - Sistem Deteksi Alergen Makanan
+                Mengenal lebih dekat Allergen Detector - Sistem Deteksi Alergen Makanan
               </p>
             </motion.div>
 
@@ -40,7 +40,7 @@ export default function AboutPage() {
                   Misi Kami
                 </h2>
                 <p className="text-surface-600 dark:text-surface-400 leading-relaxed">
-                  Bu Dian hadir untuk membantu masyarakat Indonesia mengenali alergen pada produk
+                  Allergen Detector hadir untuk membantu masyarakat Indonesia mengenali alergen pada produk
                   makanan dengan lebih mudah dan akurat. Kami menggunakan teknologi kecerdasan
                   buatan untuk mendeteksi potensi alergen dari label produk makanan.
                 </p>

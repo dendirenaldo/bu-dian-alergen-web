@@ -56,9 +56,6 @@ export default function HowItWorksSection() {
               <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary-600 text-white">
                 <step.icon className="h-7 w-7" />
               </div>
-              <div className="mb-3 text-sm font-bold text-primary-600 dark:text-primary-400">
-                Langkah {step.step}
-              </div>
               <h3 className="mb-2 text-xl font-semibold text-surface-900 dark:text-surface-100">
                 {step.title}
               </h3>

@@ -14,6 +14,7 @@ import Textarea from '@/components/ui/Textarea';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface ProductFormProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ interface ProductFormProps {
 
 export default function ProductForm({ isOpen, onClose, product, onSubmit, isSaving = false }: ProductFormProps) {
   const { token } = useAuth();
+  const { t } = useLocale();
   const [form, setForm] = useState({ name: '', slug: '', brand: '', description: '', barcode: '', categoryId: '' });
   const [categories, setCategories] = useState<Category[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -64,12 +66,12 @@ export default function ProductForm({ isOpen, onClose, product, onSubmit, isSavi
 
   const handleBlur = (field: string, value: string) => {
     let result;
-    if (field === 'name') result = validators.required('Nama Produk')(value);
+    if (field === 'name') result = validators.required(t('admin.form.productName'))(value);
     if (field === 'barcode' && value && !/^[0-9]+$/.test(value)) {
-      result = { valid: false, error: 'Barcode harus berupa angka' };
+      result = { valid: false, error: t('admin.validation.barcodeNumeric') };
     }
     if (field === 'slug' && value && !/^[a-z0-9-]+$/.test(value)) {
-      result = { valid: false, error: 'Slug hanya huruf kecil, angka, strip' };
+      result = { valid: false, error: t('admin.validation.slugChars') };
     }
     if (result && !result.valid) setErrors((prev) => ({ ...prev, [field]: result!.error! }));
     else setErrors((prev) => { const next = { ...prev }; delete next[field]; return next; });
@@ -77,10 +79,10 @@ export default function ProductForm({ isOpen, onClose, product, onSubmit, isSavi
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    const nameResult = validators.required('Nama Produk')(form.name);
+    const nameResult = validators.required(t('admin.form.productName'))(form.name);
     if (!nameResult.valid) errs.name = nameResult.error!;
-    if (form.barcode && !/^[0-9]+$/.test(form.barcode)) errs.barcode = 'Barcode harus berupa angka';
-    if (form.slug && !/^[a-z0-9-]+$/.test(form.slug)) errs.slug = 'Slug hanya huruf kecil, angka, strip';
+    if (form.barcode && !/^[0-9]+$/.test(form.barcode)) errs.barcode = t('admin.validation.barcodeNumeric');
+    if (form.slug && !/^[a-z0-9-]+$/.test(form.slug)) errs.slug = t('admin.validation.slugChars');
     return errs;
   };
 
@@ -105,22 +107,22 @@ export default function ProductForm({ isOpen, onClose, product, onSubmit, isSavi
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={product ? 'Ubah Produk' : 'Tambah Produk'} description="Slug otomatis dari nama bila dikosongkan." size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={product ? t('admin.form.editProduct') : t('admin.form.addProduct')} description={t('admin.form.slugAuto')} size="md">
       <guard.Dialog onClose={onClose} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input label="Nama Produk" placeholder="cth: Indomie Goreng" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} onBlur={(e) => handleBlur('name', e.target.value)} error={errors.name} required leftIcon={<Package className="h-4 w-4" />} />
+        <Input label={t('admin.form.productName')} placeholder={t('admin.form.exProduct')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} onBlur={(e) => handleBlur('name', e.target.value)} error={errors.name} required leftIcon={<Package className="h-4 w-4" />} />
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Slug (opsional)" placeholder="indomie-goreng" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} onBlur={(e) => handleBlur('slug', e.target.value)} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} helperText="Kosongkan untuk otomatis." />
-          <Select label="Kategori" value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} options={[{ value: '', label: 'Tanpa kategori' }, ...categories.map((c) => ({ value: String(c.id), label: c.name }))]} />
+          <Input label={t('admin.form.slug')} placeholder="indomie-goreng" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} onBlur={(e) => handleBlur('slug', e.target.value)} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} helperText={t('admin.form.slugEmpty')} />
+          <Select label={t('admin.form.category')} value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} options={[{ value: '', label: t('admin.form.noCategory') }, ...categories.map((c) => ({ value: String(c.id), label: c.name }))]} />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Merek" placeholder="cth: Indofood" value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} leftIcon={<Tag className="h-4 w-4" />} />
-          <Input label="Barcode" placeholder="Hanya angka" value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} onBlur={(e) => handleBlur('barcode', e.target.value)} error={errors.barcode} leftIcon={<Barcode className="h-4 w-4" />} inputMode="numeric" />
+          <Input label={t('admin.form.brand')} placeholder={t('admin.form.exBrand')} value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} leftIcon={<Tag className="h-4 w-4" />} />
+          <Input label={t('admin.form.barcode')} placeholder={t('admin.form.barcodeHint')} value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} onBlur={(e) => handleBlur('barcode', e.target.value)} error={errors.barcode} leftIcon={<Barcode className="h-4 w-4" />} inputMode="numeric" />
         </div>
-        <Textarea label="Deskripsi" placeholder="Deskripsi singkat produk" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
+        <Textarea label={t('admin.form.description')} placeholder={t('admin.form.descOptional')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>Batal</Button>
-          <Button type="submit" isLoading={isSaving}>{product ? 'Simpan' : 'Tambah'}</Button>
+          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>{t('common.cancel')}</Button>
+          <Button type="submit" isLoading={isSaving}>{product ? t('admin.form.save') : t('admin.form.add')}</Button>
         </div>
       </form>
     </Modal>

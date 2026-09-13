@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { ChevronLeft, LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { APP_NAME } from '@/lib/constants';
+import { useAppName, useAppInitials } from '@/contexts/AppConfigContext';
 import { useLocale } from '@/contexts/LocaleContext';
 
 interface SidebarProps {
@@ -12,6 +12,8 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProps) {
+  const appName = useAppName();
+  const appInitials = useAppInitials();
   const router = useRouter();
   const { t } = useLocale();
 
@@ -36,11 +38,9 @@ export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProp
       <div className="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-800">
         {!isCollapsed && (
           <Link href="/admin" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">
-              BD
-            </div>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
             <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
-              {APP_NAME}
+              {appName}
             </span>
           </Link>
         )}

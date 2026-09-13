@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface CategoryFormProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ interface CategoryFormProps {
 }
 
 export default function CategoryForm({ isOpen, onClose, category, onSubmit, isSaving = false }: CategoryFormProps) {
+  const { t } = useLocale();
   const [form, setForm] = useState({ name: '', slug: '', description: '', imageUrl: '', sortOrder: '0' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const dirty = useMemo(() => [form.name, form.slug, form.description, form.imageUrl].some((v) => v !== ''), [form]);
@@ -32,10 +34,10 @@ export default function CategoryForm({ isOpen, onClose, category, onSubmit, isSa
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    const r = validators.required('Nama Kategori')(form.name);
+    const r = validators.required(t('admin.form.categoryName'))(form.name);
     if (!r.valid) errs.name = r.error!;
-    if (form.slug && !/^[a-z0-9-]+$/.test(form.slug.trim())) errs.slug = 'Slug hanya huruf kecil, angka, strip';
-    if (form.sortOrder && !/^-?\d+$/.test(form.sortOrder.trim())) errs.sortOrder = 'Urutan harus bilangan bulat';
+    if (form.slug && !/^[a-z0-9-]+$/.test(form.slug.trim())) errs.slug = t('admin.validation.slugChars');
+    if (form.sortOrder && !/^-?\d+$/.test(form.sortOrder.trim())) errs.sortOrder = t('admin.validation.orderInt');
     return errs;
   };
 
@@ -56,19 +58,19 @@ export default function CategoryForm({ isOpen, onClose, category, onSubmit, isSa
   const handleClose = () => { if (dirty && !isSaving) guard.setShowDialog(true); else onClose(); };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title={category ? 'Ubah Kategori' : 'Tambah Kategori'} description="Slug otomatis dari nama bila dikosongkan." size="md">
+    <Modal isOpen={isOpen} onClose={handleClose} title={category ? t('admin.form.editCategory') : t('admin.form.addCategory')} description={t('admin.form.slugAuto')} size="md">
       <guard.Dialog onClose={onClose} />
       <form onSubmit={handleSubmit} className="space-y-4">
-        <Input label="Nama Kategori" placeholder="cth: Makanan Ringan" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} required leftIcon={<FolderOpen className="h-4 w-4" />} />
+        <Input label={t('admin.form.categoryName')} placeholder={t('admin.form.exCategory')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} required leftIcon={<FolderOpen className="h-4 w-4" />} />
         <div className="grid grid-cols-2 gap-4">
-          <Input label="Slug (opsional)" placeholder="makanan-ringan" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} />
-          <Input label="Urutan" placeholder="0" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} error={errors.sortOrder} leftIcon={<ArrowUpDown className="h-4 w-4" />} inputMode="numeric" />
+          <Input label={t('admin.form.slug')} placeholder="makanan-ringan" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} />
+          <Input label={t('admin.form.order')} placeholder="0" value={form.sortOrder} onChange={(e) => setForm({ ...form, sortOrder: e.target.value })} error={errors.sortOrder} leftIcon={<ArrowUpDown className="h-4 w-4" />} inputMode="numeric" />
         </div>
-        <Input label="URL Gambar (opsional)" placeholder="https://..." value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} leftIcon={<ImageIcon className="h-4 w-4" />} inputMode="url" />
-        <Textarea label="Deskripsi" placeholder="Deskripsi singkat (opsional)" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
+        <Input label={t('admin.form.imageUrl')} placeholder="https://..." value={form.imageUrl} onChange={(e) => setForm({ ...form, imageUrl: e.target.value })} leftIcon={<ImageIcon className="h-4 w-4" />} inputMode="url" />
+        <Textarea label={t('admin.form.description')} placeholder={t('admin.form.descOptional')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
         <div className="flex justify-end gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>Batal</Button>
-          <Button type="submit" isLoading={isSaving}>{category ? 'Simpan' : 'Tambah'}</Button>
+          <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>{t('common.cancel')}</Button>
+          <Button type="submit" isLoading={isSaving}>{category ? t('admin.form.save') : t('admin.form.add')}</Button>
         </div>
       </form>
     </Modal>
