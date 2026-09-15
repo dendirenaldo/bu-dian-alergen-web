@@ -20,13 +20,17 @@ export function useAdminList<T>(endpoint: string, { token, page, limit = 10, ext
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Generasi request monotonik: hanya hasil terbaru yang boleh tulis state.
+  const requestIdRef = useRef(0);
 
   const fetchList = useCallback(async () => {
     if (!token) {
       setIsLoading(false);
       return;
     }
+    const requestId = ++requestIdRef.current;
     const ctrl = new AbortController();
+    const onAbort = () => ctrl.abort();
     setIsLoading(true);
     setError(null);
     try {
@@ -35,6 +39,8 @@ export function useAdminList<T>(endpoint: string, { token, page, limit = 10, ext
         ? `${endpoint}${sep}page=${page}&limit=${limit}${extraParams}`
         : `${endpoint}${extraParams ? `${sep}${extraParams.replace(/^&/, '')}` : ''}`;
       const res = await api.get(url, token, ctrl.signal);
+      // Abaikan respons basi (request lebih baru sudah jalan).
+      if (requestIdRef.current !== requestId) return onAbort;
       const unwrapped = unwrapListApi<T>(res, page, limit);
       if (serverPagination) {
         setItems(unwrapped.items);
@@ -50,20 +56,22 @@ export function useAdminList<T>(endpoint: string, { token, page, limit = 10, ext
         setTotalPages(totalPagesCalc);
       }
     } catch (err: any) {
-      if (err?.name === 'AbortError') return;
+      if (err?.name === 'AbortError') return onAbort;
+      if (requestIdRef.current !== requestId) return onAbort;
       setError(err?.message || tr('api.err.loadFail'));
     } finally {
-      setIsLoading(false);
+      if (requestIdRef.current === requestId) setIsLoading(false);
     }
-    return () => ctrl.abort();
+    return onAbort;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [endpoint, token, page, limit, extraParams]);
 
   useEffect(() => {
-    const cleanup = fetchList() as unknown as (() => void) | undefined;
-    return () => {
-      if (typeof cleanup === 'function') cleanup();
-    };
+    let cleanup: (() => void) | undefined;
+    void fetchList().then((fn) => {
+      cleanup = typeof fn === 'function' ? fn : undefined;
+    });
+    return () => cleanup?.();
   }, [fetchList]);
 
   return { items, setItems, total, totalPages, isLoading, error, setError, refresh: fetchList };

@@ -32,7 +32,7 @@ export default function ConfirmDialog({
   const confirmText = confirmLabel ?? t('common.confirm');
   const cancelText = cancelLabel ?? t('common.cancel');
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm">
+    <Modal isOpen={isOpen} onClose={onClose} size="sm" ariaLabel={typeof title === 'string' ? title : undefined}>
       <div className="flex flex-col items-center text-center">
         <div
           className={cn(

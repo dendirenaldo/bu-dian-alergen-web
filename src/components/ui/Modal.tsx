@@ -1,4 +1,7 @@
+'use client';
+
 import { HTMLAttributes, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 
@@ -8,7 +11,15 @@ interface ModalProps extends HTMLAttributes<HTMLDivElement> {
   title?: string;
   description?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Label aksesibilitas bila judul dirender manual oleh children. */
+  ariaLabel?: string;
 }
+
+// Stack id modal terbuka (khusus modal bersarang, mis. dialog konfirmasi
+// di dalam form): hanya modal teratas (terakhir dibuka) yang menangani
+// Escape, dan body overflow hanya dipulihkan saat tumpukan kosong.
+const openModalStack: number[] = [];
+let modalSeq = 0;
 
 export default function Modal({
   isOpen,
@@ -18,6 +29,7 @@ export default function Modal({
   size = 'md',
   children,
   className,
+  ariaLabel,
 }: ModalProps) {
   const sizes = {
     sm: 'max-w-sm',
@@ -31,6 +43,7 @@ export default function Modal({
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
   const wasOpenRef = useRef(false);
+  const modalIdRef = useRef(0);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -42,15 +55,24 @@ export default function Modal({
   }, [isOpen]);
 
   useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onCloseRef.current();
-    };
     if (!isOpen) return;
+    const myId = ++modalSeq;
+    modalIdRef.current = myId;
+    openModalStack.push(myId);
+    const handleEscape = (e: KeyboardEvent) => {
+      // Hanya modal teratas yang merespons Escape (hindari dobel-tutup).
+      if (e.key === 'Escape' && openModalStack[openModalStack.length - 1] === myId) {
+        e.stopPropagation();
+        onCloseRef.current();
+      }
+    };
     document.addEventListener('keydown', handleEscape);
-    document.body.style.overflow = 'hidden';
+    if (openModalStack.length === 1) document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
+      const idx = openModalStack.indexOf(myId);
+      if (idx !== -1) openModalStack.splice(idx, 1);
+      if (openModalStack.length === 0) document.body.style.overflow = '';
     };
   }, [isOpen]);
 
@@ -96,8 +118,11 @@ export default function Modal({
   };
 
   if (!isOpen) return null;
+  // Portal ke body: backdrop fixed tidak terjepit transform ancestor
+  // (mis. animasi scale pada dialog induk) dan z-index konsisten.
+  if (typeof document === 'undefined') return null;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div
         className={cn(
@@ -121,6 +146,7 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
+        aria-label={!title ? ariaLabel : undefined}
       >
         <div className="flex items-start justify-between mb-4">
           <div>
@@ -145,6 +171,7 @@ export default function Modal({
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
