@@ -28,7 +28,7 @@ export default function AdminDetectionsPage() {
   const [deleteTarget, setDeleteTarget] = useState<Detection | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const { items: detections, total, totalPages, isLoading, error, setError, refresh } =
+  const { items: detections, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
     useAdminList<Detection>(API_ENDPOINTS.DETECTIONS.LIST, { token, page: currentPage, limit: 10 });
 
   const handleDelete = async () => {
@@ -61,7 +61,7 @@ export default function AdminDetectionsPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.detections')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage}
+          <AdminTable data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
             onView={setSelectedDetection} onDelete={setDeleteTarget}
             emptyTitle={t('admin.emptyTitle.detections')} emptyDescription={t('admin.emptyDesc.detections')} />
           {selectedDetection && <DetectionDetail detection={selectedDetection} onClose={() => setSelectedDetection(null)} />}

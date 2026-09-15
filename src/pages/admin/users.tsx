@@ -29,7 +29,7 @@ export default function AdminUsersPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { items: users, total, totalPages, isLoading, error, setError, refresh } =
+  const { items: users, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
     useAdminList<User>(API_ENDPOINTS.USERS.LIST, { token, page: currentPage, limit: 10 });
 
   const handleCreate = async (data: any) => {
@@ -80,7 +80,7 @@ export default function AdminUsersPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.users')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={users} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage}
+          <AdminTable data={users} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
             onAdd={() => { setSelectedUser(null); setIsFormOpen(true); }}
             onEdit={(user) => { setSelectedUser(user); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.users')} emptyDescription={t('admin.emptyDesc.users')} addLabel={t('admin.addLabel.users')} />

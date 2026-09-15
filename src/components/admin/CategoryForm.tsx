@@ -23,7 +23,7 @@ export default function CategoryForm({ isOpen, onClose, category, onSubmit, isSa
   const { t } = useLocale();
   const [form, setForm] = useState({ name: '', slug: '', description: '', imageUrl: '', sortOrder: '0' });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const dirty = useMemo(() => [form.name, form.slug, form.description, form.imageUrl].some((v) => v !== ''), [form]);
+  const dirty = useMemo(() => [form.name, form.slug, form.description, form.imageUrl, form.sortOrder !== '0'].some((v) => v === true || (typeof v === 'string' && v !== '')), [form]);
   const guard = useUnsavedGuard(isOpen && dirty && !isSaving);
 
   useEffect(() => {

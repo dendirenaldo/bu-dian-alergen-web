@@ -36,7 +36,7 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving
   const [form, setForm] = useState({ title: '', slug: '', body: '', excerpt: '', type: 'page' as ContentType, status: 'draft' as ContentStatus });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const dirty = useMemo(() => [form.title, form.slug, form.body, form.excerpt].some((v) => v !== ''), [form]);
+  const dirty = useMemo(() => [form.title, form.slug, form.body, form.excerpt, form.type !== 'page', form.status !== 'draft'].some((v) => v === true || (typeof v === 'string' && v !== '')), [form]);
   const guard = useUnsavedGuard(isOpen && dirty && !isSaving);
 
   useEffect(() => {

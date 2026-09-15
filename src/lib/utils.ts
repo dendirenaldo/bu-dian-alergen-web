@@ -2,8 +2,17 @@ export function cn(...classes: (string | undefined | false | null)[]) {
   return classes.filter(Boolean).join(' ');
 }
 
+function activeDateLocale(): string {
+  if (typeof window === 'undefined') return 'id-ID';
+  try {
+    return window.localStorage.getItem('locale') === 'en' ? 'en-US' : 'id-ID';
+  } catch {
+    return 'id-ID';
+  }
+}
+
 export function formatDate(date: string) {
-  return new Date(date).toLocaleDateString('id-ID', {
+  return new Date(date).toLocaleDateString(activeDateLocale(), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
@@ -11,7 +20,7 @@ export function formatDate(date: string) {
 }
 
 export function formatDateTime(date: string) {
-  return new Date(date).toLocaleDateString('id-ID', {
+  return new Date(date).toLocaleDateString(activeDateLocale(), {
     day: 'numeric',
     month: 'long',
     year: 'numeric',

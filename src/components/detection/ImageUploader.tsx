@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Upload, Image as ImageIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocale } from '@/contexts/LocaleContext';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -13,6 +14,7 @@ interface ImageUploaderProps {
 const MAX_SIZE = 5 * 1024 * 1024;
 
 export default function ImageUploader({ onImageSelect, isProcessing }: ImageUploaderProps) {
+  const { t } = useLocale();
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,11 +24,11 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
     (file: File) => {
       setError(null);
       if (!file.type.startsWith('image/')) {
-        setError('File harus berupa gambar (JPG/PNG/WEBP).');
+        setError(t('upload.invalidType'));
         return;
       }
       if (file.size > MAX_SIZE) {
-        setError('Ukuran gambar maksimal 5MB.');
+        setError(t('upload.tooLarge'));
         return;
       }
       const reader = new FileReader();
@@ -58,12 +60,12 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
     return (
       <div className="relative">
         <div className="relative h-80 w-full overflow-hidden rounded-xl border border-surface-200 dark:border-surface-700">
-          <Image src={preview} alt="Pratinjau gambar terunggah" fill className="object-contain" unoptimized sizes="100vw" />
+          <Image src={preview} alt={t('upload.previewAlt')} fill className="object-contain" unoptimized sizes="100vw" />
         </div>
         <button
           onClick={clearPreview}
-          aria-label="Hapus gambar"
-          title="Hapus gambar"
+          aria-label={t('upload.remove')}
+          title={t('upload.remove')}
           disabled={isProcessing}
           className="absolute right-2 top-2 rounded-lg bg-white/80 p-1.5 text-surface-600 transition-colors hover:bg-white disabled:opacity-50 dark:bg-surface-800/80 dark:text-surface-400 dark:hover:bg-surface-800"
         >
@@ -94,17 +96,17 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
           )}
         </div>
         <p className="mb-2 text-sm font-medium text-surface-700 dark:text-surface-300">
-          {isDragging ? 'Lepaskan gambar di sini' : 'Seret & letakkan gambar di sini'}
+          {isDragging ? t('upload.dropHere') : t('upload.dragHere')}
         </p>
-        <p className="mb-4 text-xs text-surface-500 dark:text-surface-400">atau</p>
+        <p className="mb-4 text-xs text-surface-500 dark:text-surface-400">{t('upload.or')}</p>
         <label>
-          <input ref={inputRef} type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} className="hidden" disabled={isProcessing} aria-label="Pilih gambar" />
+          <input ref={inputRef} type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) handleFile(f); }} className="hidden" disabled={isProcessing} aria-label={t('upload.chooseAria')} />
           <span className="inline-flex cursor-pointer items-center gap-2 rounded-xl bg-primary-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary-700">
             <ImageIcon className="h-4 w-4" />
-            Pilih Gambar
+            {t('upload.choose')}
           </span>
         </label>
-        <p className="mt-4 text-xs text-surface-400 dark:text-surface-500">Format: JPG, PNG, WEBP (Maks. 5MB)</p>
+        <p className="mt-4 text-xs text-surface-400 dark:text-surface-500">{t('upload.formats')}</p>
       </div>
       {error && <p className="mt-2 text-sm text-red-600 dark:text-red-400" role="alert">{error}</p>}
     </div>

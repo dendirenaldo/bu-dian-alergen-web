@@ -28,7 +28,7 @@ export default function UserForm({ isOpen, onClose, user, onSubmit, isSaving = f
   const [form, setForm] = useState({ name: '', email: '', phone: '', role: 'user' as 'admin' | 'user', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const dirty = useMemo(() => [form.name, form.email, form.phone, form.password].some((v) => v !== ''), [form]);
+  const dirty = useMemo(() => [form.name, form.email, form.phone, form.password, form.role !== 'user'].some((v) => v === true || (typeof v === 'string' && v !== '')), [form]);
   const guard = useUnsavedGuard(isOpen && dirty && !isSaving);
 
   useEffect(() => {

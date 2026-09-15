@@ -39,7 +39,7 @@ export default function DetectionHistoryTable() {
         setTotal(u.total);
         setTotalPages(u.totalPages);
       })
-      .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || 'Gagal memuat riwayat'); })
+      .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || t('history.loadFail')); })
       .finally(() => setIsLoading(false));
     return () => ctrl.abort();
   }, [currentPage, token]);
@@ -51,19 +51,19 @@ export default function DetectionHistoryTable() {
           <thead>
             <tr className="border-b border-surface-200 dark:border-surface-800">
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Tanggal
+                {t('admin.table.date')}
               </th>
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Produk
+                {t('admin.table.product')}
               </th>
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Alergen
+                {t('admin.table.allergens')}
               </th>
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Status
+                {t('admin.table.status')}
               </th>
               <th className="pb-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">
-                Aksi
+                {t('admin.table.action')}
               </th>
             </tr>
           </thead>
@@ -95,25 +95,25 @@ export default function DetectionHistoryTable() {
 
   return (
     <>
-      {error && <div className="mb-4"><Alert variant="error" title="Gagal memuat">{error}</Alert></div>}
+      {error && <div className="mb-4"><Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert></div>}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-b border-surface-200 dark:border-surface-800">
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Tanggal
+                {t('admin.table.date')}
               </th>
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Produk
+                {t('admin.table.product')}
               </th>
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Alergen
+                {t('admin.table.allergens')}
               </th>
               <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                Status
+                {t('admin.table.status')}
               </th>
               <th className="pb-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">
-                Aksi
+                {t('admin.table.action')}
               </th>
             </tr>
           </thead>
@@ -151,7 +151,7 @@ export default function DetectionHistoryTable() {
                 </td>
                 <td className="py-3">
                   <Badge variant={detection.result === 'safe' ? 'success' : 'danger'}>
-                    {detection.result === 'safe' ? 'Aman' : 'Berbahaya'}
+                    {detection.result === 'safe' ? t('admin.safe') : t('admin.unsafe')}
                   </Badge>
                 </td>
                 <td className="py-3 text-right">
@@ -160,7 +160,7 @@ export default function DetectionHistoryTable() {
                     className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-primary-600 hover:bg-primary-50 dark:text-primary-400 dark:hover:bg-primary-900/20"
                   >
                     <Eye className="h-4 w-4" />
-                    Detail
+                    {t('common.detail')}
                   </button>
                 </td>
               </tr>
@@ -172,7 +172,7 @@ export default function DetectionHistoryTable() {
       {totalPages > 1 && (
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-surface-500 dark:text-surface-400">
-            {total} data • Halaman {currentPage} dari {totalPages}
+            {t('admin.table.pageInfo', { total, page: currentPage, pages: totalPages })}
           </p>
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>

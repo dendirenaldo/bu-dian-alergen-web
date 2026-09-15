@@ -47,7 +47,7 @@ export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProp
         {onCollapse && (
           <button
             onClick={onCollapse}
-            aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            aria-label={isCollapsed ? t('a11y.expandSidebar') : t('a11y.collapseSidebar')}
             className="rounded-lg p-1.5 text-surface-400 hover:bg-surface-100 dark:hover:bg-surface-800"
           >
             <ChevronLeft

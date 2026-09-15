@@ -36,7 +36,7 @@ export default function AdminAllergensPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { items: allergens, total, totalPages, isLoading, error, setError, refresh } =
+  const { items: allergens, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
     useAdminList<Allergen>(API_ENDPOINTS.ALLERGENS.LIST, { token, page: currentPage, limit: 10 });
 
   const handleCreate = async (data: any) => {
@@ -85,7 +85,7 @@ export default function AdminAllergensPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.allergens')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage}
+          <AdminTable data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
             onAdd={() => { setSelectedAllergen(null); setIsFormOpen(true); }}
             onEdit={(a) => { setSelectedAllergen(a); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.allergens')} emptyDescription={t('admin.emptyDesc.allergens')} addLabel={t('admin.addLabel.allergens')} />

@@ -74,7 +74,10 @@ export function useAdminList<T>(endpoint: string, { token, page, limit = 10, ext
     return () => cleanup?.();
   }, [fetchList]);
 
-  return { items, setItems, total, totalPages, isLoading, error, setError, refresh: fetchList };
+  // Halaman efektif (terjepit ke totalPages) — pakai ini untuk prop currentPage
+  // agar footer tak menampilkan "Halaman 3 dari 1" setelah hapus data.
+  const effectivePage = Math.min(page, totalPages);
+  return { items, setItems, total, totalPages, effectivePage, isLoading, error, setError, refresh: fetchList };
 }
 
 export { newIdempotencyKey };

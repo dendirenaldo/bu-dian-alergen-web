@@ -24,14 +24,14 @@ export default function ContactPage() {
 
   const handleBlur = (field: string, value: string) => {
     let result;
-    if (field === 'name') result = validators.required('Nama')(value);
+    if (field === 'name') result = validators.required(t('contact.name'))(value);
     if (field === 'email') {
-      const emailReq = validators.required('Email')(value);
+      const emailReq = validators.required(t('contact.email'))(value);
       if (!emailReq.valid) result = emailReq;
       else result = validators.email(value);
     }
-    if (field === 'subject') result = validators.required('Subjek')(value);
-    if (field === 'message') result = validators.required('Pesan')(value);
+    if (field === 'subject') result = validators.required(t('contact.subject'))(value);
+    if (field === 'message') result = validators.required(t('contact.message'))(value);
     if (result && !result.valid) {
       setErrors(prev => ({ ...prev, [field]: result!.error! }));
     } else {
@@ -45,17 +45,17 @@ export default function ContactPage() {
 
   const validate = () => {
     const errs: Record<string, string> = {};
-    const nameResult = validators.required('Nama')(form.name);
+    const nameResult = validators.required(t('contact.name'))(form.name);
     if (!nameResult.valid) errs.name = nameResult.error!;
-    const emailRequired = validators.required('Email')(form.email);
+    const emailRequired = validators.required(t('contact.email'))(form.email);
     if (!emailRequired.valid) errs.email = emailRequired.error!;
     else {
       const emailFormat = validators.email(form.email);
       if (!emailFormat.valid) errs.email = emailFormat.error!;
     }
-    const subjectResult = validators.required('Subjek')(form.subject);
+    const subjectResult = validators.required(t('contact.subject'))(form.subject);
     if (!subjectResult.valid) errs.subject = subjectResult.error!;
-    const messageResult = validators.required('Pesan')(form.message);
+    const messageResult = validators.required(t('contact.message'))(form.message);
     if (!messageResult.valid) errs.message = messageResult.error!;
     return errs;
   };
@@ -104,9 +104,9 @@ export default function ContactPage() {
                 className="space-y-4"
               >
                 {[
-                  { icon: Mail, label: 'Email', value: 'info@budian.id' },
-                  { icon: Phone, label: 'Telepon', value: '+62 123 456 789' },
-                  { icon: MapPin, label: 'Alamat', value: 'Jakarta, Indonesia' },
+                  { icon: Mail, label: t('contact.infoEmail'), value: 'info@budian.id' },
+                  { icon: Phone, label: t('contact.infoPhone'), value: '+62 123 456 789' },
+                  { icon: MapPin, label: t('contact.infoAddress'), value: 'Jakarta, Indonesia' },
                 ].map((item) => (
                   <Card
                     key={item.label}
@@ -150,7 +150,7 @@ export default function ContactPage() {
                       <div className="grid gap-4 sm:grid-cols-2">
                         <Input
                           label={t('contact.name')}
-                          placeholder="Nama lengkap"
+                          placeholder={t('contact.phName')}
                           value={form.name}
                           onChange={(e) => setForm({ ...form, name: e.target.value })}
                           onBlur={(e) => handleBlur('name', e.target.value)}
@@ -174,7 +174,7 @@ export default function ContactPage() {
                       </div>
                       <Input
                         label={t('contact.subject')}
-                        placeholder="Topik pesan"
+                        placeholder={t('contact.phSubject')}
                         value={form.subject}
                         onChange={(e) => setForm({ ...form, subject: e.target.value })}
                         onBlur={(e) => handleBlur('subject', e.target.value)}
@@ -184,7 +184,7 @@ export default function ContactPage() {
                       />
                       <Textarea
                         label={t('contact.message')}
-                        placeholder="Tulis pesan Anda..."
+                        placeholder={t('contact.phMessage')}
                         value={form.message}
                         onChange={(e) => setForm({ ...form, message: e.target.value })}
                         onBlur={(e) => handleBlur('message', e.target.value)}

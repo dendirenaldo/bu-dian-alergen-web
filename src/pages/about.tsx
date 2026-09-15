@@ -22,10 +22,10 @@ export default function AboutPage() {
               className="mb-12 text-center"
             >
               <h1 className="text-3xl font-bold text-surface-900 dark:text-surface-100 sm:text-4xl">
-                Tentang Kami
+                {t('about.heading')}
               </h1>
               <p className="mt-4 text-lg text-surface-600 dark:text-surface-400">
-                Mengenal lebih dekat Allergen Detector - Sistem Deteksi Alergen Makanan
+                {t('about.lead')}
               </p>
             </motion.div>
 
@@ -37,21 +37,19 @@ export default function AboutPage() {
             >
               <Card padding="lg">
                 <h2 className="mb-4 text-xl font-semibold text-surface-900 dark:text-surface-100">
-                  Misi Kami
+                  {t('about.missionTitle')}
                 </h2>
                 <p className="text-surface-600 dark:text-surface-400 leading-relaxed">
-                  Allergen Detector hadir untuk membantu masyarakat Indonesia mengenali alergen pada produk
-                  makanan dengan lebih mudah dan akurat. Kami menggunakan teknologi kecerdasan
-                  buatan untuk mendeteksi potensi alergen dari label produk makanan.
+                  {t('about.mission')}
                 </p>
               </Card>
 
               <div className="grid gap-6 sm:grid-cols-2">
                 {[
-                  { icon: ShieldCheck, title: 'Akurasi Tinggi', desc: 'Menggunakan model Word2Vec & BiLSTM untuk deteksi alergen yang akurat.' },
-                  { icon: Users, title: 'Untuk Semua', desc: 'Tersedia untuk umum, membantu penderita alergi memilih makanan yang aman.' },
-                  { icon: Target, title: 'Fokus Lokal', desc: 'Dirancang khusus untuk produk makanan Indonesia.' },
-                  { icon: BookOpen, title: 'Edukasi', desc: 'Memberikan informasi lengkap tentang berbagai jenis alergen makanan.' },
+                  { icon: ShieldCheck, title: t('about.f1t'), desc: t('about.f1d') },
+                  { icon: Users, title: t('about.f2t'), desc: t('about.f2d') },
+                  { icon: Target, title: t('about.f3t'), desc: t('about.f3d') },
+                  { icon: BookOpen, title: t('about.f4t'), desc: t('about.f4d') },
                 ].map((item, index) => (
                   <motion.div
                     key={item.title}

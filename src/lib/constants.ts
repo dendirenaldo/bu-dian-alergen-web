@@ -1,4 +1,10 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const _apiBase = process.env.NEXT_PUBLIC_API_URL;
+if (!_apiBase && typeof window !== 'undefined') {
+  throw new Error(
+    'NEXT_PUBLIC_API_URL belum diset. Isi .env.production/.env.development; fallback localhost dihapus agar misconfig gagal-cepat.'
+  );
+}
+export const API_BASE_URL = _apiBase || 'http://localhost:3001';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -47,24 +53,6 @@ export const API_ENDPOINTS = {
 export const APP_NAME = 'Allergen Detector';
 export const APP_DESCRIPTION = 'Sistem Deteksi Alergen Makanan';
 
-import {
-  LayoutDashboard,
-  Package,
-  AlertTriangle,
-  Users,
-  FileText,
-  ScanSearch,
-  Tags,
-  Settings,
-} from 'lucide-react';
 
-export const sidebarLinks = [
-  { href: '/admin', label: 'Dasbor', icon: LayoutDashboard },
-  { href: '/admin/products', label: 'Produk', icon: Package },
-  { href: '/admin/categories', label: 'Kategori', icon: Tags },
-  { href: '/admin/allergens', label: 'Alergen', icon: AlertTriangle },
-  { href: '/admin/detections', label: 'Deteksi', icon: ScanSearch },
-  { href: '/admin/users', label: 'Pengguna', icon: Users },
-  { href: '/admin/cms', label: 'Konten', icon: FileText },
-  { href: '/admin/settings', label: 'Pengaturan', icon: Settings },
-];
+
+

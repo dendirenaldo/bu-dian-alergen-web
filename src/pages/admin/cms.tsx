@@ -31,7 +31,7 @@ export default function AdminCmsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { items: contents, total, totalPages, isLoading, error, setError, refresh } =
+  const { items: contents, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
     // /contents tidak mendukung query page/limit (DTO backend ketat) -> paginasi client-side.
     useAdminList<Content>(API_ENDPOINTS.CONTENTS.LIST, { token, page: currentPage, limit: 10, serverPagination: false });
 
@@ -81,7 +81,7 @@ export default function AdminCmsPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.cms')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={currentPage} onPageChange={setCurrentPage}
+          <AdminTable data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
             onAdd={() => { setSelectedContent(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelectedContent(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.cms')} emptyDescription={t('admin.emptyDesc.cms')} addLabel={t('admin.addLabel.cms')} />

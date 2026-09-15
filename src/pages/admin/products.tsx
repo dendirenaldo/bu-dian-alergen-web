@@ -30,7 +30,7 @@ export default function AdminProductsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const { items: products, total, totalPages, isLoading, error, setError, refresh } =
+  const { items: products, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
     useAdminList<Product>(API_ENDPOINTS.PRODUCTS.LIST, {
       token,
       page: currentPage,
@@ -135,7 +135,7 @@ export default function AdminProductsPage() {
             isLoading={isLoading}
             total={total}
             totalPages={totalPages}
-            currentPage={currentPage}
+            currentPage={effectivePage}
             onPageChange={setCurrentPage}
             onSearch={(q) => {
               setCurrentPage(1);

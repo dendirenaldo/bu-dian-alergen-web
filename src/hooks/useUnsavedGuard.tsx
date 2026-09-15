@@ -12,6 +12,7 @@ export function useUnsavedGuard(dirty: boolean, message?: string) {
   const { t } = useLocale();
   const guardMessage = message ?? t('guard.message');
   const [showDialog, setShowDialog] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
   const pendingUrl = useRef<string | null>(null);
   const onConfirmExtraRef = useRef<(() => void) | null>(null);
   const dirtyRef = useRef(dirty);
@@ -31,6 +32,7 @@ export function useUnsavedGuard(dirty: boolean, message?: string) {
     const handleRouteChange = (url: string) => {
       if (!dirtyRef.current || url === router.asPath) return;
       pendingUrl.current = url;
+      onConfirmExtraRef.current = null;
       setShowDialog(true);
       router.events.emit('routeChangeError');
       // eslint-disable-next-line @typescript-eslint/no-throw-literal
@@ -41,18 +43,27 @@ export function useUnsavedGuard(dirty: boolean, message?: string) {
   }, [router]);
 
   const confirmLeave = useCallback(() => {
+    if (isConfirming) return;
+    setIsConfirming(true);
     dirtyRef.current = false;
     setShowDialog(false);
     if (pendingUrl.current) {
-      router.push(pendingUrl.current);
+      const url = pendingUrl.current;
       pendingUrl.current = null;
+      onConfirmExtraRef.current = null;
+      router.push(url).finally(() => setIsConfirming(false));
     } else {
       // Dipicu dari tombol close modal (bukan navigasi): tutup modal induk
       // + reset form via callback yang diberikan Dialog.
-      onConfirmExtraRef.current?.();
+      const extra = onConfirmExtraRef.current;
       onConfirmExtraRef.current = null;
+      try {
+        extra?.();
+      } finally {
+        setIsConfirming(false);
+      }
     }
-  }, [router]);
+  }, [router, isConfirming]);
 
   const Dialog = useCallback(
     ({ onClose: extraOnClose }: { onClose?: () => void } = {}) => (
@@ -73,9 +84,10 @@ export function useUnsavedGuard(dirty: boolean, message?: string) {
         confirmLabel={t('common.confirm')}
         cancelLabel={t('common.back')}
         variant="primary"
+        isLoading={isConfirming}
       />
     ),
-    [showDialog, confirmLeave, guardMessage, t],
+    [showDialog, isConfirming, confirmLeave, guardMessage, t],
   );
 
   return { showDialog, setShowDialog, confirmLeave, Dialog };

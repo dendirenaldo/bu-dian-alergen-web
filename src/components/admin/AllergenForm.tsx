@@ -31,7 +31,7 @@ export default function AllergenForm({ isOpen, onClose, allergen, onSubmit, isSa
   const [form, setForm] = useState({ name: '', code: '', description: '', severityLevel: 'medium' as AllergenSeverity, color: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const dirty = useMemo(() => [form.name, form.code, form.description, form.color].some((v) => v !== ''), [form]);
+  const dirty = useMemo(() => [form.name, form.code, form.description, form.color, form.severityLevel !== 'medium'].some((v) => v === true || (typeof v === 'string' && v !== '')), [form]);
   const guard = useUnsavedGuard(isOpen && dirty && !isSaving);
 
   useEffect(() => {
