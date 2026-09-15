@@ -51,9 +51,9 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in-0 duration-200" onClick={onClose} />
       <aside className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-surface-950 shadow-xl animate-in slide-in-from-left duration-200">
         <div className="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-800">
-          <Link href="/admin" onClick={onClose} className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
-            <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
+          <Link href="/admin" onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
+            <span className="truncate text-base font-bold text-surface-900 dark:text-surface-100">
               {appName}
             </span>
           </Link>

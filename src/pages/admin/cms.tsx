@@ -77,7 +77,7 @@ export default function AdminCmsPage() {
         <div className="space-y-6">
           <div className="space-y-2">
             <Breadcrumb items={[{ label: t('admin.cms') }]} />
-            <h1 className="text-2xl font-bold text-surface-900 dark:text-surface-100">{t('admin.cms')}</h1>
+            <h1 className="text-xl font-bold text-surface-900 dark:text-surface-100">{t('admin.cms')}</h1>
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.cms')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}

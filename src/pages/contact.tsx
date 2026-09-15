@@ -104,7 +104,7 @@ export default function ContactPage() {
                 className="space-y-4"
               >
                 {[
-                  { icon: Mail, label: t('contact.infoEmail'), value: 'info@budian.id' },
+                  { icon: Mail, label: t('contact.infoEmail'), value: 'info@allergendetector.id' },
                   { icon: Phone, label: t('contact.infoPhone'), value: '+62 123 456 789' },
                   { icon: MapPin, label: t('contact.infoAddress'), value: 'Jakarta, Indonesia' },
                 ].map((item) => (

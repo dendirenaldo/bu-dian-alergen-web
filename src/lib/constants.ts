@@ -42,6 +42,7 @@ export const API_ENDPOINTS = {
   SETTINGS: {
     LIST: '/api/v1/settings',
     DETAIL: (key: string) => `/api/v1/settings/${key}`,
+    PUBLIC: '/api/v1/settings/public',
   },
   DASHBOARD: {
     STATS: '/api/v1/dashboard/stats',

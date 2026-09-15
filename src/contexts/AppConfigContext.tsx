@@ -21,15 +21,18 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.SETTINGS.DETAIL('app_name')}`);
+        // Endpoint publik (tanpa auth). Dulu pakai DETAIL('app_name')
+        // yang dikunci admin → selalu 401 → nama backend tak pernah tampil.
+        const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.SETTINGS.PUBLIC}`);
         if (!res.ok) return;
         const data = await res.json();
-        const value = data?.data?.value ?? data?.value;
+        const holder = data?.data ?? data;
+        const value = holder?.app_name ?? holder?.value;
         if (!cancelled && typeof value === 'string' && value.trim()) {
           setAppName(value.trim());
         }
       } catch {
-        /* offline/unauthorized -> fallback ke konstanta */
+        /* offline/error -> fallback ke konstanta */
       }
     })();
     return () => {

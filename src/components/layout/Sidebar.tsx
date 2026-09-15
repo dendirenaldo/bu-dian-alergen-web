@@ -37,9 +37,9 @@ export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProp
     >
       <div className="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-800">
         {!isCollapsed && (
-          <Link href="/admin" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
-            <span className="text-lg font-bold text-surface-900 dark:text-surface-100">
+          <Link href="/admin" className="flex min-w-0 flex-1 items-center gap-2">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
+            <span className="truncate text-base font-bold text-surface-900 dark:text-surface-100">
               {appName}
             </span>
           </Link>
