@@ -38,6 +38,10 @@ export default function DetectionHistoryTable() {
         setDetections(u.items);
         setTotal(u.total);
         setTotalPages(u.totalPages);
+        // Clamp: page melebihi total (mis. data berkurang) -> reset halaman.
+        if (currentPage > u.totalPages && u.totalPages >= 1) {
+          setCurrentPage(u.totalPages);
+        }
       })
       .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || t('history.loadFail')); })
       .finally(() => setIsLoading(false));
@@ -80,6 +84,13 @@ export default function DetectionHistoryTable() {
           </tbody>
         </table>
       </div>
+    );
+  }
+
+  // Gagal memuat (tanpa data lama): tampilkan ERROR, bukan EmptyState.
+  if (error && detections.length === 0) {
+    return (
+      <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>
     );
   }
 

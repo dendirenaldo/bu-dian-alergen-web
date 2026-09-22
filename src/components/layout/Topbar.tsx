@@ -5,7 +5,6 @@ import { useLocale } from '@/contexts/LocaleContext';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import LocaleToggle from '@/components/shared/LocaleToggle';
 import Dropdown from '@/components/ui/Dropdown';
-import Avatar from '@/components/ui/Avatar';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -46,8 +45,21 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
           align="right"
           onSelect={handleSelect}
           trigger={
+            // HTML-valid: <button> hanya berisi konten phrasing (span/img),
+            // bukan <div> dari komponen Avatar.
             <span className="flex items-center gap-3 rounded-lg p-1 hover:bg-surface-100 dark:hover:bg-surface-800">
-              <Avatar src={user?.avatarUrl} name={user?.name || 'User'} size="sm" />
+              {user?.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={user.avatarUrl}
+                  alt={user.name || 'Avatar'}
+                  className="h-8 w-8 rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900/30 dark:text-primary-400 text-sm font-medium">
+                  {(user?.name || 'U').charAt(0).toUpperCase()}
+                </span>
+              )}
               <span className="hidden text-left sm:block">
                 <span className="block text-sm font-medium text-surface-900 dark:text-surface-100">
                   {user?.name || 'User'}

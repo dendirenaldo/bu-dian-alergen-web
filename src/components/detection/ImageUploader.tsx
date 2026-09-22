@@ -36,7 +36,7 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
       reader.readAsDataURL(file);
       onImageSelect(file);
     },
-    [onImageSelect]
+    [onImageSelect, t]
   );
 
   const handleDrop = useCallback(

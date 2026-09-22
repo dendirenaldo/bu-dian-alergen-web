@@ -8,7 +8,7 @@ interface SeoHeadProps {
   noIndex?: boolean;
 }
 
-const SITE_URL = 'https://researchcomnets.ilkom.unsri.ac.id';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://researchcomnets.ilkom.unsri.ac.id';
 
 export default function SeoHead({ title, description, path = '/', noIndex = false }: SeoHeadProps) {
   const appName = useAppName();

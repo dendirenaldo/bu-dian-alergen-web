@@ -29,7 +29,7 @@ export default function AdminDetectionsPage() {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const { items: detections, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
-    useAdminList<Detection>(API_ENDPOINTS.DETECTIONS.LIST, { token, page: currentPage, limit: 10 });
+    useAdminList<Detection>(API_ENDPOINTS.DETECTIONS.LIST, { token, page: currentPage, limit: 10, onPageClamp: setCurrentPage });
 
   const handleDelete = async () => {
     if (!deleteTarget) return;

@@ -46,7 +46,8 @@ npm install
 Buat file `.env.local`:
 
 ```env
-NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+# Tanpa /api/v1 — kode menambahkan path endpoint sendiri
+NEXT_PUBLIC_API_URL=http://localhost:3001
 ```
 
 ### 3. Jalankan development server

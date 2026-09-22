@@ -18,23 +18,41 @@ export function translate(locale: Locale, key: string, params?: Record<string, s
   return text;
 }
 
-function getInitialLocale(): Locale {
-  if (typeof window === 'undefined') return 'id';
-  const saved = window.localStorage.getItem(STORAGE_KEY);
-  return saved === 'en' || saved === 'id' ? saved : 'id';
+function readSavedLocale(): Locale | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved === 'en' || saved === 'id') return saved;
+    const cookie = document.cookie.match(/(?:^|;\s*)locale=(id|en)(?:;|$)/);
+    if (cookie) return cookie[1] as Locale;
+  } catch {
+    /* storage unavailable — memory only */
+  }
+  return null;
 }
 
 const LocaleContext = createContext<{ locale: Locale; setLocale: (l: Locale) => void; t: TFunction } | undefined>(undefined);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+  // Render PERTAMA selalu 'id' di server DAN client (hydration identik —
+  // tanpa React mismatch). Locale tersimpan dipulihkan SETELAH mount.
+  const [locale, setLocaleState] = useState<Locale>('id');
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     try {
       window.localStorage.setItem(STORAGE_KEY, l);
+      // Cookie juga diset agar konsisten dengan inisiasi _document dan
+      // siap dipakai SSR di masa depan.
+      document.cookie = `${STORAGE_KEY}=${l}; path=/; max-age=31536000; SameSite=Lax`;
     } catch {
       /* storage unavailable (private mode) — memory only */
     }
+  }, []);
+  useEffect(() => {
+    // Restore setelah hydration: server & client render pertama identik ('id'),
+    // baru di efek ini state diselaraskan dengan pilihan pengguna.
+    const saved = readSavedLocale();
+    if (saved && saved !== 'id') setLocaleState(saved);
   }, []);
   useEffect(() => {
     document.documentElement.lang = locale;

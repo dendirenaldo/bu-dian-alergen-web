@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import PublicLayout from '@/components/layout/PublicLayout';
 import SeoHead from '@/components/shared/SeoHead';
-import Button from '@/components/ui/Button';
 import { useLocale } from '@/contexts/LocaleContext';
 import type { ReactElement } from 'react';
 
@@ -17,8 +16,11 @@ export default function NotFoundPage() {
         </h1>
         <p className="mt-2 text-surface-600 dark:text-surface-400">{t('error404.desc')}</p>
         <div className="mt-6">
-          <Link href="/">
-            <Button>{t('error404.back')}</Button>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-primary-700"
+          >
+            {t('error404.back')}
           </Link>
         </div>
       </div>

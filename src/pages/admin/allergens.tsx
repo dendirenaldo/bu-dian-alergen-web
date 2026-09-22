@@ -37,7 +37,7 @@ export default function AdminAllergensPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const { items: allergens, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
-    useAdminList<Allergen>(API_ENDPOINTS.ALLERGENS.LIST, { token, page: currentPage, limit: 10 });
+    useAdminList<Allergen>(API_ENDPOINTS.ALLERGENS.LIST, { token, page: currentPage, limit: 10, onPageClamp: setCurrentPage });
 
   const handleCreate = async (data: any) => {
     setError(null); setIsSaving(true);

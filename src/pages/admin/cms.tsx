@@ -33,7 +33,7 @@ export default function AdminCmsPage() {
 
   const { items: contents, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
     // /contents tidak mendukung query page/limit (DTO backend ketat) -> paginasi client-side.
-    useAdminList<Content>(API_ENDPOINTS.CONTENTS.LIST, { token, page: currentPage, limit: 10, serverPagination: false });
+    useAdminList<Content>(API_ENDPOINTS.CONTENTS.LIST, { token, page: currentPage, limit: 10, onPageClamp: setCurrentPage, serverPagination: false });
 
   const handleCreate = async (data: any) => {
     setError(null); setIsSaving(true);

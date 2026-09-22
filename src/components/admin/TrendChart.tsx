@@ -42,7 +42,7 @@ export default function TrendChart({ days = 14 }: { days?: number }) {
       .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || t('api.err.loadFail')); })
       .finally(() => setIsLoading(false));
     return () => ctrl.abort();
-  }, [token, days]);
+  }, [token, days, t]);
 
   if (isLoading) return <Card padding="md"><Skeleton width="100%" height="16rem" /></Card>;
   if (error) return <Card padding="md"><p className="py-8 text-center text-sm text-red-600">{error}</p></Card>;

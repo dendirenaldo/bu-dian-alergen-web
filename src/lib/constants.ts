@@ -1,10 +1,13 @@
+// Fail-fast: env wajib diset oleh .env.production / .env.development
+// (keduanya ter-commit). Tanpa fallback localhost agar misconfig ketahuan
+// saat build/runtime, bukan diam-diam menunjuk mesin developer.
 const _apiBase = process.env.NEXT_PUBLIC_API_URL;
-if (!_apiBase && typeof window !== 'undefined') {
+if (!_apiBase) {
   throw new Error(
-    'NEXT_PUBLIC_API_URL belum diset. Isi .env.production/.env.development; fallback localhost dihapus agar misconfig gagal-cepat.'
+    'NEXT_PUBLIC_API_URL tidak diset. Isi .env.production/.env.development.',
   );
 }
-export const API_BASE_URL = _apiBase || 'http://localhost:3001';
+export const API_BASE_URL = _apiBase;
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -52,8 +55,6 @@ export const API_ENDPOINTS = {
 };
 
 export const APP_NAME = 'Allergen Detector';
-export const APP_DESCRIPTION = 'Sistem Deteksi Alergen Makanan';
-
 
 
 

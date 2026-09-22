@@ -34,7 +34,7 @@ export default function AdminProductsPage() {
     useAdminList<Product>(API_ENDPOINTS.PRODUCTS.LIST, {
       token,
       page: currentPage,
-      limit: 10,
+      limit: 10, onPageClamp: setCurrentPage,
       extraParams: search ? `&search=${encodeURIComponent(search)}` : '',
     });
 

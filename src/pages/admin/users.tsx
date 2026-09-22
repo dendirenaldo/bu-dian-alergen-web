@@ -30,7 +30,7 @@ export default function AdminUsersPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const { items: users, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
-    useAdminList<User>(API_ENDPOINTS.USERS.LIST, { token, page: currentPage, limit: 10 });
+    useAdminList<User>(API_ENDPOINTS.USERS.LIST, { token, page: currentPage, limit: 10, onPageClamp: setCurrentPage });
 
   const handleCreate = async (data: any) => {
     setError(null); setIsSaving(true);
