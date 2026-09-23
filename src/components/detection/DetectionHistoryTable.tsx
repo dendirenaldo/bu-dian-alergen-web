@@ -13,6 +13,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
 import Alert from '@/components/ui/Alert';
 import DetectionDetail from './DetectionDetail';
+import { resolveDetectedAllergens } from '@/lib/detection-allergens';
 import { useLocale } from '@/contexts/LocaleContext';
 import { Eye } from 'lucide-react';
 
@@ -129,7 +130,9 @@ export default function DetectionHistoryTable() {
             </tr>
           </thead>
           <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
-            {detections.map((detection) => (
+            {detections.map((detection) => {
+              const allergens = resolveDetectedAllergens(detection);
+              return (
               <tr
                 key={detection.id}
                 className="hover:bg-surface-50 dark:hover:bg-surface-800/50"
@@ -141,19 +144,19 @@ export default function DetectionHistoryTable() {
                   {detection.product?.name || '-'}
                 </td>
                 <td className="py-3">
-                  {detection.detectionAllergens && detection.detectionAllergens.length > 0 ? (
+                  {allergens.length > 0 ? (
                     <div className="flex flex-wrap gap-1">
-                      {detection.detectionAllergens.slice(0, 2).map((a) => (
+                      {allergens.slice(0, 2).map((a) => (
                         <Badge
-                          key={a.allergenId}
-                          variant={a.severityLevel === 'critical' ? 'danger' : 'warning'}
+                          key={a.key}
+                          variant={a.severity === 'critical' ? 'danger' : 'warning'}
                           size="sm"
                         >
                           {a.name}
                         </Badge>
                       ))}
-                      {detection.detectionAllergens.length > 2 && (
-                        <Badge size="sm">+{detection.detectionAllergens.length - 2}</Badge>
+                      {allergens.length > 2 && (
+                        <Badge size="sm">+{allergens.length - 2}</Badge>
                       )}
                     </div>
                   ) : (
@@ -175,7 +178,8 @@ export default function DetectionHistoryTable() {
                   </button>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>

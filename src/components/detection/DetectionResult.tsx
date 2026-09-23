@@ -5,6 +5,7 @@ import { formatDate } from '@/lib/utils';
 import { ShieldCheck, ShieldAlert, Clock } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import AllergenTag from './AllergenTag';
+import { resolveDetectedAllergens } from '@/lib/detection-allergens';
 import { useLocale } from '@/contexts/LocaleContext';
 
 interface DetectionResultProps {
@@ -14,6 +15,7 @@ interface DetectionResultProps {
 export default function DetectionResult({ detection }: DetectionResultProps) {
   const { t } = useLocale();
   const isSafe = detection.result === 'safe';
+  const allergens = resolveDetectedAllergens(detection);
 
   return (
     <Card padding="md">
@@ -37,6 +39,11 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
               {formatDate(detection.createdAt)}
             </span>
             <span>{detection.processingTimeMs}ms</span>
+            {(detection.modelName || (detection.rawModelOutput as any)?.model_name) && (
+              <span className="rounded-md bg-surface-100 px-2 py-0.5 font-mono text-xs uppercase dark:bg-surface-800">
+                {detection.modelName || (detection.rawModelOutput as any)?.model_name}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -60,22 +67,22 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
             : t('detection.unsafeMsg')}
         </p>
         <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
-          {t('detection.confidence')} {Math.round(detection.confidenceScore * 100)}%
+          {t('detection.confidence')} {Math.round((detection.confidenceScore || 0) * 100)}%
         </p>
       </div>
 
-      {detection.detectionAllergens && detection.detectionAllergens.length > 0 && (
+      {allergens.length > 0 && (
         <div>
           <h4 className="mb-2 text-sm font-medium text-surface-700 dark:text-surface-300">
             {t('detection.allergensFound')}
           </h4>
           <div className="flex flex-wrap gap-2">
-            {detection.detectionAllergens.map((allergen) => (
+            {allergens.map((allergen) => (
               <AllergenTag
-                key={allergen.allergenId}
+                key={allergen.key}
                 name={allergen.name}
-                severity={allergen.severityLevel}
-                confidence={allergen.confidenceScore}
+                severity={allergen.severity}
+                confidence={allergen.confidence}
               />
             ))}
           </div>

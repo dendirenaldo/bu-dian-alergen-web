@@ -8,7 +8,13 @@ export interface UnwrappedList<T> {
 }
 
 export function unwrapListApi<T>(res: any, fallbackPage = 1, fallbackLimit = 10): UnwrappedList<T> {
-  const body = res?.data ?? res;
+  // Bentuk fetch (api.ts pakai fetch): res SUDAH body backend
+  // { data: [...], total, page, limit, totalPages, meta? }.
+  // Bentuk axios lama: { data: { data: [...], ... } }. Kenali keduanya.
+  const body =
+    res && Array.isArray(res.data) && typeof res.total === 'number'
+      ? res
+      : (res?.data ?? res);
   // Paginated: { data: [], total, page, limit, totalPages, meta? }
   if (body && Array.isArray(body.data)) {
     const meta = body.meta ?? {};

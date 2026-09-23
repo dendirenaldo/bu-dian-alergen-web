@@ -36,6 +36,10 @@ export const API_ENDPOINTS = {
     TEXT: '/api/v1/detections/text',
     LIST: '/api/v1/detections',
     DETAIL: (id: number) => `/api/v1/detections/${id}`,
+    PUBLIC_UPLOAD: '/api/v1/detections/public/upload',
+    PUBLIC_TEXT: '/api/v1/detections/public/text',
+    PUBLIC_QUOTA: '/api/v1/detections/public/quota',
+    ADMIN_ALL: '/api/v1/detections/admin/all',
   },
   CONTENTS: {
     LIST: '/api/v1/contents',

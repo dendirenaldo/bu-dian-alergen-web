@@ -5,6 +5,7 @@ interface RequestOptions {
   method?: string;
   body?: any;
   token?: string;
+  anonId?: string;
   isFormData?: boolean;
   signal?: AbortSignal;
   idempotencyKey?: string;
@@ -31,12 +32,16 @@ class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    const { method = 'GET', body, token, isFormData = false, signal, idempotencyKey } = options;
+    const { method = 'GET', body, token, anonId, isFormData = false, signal, idempotencyKey } = options;
 
     const headers: Record<string, string> = {};
 
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    if (anonId) {
+      headers['x-anon-id'] = anonId;
     }
 
     if (body && !isFormData && !(body instanceof FormData)) {
@@ -51,6 +56,7 @@ class ApiClient {
       method,
       headers,
       signal,
+      credentials: 'include',
       body: body instanceof FormData ? body : body ? JSON.stringify(body) : undefined,
     });
 
@@ -67,11 +73,11 @@ class ApiClient {
     return response.json();
   }
 
-  get<T>(endpoint: string, token?: string, signal?: AbortSignal) {
-    return this.request<T>(endpoint, { token, signal });
+  get<T>(endpoint: string, token?: string, signal?: AbortSignal, anonId?: string) {
+    return this.request<T>(endpoint, { token, signal, anonId });
   }
 
-  post<T>(endpoint: string, body?: any, token?: string, opts?: { isFormData?: boolean; signal?: AbortSignal; idempotencyKey?: string }) {
+  post<T>(endpoint: string, body?: any, token?: string, opts?: { isFormData?: boolean; signal?: AbortSignal; idempotencyKey?: string; anonId?: string }) {
     return this.request<T>(endpoint, { method: 'POST', body, token, ...opts });
   }
 

@@ -79,6 +79,7 @@ export interface Allergen {
 // Detection types
 export type DetectionMethod = 'image_ocr' | 'text_input';
 export type DetectionResultType = 'safe' | 'unsafe';
+export type DetectionModelChoice = 'bilstm' | 'bert' | 'ensemble';
 
 export interface DetectedAllergen {
   allergenId: number;
@@ -89,7 +90,8 @@ export interface DetectedAllergen {
 
 export interface Detection {
   id: number;
-  userId: number;
+  userId: number | null;
+  user?: Pick<User, 'id' | 'name' | 'email' | 'role'>;
   product?: Product;
   imageUrl?: string;
   ocrText?: string;
@@ -98,9 +100,17 @@ export interface Detection {
   confidenceScore: number;
   processingTimeMs: number;
   detectionMethod: DetectionMethod;
+  modelName?: string;
+  isGuest?: boolean;
   notes?: string;
   detectionAllergens?: DetectedAllergen[];
   createdAt: string;
+}
+
+export interface PublicQuota {
+  limit: number;
+  remaining: number;
+  used: number;
 }
 
 // Content types (CMS)

@@ -17,11 +17,12 @@ const severityColors: Record<AllergenSeverity, string> = {
 };
 
 export default function AllergenTag({ name, severity, confidence }: AllergenTagProps) {
+  const color = severityColors[severity] ?? severityColors.medium;
   return (
     <span
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium',
-        severityColors[severity]
+        color
       )}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
