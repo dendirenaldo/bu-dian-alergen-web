@@ -22,7 +22,7 @@ import { API_BASE_URL, API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
-import { formatDateTime, formatModelName, formatResult } from '@/lib/format';
+import { formatConfidence, formatDateTime, formatMethod, formatModelName, formatResult } from '@/lib/format';
 
 type StatusFilter = '' | 'draft' | 'verified';
 type LabelFilter = '' | 'safe' | 'unsafe';
@@ -33,6 +33,19 @@ function ocrOf(item: DatasetItem): string {
 
 function productOf(item: DatasetItem): string {
   return String(item.detection?.product?.name ?? '').trim() || '—';
+}
+
+function avgConfidenceOf(item: DatasetItem): number | null {
+  const list = item.correctedAllergens ?? item.corrected_allergens ?? [];
+  if (!Array.isArray(list) || list.length === 0) return null;
+  const nums = list.map((a) => Number(a?.confidence)).filter((n) => Number.isFinite(n));
+  if (nums.length === 0) return null;
+  return nums.reduce((s, n) => s + n, 0) / nums.length;
+}
+
+function methodOf(item: DatasetItem): string {
+  const det: any = item.detection ?? null;
+  return String(det?.detectionMethod ?? det?.detection_method ?? det?.modelName ?? '').trim() || '—';
 }
 
 export default function AdminDatasetPage() {
@@ -53,8 +66,15 @@ export default function AdminDatasetPage() {
   const [isExporting, setIsExporting] = useState(false);
   const [busyId, setBusyId] = useState<number | null>(null);
   const timerRef = useRef<number | undefined>(undefined);
+  const exportAbortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => () => window.clearTimeout(timerRef.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(timerRef.current);
+      exportAbortRef.current?.abort();
+    },
+    [],
+  );
 
   const onSearchChange = (v: string) => {
     setSearch(v);
@@ -148,6 +168,9 @@ export default function AdminDatasetPage() {
   const handleExportCsv = async () => {
     if (!token || isExporting) return;
     setIsExporting(true);
+    exportAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    exportAbortRef.current = ctrl;
     try {
       const p = new URLSearchParams({ format: 'csv' });
       if (statusFilter) p.set('status', statusFilter);
@@ -155,6 +178,7 @@ export default function AdminDatasetPage() {
       const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.DATASET.EXPORT}?${p.toString()}`, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
+        signal: ctrl.signal,
       });
       if (!res.ok) {
         const payload = await res.json().catch(() => ({ message: 'Request failed' }));
@@ -178,9 +202,11 @@ export default function AdminDatasetPage() {
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 4000);
       toast(t('dataset.exported'));
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       toast(formatApiErrorMessage(err), 'error');
     } finally {
+      if (exportAbortRef.current === ctrl) exportAbortRef.current = null;
       setIsExporting(false);
     }
   };
@@ -230,6 +256,22 @@ export default function AdminDatasetPage() {
       render: (item: DatasetItem) => {
         const raw = item.detection?.modelName ?? (item.detection?.rawModelOutput as { model_name?: string } | undefined)?.model_name;
         return <span className="font-mono text-xs">{raw ? formatModelName(raw) : '—'}</span>;
+      },
+    },
+    {
+      key: 'confidence',
+      label: t('admin.table.confidence'),
+      render: (item: DatasetItem) => {
+        const avg = avgConfidenceOf(item);
+        return <span className="font-mono text-xs">{avg == null ? '—' : formatConfidence(avg)}</span>;
+      },
+    },
+    {
+      key: 'method',
+      label: t('admin.table.method'),
+      render: (item: DatasetItem) => {
+        const raw: any = (item.detection as any)?.detectionMethod ?? (item.detection as any)?.detection_method ?? null;
+        return <span className="text-xs">{raw ? formatMethod(raw) : methodOf(item) === '—' ? '—' : methodOf(item)}</span>;
       },
     },
     {

@@ -52,6 +52,28 @@ function toRows(item: DatasetItem | null): Row[] {
   return [];
 }
 
+/** Diff kata sederhana: prefix/suffix sama, tengah ditandai hapus/tambah. */
+function diffWords(original: string, corrected: string): Array<{ type: 'same' | 'del' | 'ins'; text: string }> {
+  const a = String(original ?? '').split(/(\s+)/);
+  const b = String(corrected ?? '').split(/(\s+)/);
+  let pre = 0;
+  while (pre < a.length && pre < b.length && a[pre] === b[pre]) pre += 1;
+  let sufA = a.length - 1;
+  let sufB = b.length - 1;
+  while (sufA >= pre && sufB >= pre && a[sufA] === b[sufB]) {
+    sufA -= 1;
+    sufB -= 1;
+  }
+  const out: Array<{ type: 'same' | 'del' | 'ins'; text: string }> = [];
+  for (let i = 0; i < pre; i += 1) out.push({ type: 'same', text: a[i] });
+  const del = a.slice(pre, sufA + 1).join('');
+  const ins = b.slice(pre, sufB + 1).join('');
+  if (del) out.push({ type: 'del', text: del });
+  if (ins) out.push({ type: 'ins', text: ins });
+  for (let i = sufA + 1; i < a.length; i += 1) out.push({ type: 'same', text: a[i] });
+  return out.filter((t) => t.text !== '');
+}
+
 export default function DatasetCorrectionModal({
   isOpen,
   onClose,
@@ -105,7 +127,10 @@ export default function DatasetCorrectionModal({
     if (!correctedText.trim()) {
       errs.corrected_text = t('admin.validation.required', { field: t('dataset.correctedText') });
     } else if (correctedText.trim().length > 5000) {
-      errs.corrected_text = 'corrected_text maksimal 5000 karakter';
+      errs.corrected_text = t('dataset.correctedTextMax', { max: 5000 });
+    }
+    if (notes.trim().length > 2000) {
+      errs.notes = t('dataset.notesMax');
     }
     rows.forEach((r, i) => {
       const name = r.name.trim();
@@ -182,6 +207,26 @@ export default function DatasetCorrectionModal({
             required
           />
         </div>
+        {ocrOriginal && correctedText && ocrOriginal.trim() !== correctedText.trim() && (
+          <div className="rounded-xl border border-surface-200 bg-surface-50 p-3 dark:border-surface-700 dark:bg-surface-800">
+            <p className="mb-1.5 text-xs text-surface-500 dark:text-surface-400">{t('dataset.diffHint')}</p>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-surface-700 dark:text-surface-300" aria-live="polite">
+              {diffWords(ocrOriginal, correctedText).map((tok, idx) =>
+                tok.type === 'same' ? (
+                  <span key={idx}>{tok.text}</span>
+                ) : tok.type === 'del' ? (
+                  <del key={idx} className="rounded bg-red-100 px-0.5 text-red-700 dark:bg-red-900/30 dark:text-red-300">
+                    {tok.text}
+                  </del>
+                ) : (
+                  <ins key={idx} className="rounded bg-green-100 px-0.5 text-green-700 no-underline dark:bg-green-900/30 dark:text-green-300">
+                    {tok.text}
+                  </ins>
+                ),
+              )}
+            </p>
+          </div>
+        )}
 
         <fieldset>
           <legend className="mb-1.5 block text-sm font-medium text-surface-700 dark:text-surface-300">
@@ -278,6 +323,7 @@ export default function DatasetCorrectionModal({
           placeholder={t('dataset.notesPh')}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
+          error={errors.notes}
           rows={2}
         />
         <div className="max-w-xs">

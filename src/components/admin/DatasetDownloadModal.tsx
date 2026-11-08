@@ -48,16 +48,28 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const timerRef = useRef<number | undefined>(undefined);
+  const estimateAbortRef = useRef<AbortController | null>(null);
+  const downloadAbortRef = useRef<AbortController | null>(null);
 
   const buildQuery = useCallback(() => {
     const p = new URLSearchParams();
     if (status) p.set('status', status);
     if (label) p.set('label', label);
+    p.set('includeLabels', includeLabels ? '1' : '0');
+    p.set('includeImages', includeImages ? '1' : '0');
+    p.set('includeSplit', includeSplit ? '1' : '0');
     const s = p.toString();
     return s ? `?${s}` : '';
-  }, [status, label]);
+  }, [status, label, includeLabels, includeImages, includeSplit]);
 
-  useEffect(() => () => window.clearTimeout(timerRef.current), []);
+  useEffect(
+    () => () => {
+      window.clearTimeout(timerRef.current);
+      estimateAbortRef.current?.abort();
+      downloadAbortRef.current?.abort();
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!isOpen) {
@@ -65,26 +77,35 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
       setProgress(null);
       setError(null);
       setIsDownloading(false);
+      estimateAbortRef.current?.abort();
+      downloadAbortRef.current?.abort();
       return;
     }
     if (!token) return;
     setEstimateLoading(true);
     window.clearTimeout(timerRef.current);
     timerRef.current = window.setTimeout(() => {
+      estimateAbortRef.current?.abort();
+      const ctrl = new AbortController();
+      estimateAbortRef.current = ctrl;
       api
-        .get(`${API_ENDPOINTS.DATASET.ESTIMATE}${buildQuery()}`, token)
+        .get(`${API_ENDPOINTS.DATASET.ESTIMATE}${buildQuery()}`, token, ctrl.signal)
         .then((res) => {
           const data = unwrapData<DatasetEstimate>(res);
           setEstimate(data);
           setError(null);
         })
-        .catch((err) => {
+        .catch((err: any) => {
+          if (err?.name === 'AbortError') return;
           const msg = formatApiErrorMessage(err);
           setError(msg);
           toast(msg, 'error');
         })
         .finally(() => setEstimateLoading(false));
     }, 400);
+    return () => {
+      estimateAbortRef.current?.abort();
+    };
   }, [isOpen, token, buildQuery, toast]);
 
   const handleDownload = async () => {
@@ -92,12 +113,16 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
     setIsDownloading(true);
     setProgress(0);
     setError(null);
+    downloadAbortRef.current?.abort();
+    const ctrl = new AbortController();
+    downloadAbortRef.current = ctrl;
     const onDownloadProgress = (pct: number) => setProgress(Math.min(1, Math.max(0, pct)));
     try {
       const url = `${API_BASE_URL}${API_ENDPOINTS.DATASET.DOWNLOAD}${buildQuery()}`;
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
         credentials: 'include',
+        signal: ctrl.signal,
       });
       if (!res.ok) {
         const payload = await res.json().catch(() => ({ message: 'Request failed' }));
@@ -142,11 +167,13 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
       setTimeout(() => URL.revokeObjectURL(objUrl), 4000);
       toast(t('dataset.downloaded'));
       onClose();
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.name === 'AbortError') return;
       const msg = formatApiErrorMessage(err);
       setError(msg);
       toast(msg, 'error');
     } finally {
+      if (downloadAbortRef.current === ctrl) downloadAbortRef.current = null;
       setIsDownloading(false);
     }
   };
@@ -206,6 +233,11 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
           </p>
         </fieldset>
 
+        {missing > 0 && (
+          <Alert variant="warning" title={t('dataset.imagesMissingTitle')}>
+            {t('dataset.imagesMissing', { n: missing })}
+          </Alert>
+        )}
         <div className="rounded-xl bg-surface-50 p-3 text-sm text-surface-700 dark:bg-surface-800 dark:text-surface-300">
           {estimateLoading ? (
             <span>{t('dataset.estimateLoading')}</span>
@@ -216,7 +248,6 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
                 files: estimate.fileCount,
                 rows,
               })}
-              {missing > 0 && <span className="ml-2">• {t('dataset.imagesMissing', { n: missing })}</span>}
             </span>
           ) : (
             <span>{t('dataset.estimateNone')}</span>
