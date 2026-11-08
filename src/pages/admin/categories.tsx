@@ -15,44 +15,28 @@ import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { unwrapData, unwrapListApi } from '@/lib/unwrap';
+import { useAdminList } from '@/hooks/useAdminList';
 import { useTableControls } from '@/hooks/useTableControls';
-import { useEffect } from 'react';
 
 export default function AdminCategoriesPage() {
   const { token } = useAuth();
   const { toast } = useToast();
   const { t } = useLocale();
-  const [items, setItems] = useState<Category[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { page: currentPage, setPage: setCurrentPage, limit, changeLimit, sort, toggleSort } = useTableControls();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selected, setSelected] = useState<Category | null>(null);
-  const { sort, toggleSort } = useTableControls();
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const fetchList = async () => {
-    if (!token) { setIsLoading(false); return; }
-    setIsLoading(true); setError(null);
-    try {
-      const sortQuery = sort ? `?sortBy=${encodeURIComponent(sort.key)}&sortDir=${sort.dir}` : '';
-      const res = await api.get(`${API_ENDPOINTS.CATEGORIES.LIST}${sortQuery}`, token);
-      const u = unwrapListApi<Category>(res);
-      setItems(u.items.length ? u.items : (Array.isArray(unwrapData<any>(res)) ? unwrapData<any>(res) : []));
-    } catch (err) { setError(formatApiErrorMessage(err, 'api.err.loadFail')); }
-    finally { setIsLoading(false); }
-  };
-
-  useEffect(() => { fetchList(); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token, sort]);
+  const { items, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
+    useAdminList<Category>(API_ENDPOINTS.CATEGORIES.LIST, { token, page: currentPage, limit, sortBy: sort?.key, sortDir: sort?.dir, onPageClamp: setCurrentPage, serverPagination: false });
 
   const handleCreate = async (data: any) => {
     setIsSaving(true);
     try {
       await api.post(API_ENDPOINTS.CATEGORIES.LIST, data, token!, { idempotencyKey: newIdempotencyKey() });
-      toast(t('toast.created')); setIsFormOpen(false); fetchList();
+      toast(t('toast.created')); setIsFormOpen(false); refresh();
     } catch (err) {
       const msg = formatApiErrorMessage(err);
       setError(msg);
@@ -66,7 +50,7 @@ export default function AdminCategoriesPage() {
     setIsSaving(true);
     try {
       await api.put(API_ENDPOINTS.CATEGORIES.DETAIL(selected.id), data, token!, { idempotencyKey: newIdempotencyKey() });
-      toast(t('toast.updated')); setIsFormOpen(false); setSelected(null); fetchList();
+      toast(t('toast.updated')); setIsFormOpen(false); setSelected(null); refresh();
     } catch (err) {
       const msg = formatApiErrorMessage(err);
       setError(msg);
@@ -80,7 +64,7 @@ export default function AdminCategoriesPage() {
     setIsDeleting(true);
     try {
       await api.delete(API_ENDPOINTS.CATEGORIES.DETAIL(deleteTarget.id), token!);
-      toast(t('toast.deleted')); setDeleteTarget(null); fetchList();
+      toast(t('toast.deleted')); setDeleteTarget(null); refresh();
     } catch (err) {
       const msg = formatApiErrorMessage(err);
       setError(msg);
@@ -113,7 +97,7 @@ export default function AdminCategoriesPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.categories')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={items} columns={columns} isLoading={isLoading} total={items.length} totalPages={1} currentPage={1} sort={sort} onSort={toggleSort}
+          <AdminTable data={items} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelected(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelected(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.categories')} emptyDescription={t('admin.emptyDesc.categories')} addLabel={t('admin.addLabel.categories')} />

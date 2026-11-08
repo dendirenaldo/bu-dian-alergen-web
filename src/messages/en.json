@@ -218,7 +218,7 @@
   "dataset.imagesMissingTitle": "Some images are missing from disk",
   "dataset.searchPh": "Search OCR/corrected text...",
   "dataset.product": "Product",
-  "admin.table.pageInfo": "{total} items • Page {page} of {pages}",
+  "admin.table.pageInfo": "Showing {from}–{to} of {total} items",
   "pagination.perPage": "Per page",
   "table.sortAsc": "Sort ascending",
   "table.sortDesc": "Sort descending",

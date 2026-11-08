@@ -14,6 +14,10 @@ export default function PageLoadingBar() {
 
     const start = () => {
       NProgress.start();
+      // Bar murni dekoratif: sembunyikan dari assistive technology.
+      // Div #nprogress dibuat lazily oleh lib saat start() pertama,
+      // jadi atribut dipasang ulang setiap start.
+      document.getElementById('nprogress')?.setAttribute('aria-hidden', 'true');
     };
     const stop = () => {
       NProgress.done();

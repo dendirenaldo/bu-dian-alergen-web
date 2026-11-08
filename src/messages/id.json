@@ -218,7 +218,7 @@
   "dataset.imagesMissingTitle": "Sebagian gambar hilang dari disk",
   "dataset.searchPh": "Cari teks OCR/koreksi...",
   "dataset.product": "Produk",
-  "admin.table.pageInfo": "{total} data • Halaman {page} dari {pages}",
+  "admin.table.pageInfo": "Menampilkan {from}–{to} dari {total} data",
   "pagination.perPage": "Per halaman",
   "table.sortAsc": "Urut menaik",
   "table.sortDesc": "Urut menurun",

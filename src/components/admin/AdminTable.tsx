@@ -80,7 +80,12 @@ export default function AdminTable<T extends { id: number }>({
   };
 
   const showActions = !!(onEdit || onDelete || onView);
-  const showFooter = (total ?? data.length) > 0;
+  const totalCount = total ?? data.length;
+  const showFooter = totalCount > 0;
+  // Rentang baris halaman aktif: aman saat halaman melebihi total (auto-clamp).
+  const pageSize = limit && limit > 0 ? limit : data.length || totalCount;
+  const rangeFrom = totalCount === 0 ? 0 : Math.min((currentPage - 1) * pageSize + 1, totalCount);
+  const rangeTo = Math.min(currentPage * pageSize, totalCount);
 
   return (
     <div className="space-y-4">
@@ -248,7 +253,7 @@ export default function AdminTable<T extends { id: number }>({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
             <p className="text-sm text-surface-500 dark:text-surface-400">
-              {t('admin.table.pageInfo', { total: total ?? data.length, page: currentPage, pages: totalPages })}
+              {t('admin.table.pageInfo', { from: rangeFrom, to: rangeTo, total: totalCount })}
             </p>
             {onLimitChange && limit !== undefined && (
               <PageSizeSelect value={limit} onChange={onLimitChange} />

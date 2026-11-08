@@ -17,6 +17,8 @@ import { resolveDetectedAllergens } from '@/lib/detection-allergens';
 import { useLocale } from '@/contexts/LocaleContext';
 import { Eye } from 'lucide-react';
 
+const PAGE_SIZE = 10;
+
 export default function DetectionHistoryTable() {
   const { t } = useLocale();
   const { token } = useAuth();
@@ -33,9 +35,9 @@ export default function DetectionHistoryTable() {
     const ctrl = new AbortController();
     setIsLoading(true);
     setError(null);
-    api.get(`${API_ENDPOINTS.DETECTIONS.LIST}?page=${currentPage}&limit=10`, token, ctrl.signal)
+    api.get(`${API_ENDPOINTS.DETECTIONS.LIST}?page=${currentPage}&limit=${PAGE_SIZE}`, token, ctrl.signal)
       .then((res) => {
-        const u = unwrapListApi<Detection>(res, currentPage, 10);
+        const u = unwrapListApi<Detection>(res, currentPage, PAGE_SIZE);
         setDetections(u.items);
         setTotal(u.total);
         setTotalPages(u.totalPages);
@@ -150,7 +152,11 @@ export default function DetectionHistoryTable() {
       {totalPages > 1 && (
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-surface-500 dark:text-surface-400">
-            {t('admin.table.pageInfo', { total, page: currentPage, pages: totalPages })}
+            {t('admin.table.pageInfo', {
+              from: total === 0 ? 0 : Math.min((currentPage - 1) * PAGE_SIZE + 1, total),
+              to: Math.min(currentPage * PAGE_SIZE, total),
+              total,
+            })}
           </p>
           <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />
         </div>
