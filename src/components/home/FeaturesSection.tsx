@@ -4,21 +4,57 @@ import { motion } from 'framer-motion';
 import { Camera, Zap, History } from 'lucide-react';
 import Card from '@/components/ui/Card';
 
+function TechHint({ label, tip }: { label: string; tip: string }) {
+  return (
+    <span
+      title={tip}
+      className="cursor-help underline decoration-dotted underline-offset-2"
+    >
+      {label}
+    </span>
+  );
+}
+
 const features = [
   {
     icon: Camera,
-    title: 'Upload Gambar',
-    description: 'Foto label produk makanan dan sistem akan membaca informasi alergen secara otomatis.',
+    title: 'Foto langsung terbaca',
+    description: (
+      <>
+        Jepret label kemasan, sistem mengubahnya jadi teks dan menandai bahan
+        pemicu alergi. Arahkan kursor ke{' '}
+        <TechHint
+          label="istilah ini"
+          tip="OCR (Optical Character Recognition): teknologi membaca tulisan dari gambar."
+        />{' '}
+        untuk detail teknis.
+      </>
+    ),
   },
   {
     icon: Zap,
-    title: 'Deteksi Instan',
-    description: 'Teknologi AI mendeteksi alergen dalam hitungan detik dengan tingkat akurasi tinggi.',
+    title: 'Hasil dalam hitungan detik',
+    description: (
+      <>
+        Pemeriksaan berjalan cepat dan teliti, lengkap dengan skor keyakinan.
+        Opsi{' '}
+        <TechHint
+          label="ketelitian tambahan"
+          tip="Ensemble: gabungan beberapa model (termasuk BERT dan BiLSTM) untuk hasil lebih stabil."
+        />{' '}
+        tersedia di halaman Deteksi.
+      </>
+    ),
   },
   {
     icon: History,
-    title: 'Riwayat Lengkap',
-    description: 'Simpan dan pantau riwayat deteksi alergen untuk semua produk yang pernah Anda periksa.',
+    title: 'Riwayat tersimpan rapi',
+    description: (
+      <>
+        Masuk untuk menyimpan semua hasil pemeriksaan. Pantau kembali kapan
+        saja tanpa memotret ulang kemasan yang sama.
+      </>
+    ),
   },
 ];
 
@@ -37,7 +73,7 @@ export default function FeaturesSection() {
             Fitur Unggulan
           </h2>
           <p className="mt-4 text-lg text-surface-600 dark:text-surface-400">
-            Kemudahan deteksi alergen dalam genggaman Anda
+            Memeriksa kemasan jadi mudah untuk semua orang
           </p>
         </motion.div>
 
