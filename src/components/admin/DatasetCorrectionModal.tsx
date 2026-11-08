@@ -13,6 +13,7 @@ import { api } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { unwrapListApi } from '@/lib/unwrap';
+import { asArray } from '@/lib/json';
 import { useLocale } from '@/contexts/LocaleContext';
 
 export interface DatasetCorrectionPayload {
@@ -41,8 +42,10 @@ interface DatasetCorrectionModalProps {
 const SEVERITIES: AllergenSeverity[] = ['low', 'medium', 'high', 'critical'];
 
 function toRows(item: DatasetItem | null): Row[] {
-  const list = item?.correctedAllergens ?? item?.corrected_allergens ?? [];
-  if (Array.isArray(list) && list.length > 0) {
+  // correctedAllergens dapat berupa string LONGTEXT dari MariaDB — koersi dulu.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const list = asArray<any>(item?.correctedAllergens ?? item?.corrected_allergens ?? []);
+  if (list.length > 0) {
     return list.map((a) => ({
       name: String(a?.name ?? ''),
       severity: (SEVERITIES as string[]).includes(String(a?.severity)) ? (a.severity as AllergenSeverity) : 'medium',

@@ -17,6 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
 import { formatConfidence, formatDateTime, formatMethod, formatModelName, formatResult } from '@/lib/format';
+import { asObject } from '@/lib/json';
 
 export default function AdminDetectionsPage() {
   const { token } = useAuth();
@@ -81,7 +82,7 @@ export default function AdminDetectionsPage() {
     {
       key: 'model', label: t('admin.table.model'),
       render: (item: Detection) => {
-        const raw = item.modelName || (item.rawModelOutput as any)?.model_name;
+        const raw = item.modelName || asObject(item.rawModelOutput)?.model_name;
         return <span className="font-mono text-xs">{raw ? formatModelName(raw) : '—'}</span>;
       },
     },

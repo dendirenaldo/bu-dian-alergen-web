@@ -1,4 +1,5 @@
 import { AllergenSeverity, Detection } from '@/types';
+import { asArray, asObject } from './json';
 
 export interface ResolvedAllergen {
   key: string;
@@ -37,8 +38,9 @@ export function resolveDetectedAllergens(detection: Detection): ResolvedAllergen
     .filter(Boolean) as ResolvedAllergen[];
   if (fromRows.length > 0) return fromRows;
 
-  const raw = (detection.rawModelOutput as any)?.allergens;
-  if (Array.isArray(raw)) {
+  // rawModelOutput dapat berupa string LONGTEXT dari MariaDB — koersi dulu.
+  const raw = asArray((asObject(detection.rawModelOutput) as any)?.allergens);
+  if (raw.length > 0) {
     return raw
       .map((a: any, i: number) => {
         const name = String(a?.name ?? '').trim();

@@ -16,8 +16,9 @@ import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
 import AdminTableSkeleton from '@/components/ui/AdminTableSkeleton';
-import { DatasetItem } from '@/types';
+import { CorrectedAllergenItem, DatasetItem } from '@/types';
 import { api, formatApiErrorMessage } from '@/lib/api';
+import { asArray, asObject } from '@/lib/json';
 import { API_BASE_URL, API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -35,9 +36,14 @@ function productOf(item: DatasetItem): string {
   return String(item.detection?.product?.name ?? '').trim() || '—';
 }
 
+function correctedListOf(item: DatasetItem): CorrectedAllergenItem[] {
+  // correctedAllergens dapat berupa string LONGTEXT dari MariaDB — koersi dulu.
+  return asArray(item.correctedAllergens ?? item.corrected_allergens ?? []);
+}
+
 function avgConfidenceOf(item: DatasetItem): number | null {
-  const list = item.correctedAllergens ?? item.corrected_allergens ?? [];
-  if (!Array.isArray(list) || list.length === 0) return null;
+  const list = correctedListOf(item);
+  if (list.length === 0) return null;
   const nums = list.map((a) => Number(a?.confidence)).filter((n) => Number.isFinite(n));
   if (nums.length === 0) return null;
   return nums.reduce((s, n) => s + n, 0) / nums.length;
@@ -254,7 +260,7 @@ export default function AdminDatasetPage() {
       key: 'model',
       label: t('admin.table.model'),
       render: (item: DatasetItem) => {
-        const raw = item.detection?.modelName ?? (item.detection?.rawModelOutput as { model_name?: string } | undefined)?.model_name;
+        const raw = item.detection?.modelName ?? asObject(item.detection?.rawModelOutput)?.model_name;
         return <span className="font-mono text-xs">{raw ? formatModelName(raw) : '—'}</span>;
       },
     },

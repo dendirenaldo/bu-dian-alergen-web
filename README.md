@@ -1,4 +1,4 @@
-# Bu Dian Web Frontend
+# Allergen Detector Web Frontend
 
 Dashboard web admin dan halaman publik untuk sistem deteksi alergen makanan. Dibangun dengan Next.js 16 dan Tailwind CSS.
 

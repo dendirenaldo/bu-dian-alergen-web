@@ -7,6 +7,7 @@ import { ShieldCheck, ShieldAlert, Clock, Share2 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import AllergenTag from './AllergenTag';
 import { resolveDetectedAllergens } from '@/lib/detection-allergens';
+import { asObject } from '@/lib/json';
 import { useLocale } from '@/contexts/LocaleContext';
 
 interface DetectionResultProps {
@@ -73,9 +74,9 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
               {formatDateTime(detection.createdAt)}
             </span>
             <span>{formatDuration(detection.processingTimeMs)}</span>
-            {(detection.modelName || (detection.rawModelOutput as any)?.model_name) && (
+            {(detection.modelName || asObject(detection.rawModelOutput)?.model_name) && (
               <span className="rounded-md bg-surface-100 px-2 py-0.5 font-mono text-xs dark:bg-surface-800">
-                {formatModelName(detection.modelName || (detection.rawModelOutput as any)?.model_name)}
+                {formatModelName(detection.modelName || asObject(detection.rawModelOutput)?.model_name)}
               </span>
             )}
           </div>

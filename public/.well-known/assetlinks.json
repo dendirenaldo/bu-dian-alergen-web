@@ -1,1 +1,1 @@
-[{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "android_app", "package_name": "com.example.budian_mobile", "sha256_cert_fingerprints": ["GANTI_DENGAN_SHA256_KEYSTORE_PRODUKSI"]}}]
+[{"relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "android_app", "package_name": "com.example.allergen_detector_mobile", "sha256_cert_fingerprints": ["GANTI_DENGAN_SHA256_KEYSTORE_PRODUKSI"]}}]
