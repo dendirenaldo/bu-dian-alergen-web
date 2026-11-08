@@ -16,13 +16,14 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
+import { useTableControls } from '@/hooks/useTableControls';
 import { formatDateTime } from '@/lib/format';
 
 export default function AdminProductsPage() {
   const { token } = useAuth();
   const { toast } = useToast();
   const { t } = useLocale();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { page: currentPage, setPage: setCurrentPage, limit, changeLimit, sort, toggleSort } = useTableControls();
   const [search, setSearch] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -34,7 +35,10 @@ export default function AdminProductsPage() {
     useAdminList<Product>(API_ENDPOINTS.PRODUCTS.LIST, {
       token,
       page: currentPage,
-      limit: 10, onPageClamp: setCurrentPage,
+      limit,
+      sortBy: sort?.key,
+      sortDir: sort?.dir,
+      onPageClamp: setCurrentPage,
       extraParams: search ? `&search=${encodeURIComponent(search)}` : '',
     });
 
@@ -98,6 +102,7 @@ export default function AdminProductsPage() {
   const columns = [
     {
       key: 'name',
+      sortable: true,
       label: t('admin.table.name'),
       render: (item: Product) => <span className="font-medium">{item.name || '—'}</span>,
     },
@@ -115,6 +120,7 @@ export default function AdminProductsPage() {
     },
     {
       key: 'createdAt',
+      sortable: true,
       label: t('admin.table.created'),
       render: (item: Product) => formatDateTime(item.createdAt),
     },
@@ -143,6 +149,10 @@ export default function AdminProductsPage() {
             totalPages={totalPages}
             currentPage={effectivePage}
             onPageChange={setCurrentPage}
+            sort={sort}
+            onSort={toggleSort}
+            limit={limit}
+            onLimitChange={changeLimit}
             onSearch={(q) => {
               setCurrentPage(1);
               setSearch(q);

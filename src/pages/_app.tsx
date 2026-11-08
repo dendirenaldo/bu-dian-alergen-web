@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app';
+import PageLoadingBar from '@/components/shared/PageLoadingBar';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { DetectionProvider } from '@/contexts/DetectionContext';
@@ -24,6 +25,7 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
           font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
         }
       `}</style>
+      <PageLoadingBar />
       <ThemeProvider>
         <LocaleProvider>
           <AppConfigProvider>

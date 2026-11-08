@@ -12,6 +12,9 @@ export const authService = {
   getProfile: (token: string) =>
     api.get<ApiResponse<User>>(API_ENDPOINTS.AUTH.PROFILE, token),
 
+  updateProfile: (data: { name?: string; phone?: string; avatarUrl?: string }, token: string) =>
+    api.put<ApiResponse<User>>(API_ENDPOINTS.AUTH.PROFILE, data, token),
+
   verifyEmail: (token: string) =>
     api.post<VerifyEmailResponse>(API_ENDPOINTS.AUTH.VERIFY_EMAIL, { token }),
 

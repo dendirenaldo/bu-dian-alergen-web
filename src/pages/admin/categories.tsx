@@ -16,6 +16,7 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { unwrapData, unwrapListApi } from '@/lib/unwrap';
+import { useTableControls } from '@/hooks/useTableControls';
 import { useEffect } from 'react';
 
 export default function AdminCategoriesPage() {
@@ -27,6 +28,7 @@ export default function AdminCategoriesPage() {
   const [error, setError] = useState<string | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selected, setSelected] = useState<Category | null>(null);
+  const { sort, toggleSort } = useTableControls();
   const [deleteTarget, setDeleteTarget] = useState<Category | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -35,7 +37,8 @@ export default function AdminCategoriesPage() {
     if (!token) { setIsLoading(false); return; }
     setIsLoading(true); setError(null);
     try {
-      const res = await api.get(API_ENDPOINTS.CATEGORIES.LIST, token);
+      const sortQuery = sort ? `?sortBy=${encodeURIComponent(sort.key)}&sortDir=${sort.dir}` : '';
+      const res = await api.get(`${API_ENDPOINTS.CATEGORIES.LIST}${sortQuery}`, token);
       const u = unwrapListApi<Category>(res);
       setItems(u.items.length ? u.items : (Array.isArray(unwrapData<any>(res)) ? unwrapData<any>(res) : []));
     } catch (err) { setError(formatApiErrorMessage(err, 'api.err.loadFail')); }
@@ -43,7 +46,7 @@ export default function AdminCategoriesPage() {
   };
 
   useEffect(() => { fetchList(); // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, sort]);
 
   const handleCreate = async (data: any) => {
     setIsSaving(true);
@@ -87,13 +90,13 @@ export default function AdminCategoriesPage() {
   };
 
   const columns = [
-    { key: 'name', label: t('admin.table.name'), render: (c: Category) => <span className="font-medium">{c.name || '—'}</span> },
+    { key: 'name', label: t('admin.table.name'), sortable: true, render: (c: Category) => <span className="font-medium">{c.name || '—'}</span> },
     {
-      key: 'slug', label: t('admin.table.slug'),
+      key: 'slug', sortable: true, label: t('admin.table.slug'),
       render: (c: Category) => <span className="font-mono text-xs" title={c.slug || ''}>{c.slug || '—'}</span>,
     },
     {
-      key: 'sortOrder', label: t('admin.table.order'),
+      key: 'sortOrder', sortable: true, label: t('admin.table.order'),
       render: (c: Category) => <span aria-label={`${t('admin.table.order')}: ${c.sortOrder ?? 0}`}>{String(c.sortOrder ?? 0)}</span>,
     },
     { key: 'isActive', label: t('admin.table.status'), render: (c: Category) => <Badge variant={c.isActive === false ? 'default' : 'success'}>{c.isActive === false ? t('admin.status.inactive') : t('admin.status.active')}</Badge> },
@@ -110,7 +113,7 @@ export default function AdminCategoriesPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.categories')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={items} columns={columns} isLoading={isLoading} total={items.length} totalPages={1} currentPage={1}
+          <AdminTable data={items} columns={columns} isLoading={isLoading} total={items.length} totalPages={1} currentPage={1} sort={sort} onSort={toggleSort}
             onAdd={() => { setSelected(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelected(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.categories')} emptyDescription={t('admin.emptyDesc.categories')} addLabel={t('admin.addLabel.categories')} />

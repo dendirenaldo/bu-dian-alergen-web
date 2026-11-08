@@ -6,6 +6,8 @@ interface Options {
   token: string | null;
   page: number;
   limit?: number;
+  sortBy?: string;
+  sortDir?: 'asc' | 'desc';
   extraParams?: string;
   /** false = jangan kirim page/limit (endpoint tanpa paginasi server,
    *  mis. /contents); paginasi dilakukan client-side. Default true. */
@@ -26,7 +28,7 @@ interface Options {
  */
 export function useAdminList<T>(
   endpoint: string,
-  { token, page, limit = 10, extraParams = '', serverPagination = true, onPageClamp }: Options,
+  { token, page, limit = 10, sortBy, sortDir, extraParams = '', serverPagination = true, onPageClamp }: Options,
 ) {
   const [items, setItems] = useState<T[]>([]);
   const [total, setTotal] = useState(0);
@@ -53,9 +55,13 @@ export function useAdminList<T>(
       setFieldErrors({});
       try {
         const sep = endpoint.includes('?') ? '&' : '?';
+        const sortParams = sortBy ? `&sortBy=${encodeURIComponent(sortBy)}&sortDir=${sortDir ?? 'asc'}` : '';
+        const extra = `${sortParams}${extraParams}`;
         const url = serverPagination
-          ? `${endpoint}${sep}page=${pageParam}&limit=${limit}${extraParams}`
-          : `${endpoint}${extraParams ? `${sep}${extraParams.replace(/^&/, '')}` : ''}`;
+          ? `${endpoint}${sep}page=${pageParam}&limit=${limit}${extra}`
+          : extra
+            ? `${endpoint}${sep}${extra.replace(/^&/, '')}`
+            : endpoint;
         const res = await api.get(url, token, ctrl.signal);
         if (requestIdRef.current !== requestId) return; // request basi
         const unwrapped = unwrapListApi<T>(res, pageParam, limit);
@@ -93,7 +99,7 @@ export function useAdminList<T>(
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [endpoint, token, limit, extraParams, serverPagination, onPageClamp],
+    [endpoint, token, limit, sortBy, sortDir, extraParams, serverPagination, onPageClamp],
   );
 
   useEffect(() => {

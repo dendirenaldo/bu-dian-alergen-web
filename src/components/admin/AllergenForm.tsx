@@ -6,7 +6,7 @@ import { Allergen, AllergenSeverity } from '@/types';
 import { validators } from '@/lib/validation';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import Textarea from '@/components/ui/Textarea';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
@@ -81,7 +81,7 @@ export default function AllergenForm({ isOpen, onClose, allergen, onSubmit, isSa
           <Input label={t('admin.form.code')} placeholder={t('admin.form.exCode')} value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value.toUpperCase() })} error={errors.code} required leftIcon={<Code2 className="h-4 w-4" />} helperText={t('admin.form.codeHint')} />
           <Input label={t('admin.form.color')} placeholder="#EF4444" value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })} error={errors.color} leftIcon={<Palette className="h-4 w-4" />} />
         </div>
-        <Select label={t('admin.form.severity')} value={form.severityLevel} onChange={(e) => setForm({ ...form, severityLevel: e.target.value as AllergenSeverity })} options={severityOptions} required />
+        <MenuSelect label={t('admin.form.severity')} value={form.severityLevel} onChange={(e) => setForm({ ...form, severityLevel: e.target.value as AllergenSeverity })} options={severityOptions} required />
         <Textarea label={t('admin.form.description')} placeholder={t('admin.form.descOptional')} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={handleClose} disabled={isSaving}>{t('common.cancel')}</Button>

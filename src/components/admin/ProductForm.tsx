@@ -11,7 +11,7 @@ import { unwrapListApi } from '@/lib/unwrap';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useLocale } from '@/contexts/LocaleContext';
@@ -113,7 +113,7 @@ export default function ProductForm({ isOpen, onClose, product, onSubmit, isSavi
         <Input label={t('admin.form.productName')} placeholder={t('admin.form.exProduct')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} onBlur={(e) => handleBlur('name', e.target.value)} error={errors.name} required leftIcon={<Package className="h-4 w-4" />} />
         <div className="grid grid-cols-2 gap-4">
           <Input label={t('admin.form.slug')} placeholder="indomie-goreng" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} onBlur={(e) => handleBlur('slug', e.target.value)} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} helperText={t('admin.form.slugEmpty')} />
-          <Select label={t('admin.form.category')} value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} options={[{ value: '', label: t('admin.form.noCategory') }, ...categories.map((c) => ({ value: String(c.id), label: c.name }))]} />
+          <MenuSelect label={t('admin.form.category')} value={form.categoryId} onChange={(e) => setForm({ ...form, categoryId: e.target.value })} options={[{ value: '', label: t('admin.form.noCategory') }, ...categories.map((c) => ({ value: String(c.id), label: c.name }))]} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Input label={t('admin.form.brand')} placeholder={t('admin.form.exBrand')} value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} leftIcon={<Tag className="h-4 w-4" />} />

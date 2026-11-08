@@ -1,18 +1,25 @@
 'use client';
 
 import { useState, ReactNode } from 'react';
-import { Plus, Edit2, Trash2, Eye, Search } from 'lucide-react';
+import { Plus, Edit2, Trash2, Eye, Search, ArrowUp, ArrowDown, ChevronsUpDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Skeleton from '@/components/ui/Skeleton';
 import Pagination from '@/components/ui/Pagination';
+import PageSizeSelect from '@/components/ui/PageSizeSelect';
 import EmptyState from '@/components/ui/EmptyState';
 import { useLocale } from '@/contexts/LocaleContext';
+import type { SortState } from '@/hooks/useTableControls';
 
 interface Column<T> {
   key: string;
   label: string;
   render?: (item: T) => ReactNode;
+  /** Kolom dapat diklik untuk sortir server-side. */
+  sortable?: boolean;
+  /** Kunci yang dikirim sebagai sortBy (default = key). */
+  sortKey?: string;
 }
 
 interface AdminTableProps<T> {
@@ -32,6 +39,10 @@ interface AdminTableProps<T> {
   emptyTitle?: string;
   emptyDescription?: string;
   addLabel?: string;
+  sort?: SortState | null;
+  onSort?: (key: string) => void;
+  limit?: number;
+  onLimitChange?: (size: number) => void;
 }
 
 export default function AdminTable<T extends { id: number }>({
@@ -51,6 +62,10 @@ export default function AdminTable<T extends { id: number }>({
   emptyTitle,
   emptyDescription,
   addLabel,
+  sort = null,
+  onSort,
+  limit,
+  onLimitChange,
 }: AdminTableProps<T>) {
   const { t } = useLocale();
   const searchPh = searchPlaceholder ?? t('admin.search.default');
@@ -63,6 +78,9 @@ export default function AdminTable<T extends { id: number }>({
     e.preventDefault();
     onSearch?.(search.trim());
   };
+
+  const showActions = !!(onEdit || onDelete || onView);
+  const showFooter = (total ?? data.length) > 0;
 
   return (
     <div className="space-y-4">
@@ -96,16 +114,48 @@ export default function AdminTable<T extends { id: number }>({
         <table className="w-full">
           <thead>
             <tr className="border-b border-surface-200 bg-surface-50 dark:border-surface-800 dark:bg-surface-900">
-              {columns.map((col) => (
-                <th
-                  key={col.key}
-                  scope="col"
-                  className="px-4 py-3 text-left text-sm font-medium text-surface-600 dark:text-surface-400"
-                >
-                  {col.label}
-                </th>
-              ))}
-              {(onEdit || onDelete || onView) && (
+              {columns.map((col) => {
+                const sortId = col.sortKey ?? col.key;
+                const active = sort?.key === sortId;
+                const ariaSort = !col.sortable || !onSort ? undefined : !active ? 'none' : sort.dir === 'asc' ? 'ascending' : 'descending';
+                return (
+                  <th
+                    key={col.key}
+                    scope="col"
+                    aria-sort={ariaSort as 'none' | 'ascending' | 'descending' | undefined}
+                    className="px-4 py-3 text-left text-sm font-medium text-surface-600 dark:text-surface-400"
+                  >
+                    {col.sortable && onSort ? (
+                      <button
+                        type="button"
+                        onClick={() => onSort(col.sortKey ?? col.key)}
+                        title={active ? (sort.dir === 'asc' ? t('table.sortAsc') : t('table.sortDesc')) : t('table.sortNone')}
+                        aria-label={`${col.label}: ${active ? (sort.dir === 'asc' ? t('table.sortAsc') : t('table.sortDesc')) : t('table.sortNone')}`}
+                        className="group inline-flex items-center gap-1.5 rounded-md transition-colors hover:text-surface-900 dark:hover:text-surface-100"
+                      >
+                        <span>{col.label}</span>
+                        <span
+                          className={cn(
+                            'transition-all duration-150',
+                            active ? 'text-primary-600 dark:text-primary-400' : 'text-surface-400 opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100'
+                          )}
+                        >
+                          {!active || sort === null ? (
+                            <ChevronsUpDown className="h-3.5 w-3.5" aria-hidden="true" />
+                          ) : sort.dir === 'asc' ? (
+                            <ArrowUp className="h-3.5 w-3.5" aria-hidden="true" />
+                          ) : (
+                            <ArrowDown className="h-3.5 w-3.5" aria-hidden="true" />
+                          )}
+                        </span>
+                      </button>
+                    ) : (
+                      col.label
+                    )}
+                  </th>
+                );
+              })}
+              {showActions && (
                 <th scope="col" className="px-4 py-3 text-right text-sm font-medium text-surface-600 dark:text-surface-400">
                   {t('admin.table.action')}
                 </th>
@@ -121,7 +171,7 @@ export default function AdminTable<T extends { id: number }>({
                       <Skeleton width="6rem" height="1rem" />
                     </td>
                   ))}
-                  {(onEdit || onDelete || onView) && (
+                  {showActions && (
                     <td className="px-4 py-3">
                       <Skeleton width="4rem" height="1rem" />
                     </td>
@@ -130,7 +180,7 @@ export default function AdminTable<T extends { id: number }>({
               ))
             ) : data.length === 0 ? (
               <tr>
-                <td colSpan={columns.length + (onEdit || onDelete || onView ? 1 : 0)} className="px-4 py-4">
+                <td colSpan={columns.length + (showActions ? 1 : 0)} className="px-4 py-4">
                   <EmptyState
                     title={emptyT}
                     description={emptyD}
@@ -151,7 +201,7 @@ export default function AdminTable<T extends { id: number }>({
                         : (item as any)[col.key]}
                     </td>
                   ))}
-                  {(onEdit || onDelete || onView) && (
+                  {showActions && (
                     <td className="px-4 py-3 text-right">
                       <div className="flex items-center justify-end gap-1">
                         {onView && (
@@ -194,12 +244,19 @@ export default function AdminTable<T extends { id: number }>({
         </table>
       </div>
 
-      {totalPages > 1 && onPageChange && (
+      {showFooter && (
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-sm text-surface-500 dark:text-surface-400">
-            {t('admin.table.pageInfo', { total: total ?? data.length, page: currentPage, pages: totalPages })}
-          </p>
-          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+          <div className="flex items-center gap-4">
+            <p className="text-sm text-surface-500 dark:text-surface-400">
+              {t('admin.table.pageInfo', { total: total ?? data.length, page: currentPage, pages: totalPages })}
+            </p>
+            {onLimitChange && limit !== undefined && (
+              <PageSizeSelect value={limit} onChange={onLimitChange} />
+            )}
+          </div>
+          {totalPages > 1 && onPageChange && (
+            <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={onPageChange} />
+          )}
         </div>
       )}
     </div>

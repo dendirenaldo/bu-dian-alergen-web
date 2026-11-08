@@ -9,7 +9,7 @@ import Breadcrumb from '@/components/ui/Breadcrumb';
 import Alert from '@/components/ui/Alert';
 import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import Button from '@/components/ui/Button';
 import DetailSkeleton from '@/components/ui/DetailSkeleton';
 import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
@@ -95,7 +95,7 @@ export default function AdminSettingsPage() {
                   )}
                   <div className="grid gap-3 sm:grid-cols-[1fr_160px]">
                     <Input label={t('admin.settings.value')} value={editing[s.key]?.value ?? ''} onChange={(e) => setEditing((p) => ({ ...p, [s.key]: { ...p[s.key], value: e.target.value } }))} required />
-                    <Select label={t('admin.settings.type')} value={editing[s.key]?.type ?? 'string'} onChange={(e) => setEditing((p) => ({ ...p, [s.key]: { ...p[s.key], type: e.target.value } }))} options={[{ value: 'string', label: t('admin.settings.text') }, { value: 'number', label: t('admin.settings.number') }, { value: 'boolean', label: t('admin.settings.boolean') }, { value: 'json', label: t('admin.settings.json') }]} required />
+                    <MenuSelect label={t('admin.settings.type')} value={editing[s.key]?.type ?? 'string'} onChange={(e) => setEditing((p) => ({ ...p, [s.key]: { ...p[s.key], type: e.target.value } }))} options={[{ value: 'string', label: t('admin.settings.text') }, { value: 'number', label: t('admin.settings.number') }, { value: 'boolean', label: t('admin.settings.boolean') }, { value: 'json', label: t('admin.settings.json') }]} required />
                   </div>
                   <div className="mt-3">
                     <Input label={t('admin.settings.desc')} value={editing[s.key]?.description ?? ''} onChange={(e) => setEditing((p) => ({ ...p, [s.key]: { ...p[s.key], description: e.target.value } }))} />

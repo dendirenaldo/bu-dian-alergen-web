@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import Alert from '@/components/ui/Alert';
 import { DatasetEstimate } from '@/types';
 import { api, formatApiErrorMessage } from '@/lib/api';
@@ -190,7 +190,7 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
           </Alert>
         )}
         <div className="grid grid-cols-2 gap-4">
-          <Select
+          <MenuSelect
             label={t('dataset.filterStatus')}
             value={status}
             onChange={(e) => setStatus(e.target.value)}
@@ -200,7 +200,7 @@ export default function DatasetDownloadModal({ isOpen, onClose }: DatasetDownloa
               { value: 'verified', label: t('dataset.statusVerified') },
             ]}
           />
-          <Select
+          <MenuSelect
             label={t('dataset.filterLabel')}
             value={label}
             onChange={(e) => setLabel(e.target.value)}

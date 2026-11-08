@@ -7,7 +7,8 @@ import { validators } from '@/lib/validation';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
+import { CalendarPicker } from '@/components/ui/CalendarPicker';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useLocale } from '@/contexts/LocaleContext';
@@ -16,7 +17,7 @@ interface CmsEditorProps {
   isOpen: boolean;
   onClose: () => void;
   content?: Content | null;
-  onSubmit: (data: { title: string; slug?: string; body?: string; excerpt?: string; type: ContentType; status: ContentStatus }) => Promise<void>;
+  onSubmit: (data: { title: string; slug?: string; body?: string; excerpt?: string; type: ContentType; status: ContentStatus; publishedAt?: string }) => Promise<void>;
   isSaving?: boolean;
 }
 
@@ -33,17 +34,17 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving
     { value: 'published', label: t('admin.contentStatus.published') },
     { value: 'archived', label: t('admin.contentStatus.archived') },
   ];
-  const [form, setForm] = useState({ title: '', slug: '', body: '', excerpt: '', type: 'page' as ContentType, status: 'draft' as ContentStatus });
+  const [form, setForm] = useState({ title: '', slug: '', body: '', excerpt: '', type: 'page' as ContentType, status: 'draft' as ContentStatus, publishedAt: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const dirty = useMemo(() => [form.title, form.slug, form.body, form.excerpt, form.type !== 'page', form.status !== 'draft'].some((v) => v === true || (typeof v === 'string' && v !== '')), [form]);
+  const dirty = useMemo(() => [form.title, form.slug, form.body, form.excerpt, form.publishedAt, form.type !== 'page', form.status !== 'draft'].some((v) => v === true || (typeof v === 'string' && v !== '')), [form]);
   const guard = useUnsavedGuard(isOpen && dirty && !isSaving);
 
   useEffect(() => {
     if (content) {
-      setForm({ title: content.title || '', slug: content.slug || '', body: content.body || '', excerpt: content.excerpt || '', type: content.type || 'page', status: content.status || 'draft' });
+      setForm({ title: content.title || '', slug: content.slug || '', body: content.body || '', excerpt: content.excerpt || '', type: content.type || 'page', status: content.status || 'draft', publishedAt: String(content.publishedAt || '').slice(0, 10) });
     } else {
-      setForm({ title: '', slug: '', body: '', excerpt: '', type: 'page', status: 'draft' });
+      setForm({ title: '', slug: '', body: '', excerpt: '', type: 'page', status: 'draft', publishedAt: '' });
     }
     setErrors({});
   }, [content, isOpen]);
@@ -68,6 +69,7 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving
       excerpt: form.excerpt.trim() || undefined,
       type: form.type,
       status: form.status,
+      publishedAt: form.publishedAt ? `${form.publishedAt}T00:00:00` : undefined,
     });
   };
 
@@ -85,8 +87,11 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving
           <Input label={t('admin.form.slug')} placeholder="judul-konten" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} error={errors.slug} helperText={t('admin.form.slugHint')} leftIcon={<Link2 className="h-4 w-4" />} />
         </div>
         <div className="grid grid-cols-2 gap-4">
-          <Select label={t('admin.form.type')} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as ContentType })} options={typeOptions} required />
-          <Select label={t('admin.form.status')} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatus })} options={statusOptions} required />
+          <MenuSelect label={t('admin.form.type')} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as ContentType })} options={typeOptions} required />
+          <MenuSelect label={t('admin.form.status')} value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value as ContentStatus })} options={statusOptions} required />
+        </div>
+        <div className="max-w-xs">
+          <CalendarPicker label={t('admin.form.publishAt')} value={form.publishedAt} onChange={(date) => setForm({ ...form, publishedAt: date })} clearable helperText={t('admin.form.publishAtHint')} />
         </div>
         <Textarea label={t('admin.form.summary')} placeholder={t('admin.form.summaryOptional')} value={form.excerpt} onChange={(e) => setForm({ ...form, excerpt: e.target.value })} rows={2} />
         <Textarea label={t('admin.form.content')} placeholder={t('admin.form.contentPh')} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} rows={8} />

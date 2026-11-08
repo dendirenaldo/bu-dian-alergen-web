@@ -16,6 +16,7 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
+import { useTableControls } from '@/hooks/useTableControls';
 import { formatConfidence, formatDateTime, formatMethod, formatModelName, formatResult } from '@/lib/format';
 import { asObject } from '@/lib/json';
 
@@ -23,7 +24,7 @@ export default function AdminDetectionsPage() {
   const { token } = useAuth();
   const { toast } = useToast();
   const { t, locale } = useLocale();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { page: currentPage, setPage: setCurrentPage, limit, changeLimit, sort, toggleSort } = useTableControls();
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
   const timerRef = useRef<number | undefined>(undefined);
@@ -43,7 +44,7 @@ export default function AdminDetectionsPage() {
 
   const extra = debounced ? `&search=${encodeURIComponent(debounced)}` : '';
   const { items: detections, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
-    useAdminList<Detection>(API_ENDPOINTS.DETECTIONS.ADMIN_ALL, { token, page: currentPage, limit: 10, extraParams: extra, onPageClamp: setCurrentPage });
+    useAdminList<Detection>(API_ENDPOINTS.DETECTIONS.ADMIN_ALL, { token, page: currentPage, limit, sortBy: sort?.key, sortDir: sort?.dir, extraParams: extra, onPageClamp: setCurrentPage });
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -66,7 +67,7 @@ export default function AdminDetectionsPage() {
   };
 
   const columns = [
-    { key: 'id', label: t('admin.table.id'), render: (item: Detection) => <span className="font-mono text-xs">#{item.id}</span> },
+    { key: 'id', label: t('admin.table.id'), sortable: true, render: (item: Detection) => <span className="font-mono text-xs">#{item.id}</span> },
     {
       key: 'owner', label: locale === 'id' ? 'Pengguna' : 'User',
       render: (item: Detection) => (
@@ -77,7 +78,7 @@ export default function AdminDetectionsPage() {
       ),
     },
     { key: 'product', label: t('admin.table.product'), render: (item: Detection) => <span className="font-medium">{item.product?.name || (item.ocrText ? `${String(item.ocrText).slice(0, 30)}…` : '—')}</span> },
-    { key: 'result', label: t('admin.table.result'), render: (item: Detection) => <Badge variant={item.result === 'safe' ? 'success' : 'danger'}>{formatResult(item.result)}</Badge> },
+    { key: 'result', label: t('admin.table.result'), sortable: true, render: (item: Detection) => <Badge variant={item.result === 'safe' ? 'success' : 'danger'}>{formatResult(item.result)}</Badge> },
     { key: 'confidenceScore', label: t('admin.table.confidence'), render: (item: Detection) => <span>{formatConfidence(item.confidenceScore)}</span> },
     {
       key: 'model', label: t('admin.table.model'),
@@ -87,7 +88,7 @@ export default function AdminDetectionsPage() {
       },
     },
     { key: 'detectionMethod', label: t('admin.table.method'), render: (d: Detection) => <span className="text-xs">{d.detectionMethod ? formatMethod(d.detectionMethod) : '—'}</span> },
-    { key: 'createdAt', label: t('admin.table.date'), render: (item: Detection) => formatDateTime(item.createdAt) },
+    { key: 'createdAt', label: t('admin.table.date'), sortable: true, render: (item: Detection) => formatDateTime(item.createdAt) },
   ];
 
   return (
@@ -109,7 +110,7 @@ export default function AdminDetectionsPage() {
             />
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
+          <AdminTable data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onView={setSelectedDetection} onDelete={setDeleteTarget}
             emptyTitle={t('admin.emptyTitle.detections')} emptyDescription={t('admin.emptyDesc.detections')} />
           {selectedDetection && <DetectionDetail detection={selectedDetection} onClose={() => setSelectedDetection(null)} />}

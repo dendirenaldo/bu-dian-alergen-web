@@ -11,9 +11,8 @@ import Breadcrumb from '@/components/ui/Breadcrumb';
 import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
-import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
 import AdminTableSkeleton from '@/components/ui/AdminTableSkeleton';
 import { CorrectedAllergenItem, DatasetItem } from '@/types';
@@ -23,6 +22,7 @@ import { API_BASE_URL, API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
+import { useTableControls } from '@/hooks/useTableControls';
 import { formatConfidence, formatDateTime, formatMethod, formatModelName, formatResult } from '@/lib/format';
 
 type StatusFilter = '' | 'draft' | 'verified';
@@ -58,7 +58,7 @@ export default function AdminDatasetPage() {
   const { token } = useAuth();
   const { toast } = useToast();
   const { t } = useLocale();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { page: currentPage, setPage: setCurrentPage, limit, changeLimit, sort, toggleSort } = useTableControls();
   const [search, setSearch] = useState('');
   const [debounced, setDebounced] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('');
@@ -101,7 +101,9 @@ export default function AdminDatasetPage() {
     useAdminList<DatasetItem>(API_ENDPOINTS.DATASET.LIST, {
       token,
       page: currentPage,
-      limit: 10,
+      limit,
+      sortBy: sort?.key,
+      sortDir: sort?.dir,
       extraParams: extra,
       onPageClamp: setCurrentPage,
     });
@@ -220,10 +222,12 @@ export default function AdminDatasetPage() {
   const columns = [
     {
       key: 'no',
+      sortKey: 'id',
+      sortable: true,
       label: t('admin.table.no'),
       render: (item: DatasetItem) => {
         const idx = items.indexOf(item);
-        return <span className="font-mono text-xs">{(effectivePage - 1) * 10 + idx + 1}</span>;
+        return <span className="font-mono text-xs">{(effectivePage - 1) * limit + idx + 1}</span>;
       },
     },
     {
@@ -241,6 +245,7 @@ export default function AdminDatasetPage() {
     },
     {
       key: 'goldLabel',
+      sortable: true,
       label: t('admin.table.goldLabel'),
       render: (item: DatasetItem) => {
         const g = item.goldLabel ?? item.gold_label ?? 'safe';
@@ -249,6 +254,7 @@ export default function AdminDatasetPage() {
     },
     {
       key: 'status',
+      sortable: true,
       label: t('admin.table.status'),
       render: (item: DatasetItem) => (
         <Badge variant={item.status === 'verified' ? 'success' : 'warning'}>
@@ -282,6 +288,7 @@ export default function AdminDatasetPage() {
     },
     {
       key: 'createdAt',
+      sortable: true,
       label: t('admin.table.date'),
       render: (item: DatasetItem) => formatDateTime(item.createdAt),
     },
@@ -326,7 +333,7 @@ export default function AdminDatasetPage() {
                 />
               </div>
               <div className="w-full sm:w-44">
-                <Select
+                <MenuSelect
                   label={t('dataset.filterStatus')}
                   value={statusFilter}
                   onChange={(e) => {
@@ -341,7 +348,7 @@ export default function AdminDatasetPage() {
                 />
               </div>
               <div className="w-full sm:w-44">
-                <Select
+                <MenuSelect
                   label={t('dataset.filterLabel')}
                   value={labelFilter}
                   onChange={(e) => {
@@ -379,7 +386,13 @@ export default function AdminDatasetPage() {
                 columns={columns}
                 isLoading={isLoading}
                 total={total}
-                totalPages={1}
+                totalPages={totalPages}
+                currentPage={effectivePage}
+                onPageChange={setCurrentPage}
+                sort={sort}
+                onSort={toggleSort}
+                limit={limit}
+                onLimitChange={changeLimit}
                 onEdit={(item) => {
                   setModalError(null);
                   setCorrectTarget(item);
@@ -388,12 +401,6 @@ export default function AdminDatasetPage() {
                 emptyTitle={t('admin.emptyTitle.dataset')}
                 emptyDescription={t('admin.emptyDesc.dataset')}
               />
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-surface-500 dark:text-surface-400">
-                  {t('admin.table.pageInfo', { total, page: effectivePage, pages: totalPages })}
-                </p>
-                <Pagination currentPage={effectivePage} totalPages={totalPages} onPageChange={setCurrentPage} />
-              </div>
             </>
           )}
 

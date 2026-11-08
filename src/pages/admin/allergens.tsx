@@ -16,6 +16,7 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
+import { useTableControls } from '@/hooks/useTableControls';
 import { formatSeverity } from '@/lib/format';
 
 const severityVariant = (s: string): 'danger' | 'warning' | 'info' | 'default' => {
@@ -29,7 +30,7 @@ export default function AdminAllergensPage() {
   const { token } = useAuth();
   const { toast } = useToast();
   const { t } = useLocale();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { page: currentPage, setPage: setCurrentPage, limit, changeLimit, sort, toggleSort } = useTableControls();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedAllergen, setSelectedAllergen] = useState<Allergen | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Allergen | null>(null);
@@ -37,7 +38,7 @@ export default function AdminAllergensPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const { items: allergens, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
-    useAdminList<Allergen>(API_ENDPOINTS.ALLERGENS.LIST, { token, page: currentPage, limit: 10, onPageClamp: setCurrentPage });
+    useAdminList<Allergen>(API_ENDPOINTS.ALLERGENS.LIST, { token, page: currentPage, limit, sortBy: sort?.key, sortDir: sort?.dir, onPageClamp: setCurrentPage });
 
   const handleCreate = async (data: any) => {
     setError(null); setIsSaving(true);
@@ -81,9 +82,9 @@ export default function AdminAllergensPage() {
   };
 
   const columns = [
-    { key: 'name', label: t('admin.table.name'), render: (item: Allergen) => <span className="font-medium">{item.name || '—'}</span> },
-    { key: 'code', label: t('admin.table.code'), render: (a: Allergen) => <span className="font-mono text-xs">{a.code || '—'}</span> },
-    { key: 'severityLevel', label: t('admin.table.severity'), render: (item: Allergen) => <Badge variant={severityVariant(item.severityLevel)}>{item.severityLevel ? formatSeverity(item.severityLevel) : '—'}</Badge> },
+    { key: 'name', label: t('admin.table.name'), sortable: true, render: (item: Allergen) => <span className="font-medium">{item.name || '—'}</span> },
+    { key: 'code', label: t('admin.table.code'), sortable: true, render: (a: Allergen) => <span className="font-mono text-xs">{a.code || '—'}</span> },
+    { key: 'severityLevel', label: t('admin.table.severity'), sortable: true, render: (item: Allergen) => <Badge variant={severityVariant(item.severityLevel)}>{item.severityLevel ? formatSeverity(item.severityLevel) : '—'}</Badge> },
     { key: 'color', label: t('admin.table.color'), render: (a: Allergen) => a.color ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 rounded-full border" style={{ backgroundColor: a.color }} /><span className="font-mono text-xs">{a.color}</span></span> : '—' },
     { key: 'isActive', label: t('admin.table.status'), render: (item: Allergen) => <Badge variant={item.isActive === false ? 'default' : 'success'}>{item.isActive === false ? t('admin.status.inactive') : t('admin.status.active')}</Badge> },
   ];
@@ -99,7 +100,7 @@ export default function AdminAllergensPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.allergens')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
-          <AdminTable data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
+          <AdminTable data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedAllergen(null); setIsFormOpen(true); }}
             onEdit={(a) => { setSelectedAllergen(a); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.allergens')} emptyDescription={t('admin.emptyDesc.allergens')} addLabel={t('admin.addLabel.allergens')} />

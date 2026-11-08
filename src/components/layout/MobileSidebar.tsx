@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { ChevronLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppName, useAppInitials } from '@/contexts/AppConfigContext';
@@ -29,6 +30,8 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     { href: '/admin/settings', label: t('sidebar.settings'), icon: Settings },
   ];
 
+  const reduce = useReducedMotion();
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -45,12 +48,24 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 lg:hidden">
-      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in-0 duration-200" onClick={onClose} />
-      <aside className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-surface-950 shadow-xl animate-in slide-in-from-left duration-200">
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <motion.div
+            initial={reduce ? undefined : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.aside
+            initial={reduce ? undefined : { x: '-100%' }}
+            animate={{ x: 0 }}
+            exit={reduce ? undefined : { x: '-100%' }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed inset-y-0 left-0 w-72 bg-white dark:bg-surface-950 shadow-xl">
         <div className="flex h-16 items-center justify-between border-b border-surface-200 px-4 dark:border-surface-800">
           <Link href="/admin" onClick={onClose} className="flex min-w-0 flex-1 items-center gap-2">
             <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white font-bold text-sm">{appInitials}</div>
@@ -102,7 +117,9 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
             <span>{t('sidebar.backToSite')}</span>
           </Link>
         </div>
-      </aside>
-    </div>
+          </motion.aside>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

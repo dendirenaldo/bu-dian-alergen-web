@@ -16,6 +16,7 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
+import { useTableControls } from '@/hooks/useTableControls';
 import { formatDateTime } from '@/lib/format';
 
 export default function AdminCmsPage() {
@@ -24,7 +25,7 @@ export default function AdminCmsPage() {
   const { t } = useLocale();
   const typeLabel = (type: string) => ({ page: t('admin.type.page'), article: t('admin.type.article'), announcement: t('admin.type.announcement') } as any)[type] ?? type;
   const statusLabel = (s: string) => ({ draft: t('admin.contentStatus.draft'), published: t('admin.contentStatus.published'), archived: t('admin.contentStatus.archived') } as any)[s] ?? s;
-  const [currentPage, setCurrentPage] = useState(1);
+  const { page: currentPage, setPage: setCurrentPage, limit, changeLimit, sort, toggleSort } = useTableControls();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedContent, setSelectedContent] = useState<Content | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Content | null>(null);
@@ -32,7 +33,7 @@ export default function AdminCmsPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const { items: contents, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
-    useAdminList<Content>(API_ENDPOINTS.CONTENTS.LIST, { token, page: currentPage, limit: 10, onPageClamp: setCurrentPage, serverPagination: false });
+    useAdminList<Content>(API_ENDPOINTS.CONTENTS.LIST, { token, page: currentPage, limit, sortBy: sort?.key, sortDir: sort?.dir, onPageClamp: setCurrentPage, serverPagination: false });
 
   const missingLegalSlugs = ['terms', 'privacy'].filter(
     (slug) => !contents.some((c) => c.slug === slug),
@@ -80,11 +81,11 @@ export default function AdminCmsPage() {
   };
 
   const columns = [
-    { key: 'title', label: t('admin.table.title'), render: (item: Content) => <span className="font-medium">{item.title || '—'}</span> },
+    { key: 'title', label: t('admin.table.title'), sortable: true, render: (item: Content) => <span className="font-medium">{item.title || '—'}</span> },
     { key: 'type', label: t('admin.table.type'), render: (item: Content) => <Badge variant="info">{typeLabel(item.type)}</Badge> },
-    { key: 'status', label: t('admin.table.status'), render: (item: Content) => <Badge variant={item.status === 'published' ? 'success' : item.status === 'draft' ? 'warning' : 'default'}>{statusLabel(item.status)}</Badge> },
-    { key: 'publishedAt', label: t('admin.table.publish'), render: (c: Content) => (c as any).publishedAt ? formatDateTime((c as any).publishedAt) : '—' },
-    { key: 'createdAt', label: t('admin.table.created'), render: (item: Content) => formatDateTime(item.createdAt) },
+    { key: 'status', label: t('admin.table.status'), sortable: true, render: (item: Content) => <Badge variant={item.status === 'published' ? 'success' : item.status === 'draft' ? 'warning' : 'default'}>{statusLabel(item.status)}</Badge> },
+    { key: 'publishedAt', label: t('admin.table.publish'), sortable: true, render: (c: Content) => (c as any).publishedAt ? formatDateTime((c as any).publishedAt) : '—' },
+    { key: 'createdAt', label: t('admin.table.created'), sortable: true, render: (item: Content) => formatDateTime(item.createdAt) },
   ];
 
   return (
@@ -103,7 +104,7 @@ export default function AdminCmsPage() {
               {t('admin.cms.legalHint')} ({missingLegalSlugs.join(', ')})
             </Alert>
           )}
-          <AdminTable data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
+          <AdminTable data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedContent(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelectedContent(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.cms')} emptyDescription={t('admin.emptyDesc.cms')} addLabel={t('admin.addLabel.cms')} />

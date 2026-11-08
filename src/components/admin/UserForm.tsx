@@ -7,7 +7,7 @@ import { validators } from '@/lib/validation';
 import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import PasswordStrength from '@/components/auth/PasswordStrength';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import Button from '@/components/ui/Button';
 import { useUnsavedGuard } from '@/hooks/useUnsavedGuard';
 import { useLocale } from '@/contexts/LocaleContext';
@@ -90,7 +90,7 @@ export default function UserForm({ isOpen, onClose, user, onSubmit, isSaving = f
         <Input label={t('admin.form.name')} placeholder="Nama lengkap" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} error={errors.name} required autoComplete="name" leftIcon={<UserIcon className="h-4 w-4" />} />
         <Input label={t('admin.form.email')} type="email" placeholder="nama@email.com" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} error={errors.email} required autoComplete="email" leftIcon={<Mail className="h-4 w-4" />} />
         <Input label={t('admin.form.phone')} placeholder={t('admin.form.exPhone')} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} error={errors.phone} autoComplete="tel" leftIcon={<Phone className="h-4 w-4" />} inputMode="tel" />
-        <Select label={t('admin.form.role')} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'user' })} options={roleOptions} required />
+        <MenuSelect label={t('admin.form.role')} value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value as 'admin' | 'user' })} options={roleOptions} required />
         <Input label={user ? t('admin.form.newPassword') : t('admin.form.password')} type="password" placeholder={user ? t('admin.form.passwordEmpty') : t('admin.form.passwordHint')} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} error={errors.password} required={!user} autoComplete="new-password" leftIcon={<Lock className="h-4 w-4" />} helperText={t('admin.form.passwordHint')} />
         {form.password && <PasswordStrength password={form.password} />}
         <div className="flex justify-end gap-3 pt-2">

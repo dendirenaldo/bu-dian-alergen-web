@@ -1,10 +1,12 @@
+import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { Menu, Settings, LogOut, KeyRound } from 'lucide-react';
+import { Menu, Settings, LogOut, KeyRound, User } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import LocaleToggle from '@/components/shared/LocaleToggle';
 import Dropdown from '@/components/ui/Dropdown';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 interface TopbarProps {
   onToggleSidebar: () => void;
@@ -14,18 +16,26 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
   const { user, logout } = useAuth();
   const { t } = useLocale();
   const router = useRouter();
+  const [pendingLogout, setPendingLogout] = useState(false);
 
   const roleLabel = user?.role === 'admin' ? t('topbar.roleAdmin') : t('topbar.roleUser');
 
   const handleSelect = (id: string) => {
-    if (id === 'change-password') {
+    if (id === 'profile') {
+      router.push('/profile');
+    } else if (id === 'change-password') {
       router.push('/profile/password');
     } else if (id === 'settings') {
       router.push('/admin/settings');
     } else if (id === 'logout') {
-      logout();
-      router.push('/login');
+      setPendingLogout(true);
     }
+  };
+
+  const handleConfirmLogout = () => {
+    setPendingLogout(false);
+    logout();
+    router.push('/login');
   };
 
   return (
@@ -76,10 +86,21 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
               label: `${user?.name || 'User'} • ${roleLabel}`,
               disabled: true,
             },
+            { id: 'profile', label: t('topbar.profile'), icon: <User className="h-4 w-4" /> },
             { id: 'settings', label: t('topbar.settings'), icon: <Settings className="h-4 w-4" /> },
             { id: 'change-password', label: t('topbar.changePassword'), icon: <KeyRound className="h-4 w-4" /> },
             { id: 'logout', label: t('topbar.logout'), icon: <LogOut className="h-4 w-4" />, danger: true },
           ]}
+        />
+        <ConfirmDialog
+          isOpen={pendingLogout}
+          onClose={() => setPendingLogout(false)}
+          onConfirm={handleConfirmLogout}
+          title={t('topbar.logoutConfirmTitle')}
+          description={t('topbar.logoutConfirmDesc')}
+          confirmLabel={t('topbar.logout')}
+          cancelLabel={t('common.cancel')}
+          variant="danger"
         />
       </div>
     </header>

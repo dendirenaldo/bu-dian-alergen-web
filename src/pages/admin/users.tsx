@@ -10,7 +10,7 @@ import Breadcrumb from '@/components/ui/Breadcrumb';
 import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { User } from '@/types';
 import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
@@ -18,6 +18,7 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
+import { useTableControls } from '@/hooks/useTableControls';
 import { formatDateTime } from '@/lib/format';
 
 type VerifiedFilter = '' | 'true' | 'false';
@@ -26,7 +27,7 @@ export default function AdminUsersPage() {
   const { token } = useAuth();
   const { toast } = useToast();
   const { t } = useLocale();
-  const [currentPage, setCurrentPage] = useState(1);
+  const { page: currentPage, setPage: setCurrentPage, limit, changeLimit, sort, toggleSort } = useTableControls();
   const [verifiedFilter, setVerifiedFilter] = useState<VerifiedFilter>('');
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -39,7 +40,9 @@ export default function AdminUsersPage() {
     useAdminList<User>(API_ENDPOINTS.USERS.LIST, {
       token,
       page: currentPage,
-      limit: 10,
+      limit,
+      sortBy: sort?.key,
+      sortDir: sort?.dir,
       onPageClamp: setCurrentPage,
       extraParams: verifiedFilter ? `&verified=${verifiedFilter}` : '',
     });
@@ -126,9 +129,9 @@ export default function AdminUsersPage() {
   };
 
   const columns = [
-    { key: 'name', label: t('admin.table.name'), render: (item: User) => <span className="font-medium">{item.name || '—'}</span> },
-    { key: 'email', label: t('admin.table.email'), render: (item: User) => item.email || '—' },
-    { key: 'role', label: t('admin.table.role'), render: (item: User) => <Badge variant={item.role === 'admin' ? 'primary' : 'default'}>{item.role === 'admin' ? t('admin.form.roleAdmin') : t('admin.form.roleUser')}</Badge> },
+    { key: 'name', label: t('admin.table.name'), sortable: true, render: (item: User) => <span className="font-medium">{item.name || '—'}</span> },
+    { key: 'email', label: t('admin.table.email'), sortable: true, render: (item: User) => item.email || '—' },
+    { key: 'role', label: t('admin.table.role'), sortable: true, render: (item: User) => <Badge variant={item.role === 'admin' ? 'primary' : 'default'}>{item.role === 'admin' ? t('admin.form.roleAdmin') : t('admin.form.roleUser')}</Badge> },
     {
       key: 'emailVerified',
       label: t('users.verified.title'),
@@ -159,7 +162,7 @@ export default function AdminUsersPage() {
       ),
     },
     { key: 'isActive', label: t('admin.table.status'), render: (item: User) => <Badge variant={item.isActive === false ? 'default' : 'success'}>{item.isActive === false ? t('admin.status.inactive') : t('admin.status.active')}</Badge> },
-    { key: 'createdAt', label: t('admin.table.created'), render: (item: User) => formatDateTime(item.createdAt) },
+    { key: 'createdAt', label: t('admin.table.created'), sortable: true, render: (item: User) => formatDateTime(item.createdAt) },
   ];
 
   return (
@@ -174,7 +177,7 @@ export default function AdminUsersPage() {
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
           <div className="max-w-xs">
-            <Select
+            <MenuSelect
               label={t('users.verified.filter')}
               value={verifiedFilter}
               onChange={(e) => {
@@ -188,7 +191,7 @@ export default function AdminUsersPage() {
               ]}
             />
           </div>
-          <AdminTable data={users} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
+          <AdminTable data={users} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedUser(null); setIsFormOpen(true); }}
             onEdit={(user) => { setSelectedUser(user); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.users')} emptyDescription={t('admin.emptyDesc.users')} addLabel={t('admin.addLabel.users')} />

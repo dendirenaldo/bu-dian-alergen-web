@@ -16,6 +16,7 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<string>;
   resendVerification: (email: string) => Promise<string>;
   logout: () => void;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -115,6 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         verifyEmail,
         resendVerification,
         logout,
+        setUser,
       }}
     >
       {children}

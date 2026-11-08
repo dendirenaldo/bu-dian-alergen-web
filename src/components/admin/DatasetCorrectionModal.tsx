@@ -6,7 +6,7 @@ import Modal from '@/components/ui/Modal';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Textarea from '@/components/ui/Textarea';
-import Select from '@/components/ui/Select';
+import MenuSelect from '@/components/ui/MenuSelect';
 import Alert from '@/components/ui/Alert';
 import { Allergen, AllergenSeverity, DatasetItem } from '@/types';
 import { api } from '@/lib/api';
@@ -282,7 +282,7 @@ export default function DatasetCorrectionModal({
                   error={errors[`allergen.${i}.name`]}
                 />
               </div>
-              <Select
+              <MenuSelect
                 label={i === 0 ? t('dataset.severity') : ''}
                 value={r.severity}
                 onChange={(e) => updateRow(i, { severity: e.target.value as AllergenSeverity })}
@@ -330,7 +330,7 @@ export default function DatasetCorrectionModal({
           rows={2}
         />
         <div className="max-w-xs">
-          <Select
+          <MenuSelect
             label={t('dataset.status')}
             value={status}
             onChange={(e) => setStatus(e.target.value as 'draft' | 'verified')}
