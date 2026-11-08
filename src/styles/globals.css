@@ -14,6 +14,45 @@
   }
 }
 
+/* Transisi warna dark/light mode yang halus di seluruh permukaan.
+ * Utilitas Tailwind eksplisit (transition-colors/transition-all/transition-transform
+ * dsb.) tetap menang karena selektor `*` berspesifisitas lebih rendah. */
+@media (prefers-reduced-motion: no-preference) {
+  *,
+  *::before,
+  *::after {
+    transition-property: background-color, border-color, color, fill, stroke;
+    transition-duration: 150ms;
+    transition-timing-function: ease;
+  }
+}
+
+/* NProgress: bar tipis warna primer tanpa spinner. */
+#nprogress {
+  pointer-events: none;
+}
+#nprogress .bar {
+  background: #2563eb;
+  height: 3px;
+  position: fixed;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+html.dark #nprogress .bar {
+  background: #60a5fa;
+}
+#nprogress .peg {
+  box-shadow: 0 0 10px #2563eb, 0 0 5px #2563eb;
+}
+html.dark #nprogress .peg {
+  box-shadow: 0 0 10px #60a5fa, 0 0 5px #60a5fa;
+}
+#nprogress .spinner {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

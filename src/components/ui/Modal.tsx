@@ -2,6 +2,7 @@
 
 import { HTMLAttributes, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { X } from 'lucide-react';
 
@@ -41,15 +42,7 @@ export default function Modal({
   onCloseRef.current = onClose;
   const wasOpenRef = useRef(false);
   const modalIdRef = useRef(0);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (isOpen) {
-      const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
-    }
-    setVisible(false);
-  }, [isOpen]);
+  const reduce = useReducedMotion();
 
   useEffect(() => {
     if (!isOpen) return;
@@ -110,59 +103,71 @@ export default function Modal({
     }
   };
 
-  if (!isOpen) return null;
   if (typeof document === 'undefined') return null;
 
+  const anim = reduce
+    ? {}
+    : {
+        initial: { opacity: 0, scale: 0.95, y: 8 },
+        animate: { opacity: 1, scale: 1, y: 0 },
+        exit: { opacity: 0, scale: 0.95, y: 8 },
+        transition: { duration: 0.2, ease: 'easeOut' } as const,
+      };
+
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div
-        className={cn(
-          'fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-200',
-          visible ? 'opacity-100' : 'opacity-0'
-        )}
-        onClick={onClose}
-      />
-      <div
-        ref={modalRef}
-        onKeyDown={handleKeyDown}
-        className={cn(
-          'relative z-50 w-full rounded-2xl bg-white p-6 shadow-xl',
-          'dark:bg-surface-900',
-          'mx-4',
-          'transition-all duration-200',
-          visible ? 'opacity-100 scale-100 translate-y-0' : 'opacity-0 scale-95 translate-y-2',
-          sizes[size],
-          className
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={title ? 'modal-title' : undefined}
-        aria-label={!title ? ariaLabel : undefined}
-      >
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            {title && (
-              <h2 id="modal-title" className="text-lg font-semibold text-surface-900 dark:text-surface-100">
-                {title}
-              </h2>
-            )}
-            {description && (
-              <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
-                {description}
-              </p>
-            )}
-          </div>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <motion.div
+            initial={reduce ? undefined : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={reduce ? undefined : { opacity: 0 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
             onClick={onClose}
-            aria-label="Close"
-            className="rounded-lg p-1 text-surface-400 hover:text-surface-600 hover:bg-surface-100 dark:hover:text-surface-300 dark:hover:bg-surface-800 transition-colors"
+          />
+          <motion.div
+            {...anim}
+            ref={modalRef}
+            onKeyDown={handleKeyDown}
+            className={cn(
+              'relative z-50 w-full rounded-2xl bg-white p-6 shadow-xl',
+              'dark:bg-surface-900',
+              'mx-4',
+              sizes[size],
+              className
+            )}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={title ? 'modal-title' : undefined}
+            aria-label={!title ? ariaLabel : undefined}
           >
-            <X className="h-5 w-5" />
-          </button>
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                {title && (
+                  <h2 id="modal-title" className="text-lg font-semibold text-surface-900 dark:text-surface-100">
+                    {title}
+                  </h2>
+                )}
+                {description && (
+                  <p className="mt-1 text-sm text-surface-500 dark:text-surface-400">
+                    {description}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={onClose}
+                aria-label="Close"
+                className="rounded-lg p-1 text-surface-400 hover:text-surface-600 hover:bg-surface-100 dark:hover:text-surface-300 dark:hover:bg-surface-800 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            {children}
+          </motion.div>
         </div>
-        {children}
-      </div>
-    </div>,
+      )}
+    </AnimatePresence>,
     document.body
   );
 }
