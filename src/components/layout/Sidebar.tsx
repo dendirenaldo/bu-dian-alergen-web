@@ -1,7 +1,7 @@
 import { ReactNode, useState } from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { ChevronLeft, LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings } from 'lucide-react';
+import { ChevronLeft, LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings, Database } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppName, useAppInitials } from '@/contexts/AppConfigContext';
 import { useLocale } from '@/contexts/LocaleContext';
@@ -23,6 +23,7 @@ export default function Sidebar({ isCollapsed = false, onCollapse }: SidebarProp
     { href: '/admin/categories', label: t('sidebar.categories'), icon: Tags },
     { href: '/admin/allergens', label: t('sidebar.allergens'), icon: AlertTriangle },
     { href: '/admin/detections', label: t('sidebar.detections'), icon: ScanSearch },
+    { href: '/admin/dataset', label: t('sidebar.dataset'), icon: Database },
     { href: '/admin/users', label: t('sidebar.users'), icon: Users },
     { href: '/admin/cms', label: t('sidebar.cms'), icon: FileText },
     { href: '/admin/settings', label: t('sidebar.settings'), icon: Settings },

@@ -63,6 +63,16 @@ export const API_ENDPOINTS = {
     RECENT: '/api/v1/dashboard/recent',
     TREND: '/api/v1/dashboard/trend',
   },
+  DATASET: {
+    LIST: '/api/v1/dataset-items',
+    DETAIL: (id: number) => `/api/v1/dataset-items/${id}`,
+    UPSERT_FROM_DETECTION: (detectionId: number) => `/api/v1/detections/admin/dataset/${detectionId}`,
+    VERIFY: (id: number) => `/api/v1/dataset-items/${id}/verify`,
+    UNVERIFY: (id: number) => `/api/v1/dataset-items/${id}/unverify`,
+    EXPORT: '/api/v1/dataset-items/export',
+    DOWNLOAD: '/api/v1/dataset-items/download',
+    ESTIMATE: '/api/v1/dataset-items/download/estimate',
+  },
 };
 
 export const APP_NAME = 'Allergen Detector';

@@ -173,3 +173,49 @@ export interface DashboardStats {
   safeCount: number;
   unsafeCount: number;
 }
+
+export type DatasetStatus = 'draft' | 'verified';
+export type DatasetGoldLabel = 'safe' | 'unsafe';
+
+export interface CorrectedAllergenItem {
+  name: string;
+  severity: AllergenSeverity;
+  confidence: number;
+}
+
+export interface DatasetItem {
+  id: number;
+  detectionId?: number | null;
+  detection_id?: number | null;
+  source?: string;
+  ocrText?: string | null;
+  ocr_text?: string | null;
+  correctedText?: string | null;
+  corrected_text?: string | null;
+  goldLabel: DatasetGoldLabel;
+  gold_label?: DatasetGoldLabel;
+  correctedAllergens?: CorrectedAllergenItem[] | null;
+  corrected_allergens?: CorrectedAllergenItem[] | null;
+  status: DatasetStatus;
+  verifiedBy?: number | null;
+  verified_by?: number | null;
+  verifiedAt?: string | null;
+  verified_at?: string | null;
+  notes?: string | null;
+  detection?: Detection | null;
+  verifier?: Pick<User, 'id' | 'name' | 'email' | 'role'> | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+export interface DatasetEstimate {
+  bytes: number;
+  fileCount: number;
+  breakdown?: {
+    datasetCsv?: { bytes: number; rows: number };
+    manifestCsv?: { bytes: number; rows: number };
+    images?: { bytes: number; count: number; missing?: number };
+    splitJson?: { bytes: number };
+    readmeTxt?: { bytes: number };
+  };
+}
