@@ -10,9 +10,9 @@ const stepLabels = ['Info Pribadi', 'Kredensial', 'Konfirmasi'];
 export default function StepIndicator({ currentStep, totalSteps }: StepIndicatorProps) {
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between" role="list" aria-label={`Langkah ${currentStep} dari ${totalSteps}`}>
         {Array.from({ length: totalSteps }, (_, i) => i + 1).map((step) => (
-          <div key={step} className="flex items-center">
+          <div key={step} className="flex items-center" role="listitem" aria-current={step === currentStep ? 'step' : undefined} aria-label={`Langkah ${step} dari ${totalSteps}: ${stepLabels[step - 1]}`}>
             <div className="flex flex-col items-center">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-medium transition-colors ${
