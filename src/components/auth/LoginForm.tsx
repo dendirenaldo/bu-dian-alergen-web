@@ -9,6 +9,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Alert from '@/components/ui/Alert';
 import { validators } from '@/lib/validation';
+import { formatApiErrorMessage } from '@/lib/api';
 import { useLocale } from '@/contexts/LocaleContext';
 
 export default function LoginForm() {
@@ -58,8 +59,8 @@ export default function LoginForm() {
     try {
       const user = await login(form.email, form.password);
       router.push(user?.role === 'admin' ? '/admin' : '/detect');
-    } catch (err: any) {
-      setApiError(err.message || 'Login gagal. Silakan coba lagi.');
+    } catch (err) {
+      setApiError(formatApiErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
@@ -94,6 +95,15 @@ export default function LoginForm() {
         required
         autoComplete="current-password"
       />
+
+      <div className="flex items-center justify-end">
+        <Link
+          href="/forgot-password"
+          className="text-sm font-medium text-primary-600 hover:text-primary-700 dark:text-primary-400"
+        >
+          {t('auth.forgotLink')}
+        </Link>
+      </div>
 
       <Button type="submit" isLoading={isLoading} className="w-full">
         Login

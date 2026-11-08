@@ -15,9 +15,6 @@ interface ModalProps extends HTMLAttributes<HTMLDivElement> {
   ariaLabel?: string;
 }
 
-// Stack id modal terbuka (khusus modal bersarang, mis. dialog konfirmasi
-// di dalam form): hanya modal teratas (terakhir dibuka) yang menangani
-// Escape, dan body overflow hanya dipulihkan saat tumpukan kosong.
 const openModalStack: number[] = [];
 let modalSeq = 0;
 
@@ -60,7 +57,6 @@ export default function Modal({
     modalIdRef.current = myId;
     openModalStack.push(myId);
     const handleEscape = (e: KeyboardEvent) => {
-      // Hanya modal teratas yang merespons Escape (hindari dobel-tutup).
       if (e.key === 'Escape' && openModalStack[openModalStack.length - 1] === myId) {
         e.stopPropagation();
         onCloseRef.current();
@@ -76,9 +72,6 @@ export default function Modal({
     };
   }, [isOpen]);
 
-  // Fokus awal HANYA saat transisi tertutup -> terbuka, ke input pertama
-  // (bukan tombol close). onClose sengaja tidak masuk deps agar keystroke
-  // di form tidak memicu efek ini ulang.
   useEffect(() => {
     const wasOpen = wasOpenRef.current;
     wasOpenRef.current = isOpen;
@@ -118,8 +111,6 @@ export default function Modal({
   };
 
   if (!isOpen) return null;
-  // Portal ke body: backdrop fixed tidak terjepit transform ancestor
-  // (mis. animasi scale pada dialog induk) dan z-index konsisten.
   if (typeof document === 'undefined') return null;
 
   return createPortal(

@@ -2,6 +2,7 @@
 
 import { AllergenSeverity } from '@/types';
 import { cn } from '@/lib/utils';
+import { formatConfidence, formatSeverity } from '@/lib/format';
 
 interface AllergenTagProps {
   name: string;
@@ -27,8 +28,9 @@ export default function AllergenTag({ name, severity, confidence }: AllergenTagP
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
       {name}
+      <span className="text-xs opacity-70">• {formatSeverity(severity)}</span>
       {confidence !== undefined && (
-        <span className="text-xs opacity-70">({Math.round(confidence * 100)}%)</span>
+        <span className="text-xs opacity-70">({formatConfidence(confidence)})</span>
       )}
     </span>
   );

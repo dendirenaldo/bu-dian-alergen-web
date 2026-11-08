@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 interface StepConfirmationProps {
   data: {
     name: string;
@@ -50,13 +52,23 @@ export default function StepConfirmation({
         />
         <span className="text-sm text-surface-600 dark:text-surface-400">
           Saya menyetujui{' '}
-          <span className="font-medium text-primary-600 dark:text-primary-400">
+          <Link
+            href="/terms"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary-600 dark:text-primary-400"
+          >
             Syarat &amp; Ketentuan
-          </span>{' '}
+          </Link>{' '}
           dan{' '}
-          <span className="font-medium text-primary-600 dark:text-primary-400">
+          <Link
+            href="/privacy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-primary-600 dark:text-primary-400"
+          >
             Kebijakan Privasi
-          </span>
+          </Link>
         </span>
       </label>
       {errors.terms && (

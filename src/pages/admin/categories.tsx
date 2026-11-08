@@ -11,7 +11,7 @@ import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Category } from '@/types';
-import { api, newIdempotencyKey } from '@/lib/api';
+import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
@@ -38,7 +38,7 @@ export default function AdminCategoriesPage() {
       const res = await api.get(API_ENDPOINTS.CATEGORIES.LIST, token);
       const u = unwrapListApi<Category>(res);
       setItems(u.items.length ? u.items : (Array.isArray(unwrapData<any>(res)) ? unwrapData<any>(res) : []));
-    } catch (err: any) { setError(err.message || t('api.err.loadFail')); }
+    } catch (err) { setError(formatApiErrorMessage(err, 'api.err.loadFail')); }
     finally { setIsLoading(false); }
   };
 
@@ -50,7 +50,12 @@ export default function AdminCategoriesPage() {
     try {
       await api.post(API_ENDPOINTS.CATEGORIES.LIST, data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.created')); setIsFormOpen(false); fetchList();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
   const handleUpdate = async (data: any) => {
@@ -59,7 +64,12 @@ export default function AdminCategoriesPage() {
     try {
       await api.put(API_ENDPOINTS.CATEGORIES.DETAIL(selected.id), data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.updated')); setIsFormOpen(false); setSelected(null); fetchList();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
   const handleDelete = async () => {
@@ -68,14 +78,24 @@ export default function AdminCategoriesPage() {
     try {
       await api.delete(API_ENDPOINTS.CATEGORIES.DETAIL(deleteTarget.id), token!);
       toast(t('toast.deleted')); setDeleteTarget(null); fetchList();
-    } catch (err: any) { setError(err.message || t('toast.failed')); }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+    }
     finally { setIsDeleting(false); }
   };
 
   const columns = [
-    { key: 'name', label: t('admin.table.name'), render: (c: Category) => <span className="font-medium">{c.name}</span> },
-    { key: 'slug', label: t('admin.table.slug'), render: (c: Category) => <span className="font-mono text-xs">{c.slug}</span> },
-    { key: 'sortOrder', label: t('admin.table.order'), render: (c: Category) => String(c.sortOrder ?? 0) },
+    { key: 'name', label: t('admin.table.name'), render: (c: Category) => <span className="font-medium">{c.name || '—'}</span> },
+    {
+      key: 'slug', label: t('admin.table.slug'),
+      render: (c: Category) => <span className="font-mono text-xs" title={c.slug || ''}>{c.slug || '—'}</span>,
+    },
+    {
+      key: 'sortOrder', label: t('admin.table.order'),
+      render: (c: Category) => <span aria-label={`${t('admin.table.order')}: ${c.sortOrder ?? 0}`}>{String(c.sortOrder ?? 0)}</span>,
+    },
     { key: 'isActive', label: t('admin.table.status'), render: (c: Category) => <Badge variant={c.isActive === false ? 'default' : 'success'}>{c.isActive === false ? t('admin.status.inactive') : t('admin.status.active')}</Badge> },
   ];
 

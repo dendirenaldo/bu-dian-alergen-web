@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { Upload, Image as ImageIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import Skeleton from '@/components/ui/Skeleton';
 import { useLocale } from '@/contexts/LocaleContext';
 
 interface ImageUploaderProps {
@@ -32,6 +33,7 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
         return;
       }
       const reader = new FileReader();
+      reader.onerror = () => setError(t('upload.loadFail'));
       reader.onload = (e) => setPreview(e.target?.result as string);
       reader.readAsDataURL(file);
       onImageSelect(file);
@@ -60,7 +62,11 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
     return (
       <div className="relative">
         <div className="relative h-80 w-full overflow-hidden rounded-xl border border-surface-200 dark:border-surface-700">
-          <Image src={preview} alt={t('upload.previewAlt')} fill className="object-contain" unoptimized sizes="100vw" />
+          {isProcessing ? (
+            <Skeleton width="100%" height="100%" variant="rectangular" aria-label={t('common.loading')} />
+          ) : (
+            <Image src={preview} alt={t('upload.previewAlt')} fill className="object-contain" unoptimized sizes="100vw" />
+          )}
         </div>
         <button
           onClick={clearPreview}
@@ -90,7 +96,7 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
       >
         <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-100 dark:bg-surface-800">
           {isProcessing ? (
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-200 border-t-primary-600" />
+            <Skeleton variant="circular" width="2rem" height="2rem" aria-label={t('common.loading')} />
           ) : (
             <Upload className="h-8 w-8 text-surface-400" />
           )}

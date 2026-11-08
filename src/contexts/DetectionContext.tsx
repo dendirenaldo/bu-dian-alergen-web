@@ -1,6 +1,6 @@
 import { createContext, useContext, useRef, useState, useCallback, ReactNode, useEffect } from 'react';
 import { Detection, DetectionModelChoice, PublicQuota } from '@/types';
-import { api, newIdempotencyKey } from '@/lib/api';
+import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { ApiResponse } from '@/types';
 import { unwrapData } from '@/lib/unwrap';
@@ -20,7 +20,6 @@ function getAnonId(): string | undefined {
 
 function newUuid(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID();
-  // Fallback RFC4122 v4 manual (valid UUID, bukan Date.now-random).
   const r = () => Math.floor(Math.random() * 16).toString(16);
   return `xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx`.replace(/[xy]/g, (c) => {
     const v = c === 'x' ? parseInt(r(), 16) : (parseInt(r(), 16) & 0x3) | 0x8;
@@ -43,6 +42,8 @@ interface DetectionContextType {
   selectedModel: DetectionModelChoice;
   setSelectedModel: (m: DetectionModelChoice) => void;
   quota: PublicQuota | null;
+  /** Pesan error non-blokir saat kuota tamu gagal dimuat. */
+  quotaError: string | null;
   refreshQuota: () => Promise<void>;
   detectFromText: (text: string, model?: DetectionModelChoice) => Promise<Detection>;
   detectFromImage: (file: File, model?: DetectionModelChoice) => Promise<Detection>;
@@ -57,6 +58,7 @@ export function DetectionProvider({ children }: { children: ReactNode }) {
   const [isDetecting, setIsDetecting] = useState(false);
   const [selectedModel, setSelectedModelState] = useState<DetectionModelChoice>(DEFAULT_MODEL);
   const [quota, setQuota] = useState<PublicQuota | null>(null);
+  const [quotaError, setQuotaError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const { token } = useAuth();
 
@@ -75,15 +77,21 @@ export function DetectionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const refreshQuota = useCallback(async () => {
-    if (token) { setQuota(null); return; }
+    if (token) { setQuota(null); setQuotaError(null); return; }
     try {
       const anonId = ensureAnonId();
       const res = await api.get<{ data: PublicQuota } | PublicQuota>(
         API_ENDPOINTS.DETECTIONS.PUBLIC_QUOTA, undefined, undefined, anonId,
       );
       const q = (res as any)?.data ?? res;
-      if (typeof q?.remaining === 'number') setQuota(q as PublicQuota);
-    } catch { /* kuota gagal dimuat: jangan blokir deteksi */ }
+      if (typeof q?.remaining === 'number') {
+        setQuota(q as PublicQuota);
+        setQuotaError(null);
+      }
+    } catch (err) {
+      // Non-blokir: deteksi tetap jalan, tapi tampilkan pesan agar tidak gagal diam-diam.
+      setQuotaError(formatApiErrorMessage(err));
+    }
   }, [token]);
 
   useEffect(() => {
@@ -103,7 +111,6 @@ export function DetectionProvider({ children }: { children: ReactNode }) {
         signal: opts.signal, idempotencyKey: newIdempotencyKey(), isFormData: opts.isFormData, anonId: opts.anonId,
       });
     } catch (err: any) {
-      // Model bert/ensemble belum tersedia di server (503) → coba sekali dengan bilstm.
       if (model !== 'bilstm' && err?.statusCode === 503) {
         return await api.post<ApiResponse<Detection>>(url('bilstm'), body, token || undefined, {
           signal: opts.signal, idempotencyKey: newIdempotencyKey(), isFormData: opts.isFormData, anonId: opts.anonId,
@@ -158,7 +165,7 @@ export function DetectionProvider({ children }: { children: ReactNode }) {
   const cancelDetection = useCallback(() => { abortRef.current?.abort(); }, []);
 
   return (
-    <DetectionContext.Provider value={{ currentDetection, isDetecting, selectedModel, setSelectedModel, quota, refreshQuota, detectFromText, detectFromImage, cancelDetection, setCurrentDetection }}>
+    <DetectionContext.Provider value={{ currentDetection, isDetecting, selectedModel, setSelectedModel, quota, quotaError, refreshQuota, detectFromText, detectFromImage, cancelDetection, setCurrentDetection }}>
       {children}
     </DetectionContext.Provider>
   );

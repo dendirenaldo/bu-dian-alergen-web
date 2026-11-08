@@ -1,4 +1,3 @@
-// Auth types
 export interface User {
   id: number;
   name: string;
@@ -29,7 +28,6 @@ export interface AuthResponse {
   };
 }
 
-// Product types
 export interface Product {
   id: number;
   name: string;
@@ -51,7 +49,6 @@ export interface Ingredient {
   text: string;
 }
 
-// Category types
 export interface Category {
   id: number;
   name: string;
@@ -62,7 +59,6 @@ export interface Category {
   isActive: boolean;
 }
 
-// Allergen types
 export type AllergenSeverity = 'low' | 'medium' | 'high' | 'critical';
 
 export interface Allergen {
@@ -76,7 +72,6 @@ export interface Allergen {
   isActive: boolean;
 }
 
-// Detection types
 export type DetectionMethod = 'image_ocr' | 'text_input';
 export type DetectionResultType = 'safe' | 'unsafe';
 export type DetectionModelChoice = 'bilstm' | 'bert' | 'ensemble';
@@ -113,7 +108,6 @@ export interface PublicQuota {
   used: number;
 }
 
-// Content types (CMS)
 export type ContentType = 'page' | 'article' | 'announcement';
 export type ContentStatus = 'draft' | 'published' | 'archived';
 
@@ -132,7 +126,6 @@ export interface Content {
   createdAt: string;
 }
 
-// API types
 export interface ApiResponse<T> {
   data: T;
 }

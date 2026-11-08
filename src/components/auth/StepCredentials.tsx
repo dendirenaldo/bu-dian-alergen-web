@@ -2,6 +2,7 @@
 
 import { Mail, Lock } from 'lucide-react';
 import Input from '@/components/ui/Input';
+import PasswordStrength from './PasswordStrength';
 import { validators } from '@/lib/validation';
 import { useLocale } from '@/contexts/LocaleContext';
 
@@ -53,6 +54,7 @@ export default function StepCredentials({ data, errors, onChange, onError }: Ste
         autoComplete="new-password"
         required
       />
+      <PasswordStrength password={data.password} />
       <Input
         label={t('auth.form.confirmPassword')}
         type="password"

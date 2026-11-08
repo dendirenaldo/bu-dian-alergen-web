@@ -8,7 +8,7 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
 import { unwrapData, unwrapListApi } from '@/lib/unwrap';
-import { formatDateTime } from '@/lib/utils';
+import { formatDateTime, formatResult } from '@/lib/format';
 import Badge from '@/components/ui/Badge';
 import EmptyState from '@/components/ui/EmptyState';
 import Skeleton from '@/components/ui/Skeleton';
@@ -47,7 +47,7 @@ export default function RecentActivity({ limit = 5 }: { limit?: number }) {
             <p className="truncate text-sm font-medium text-surface-900 dark:text-surface-100">{detection.product?.name || t('admin.detectText')}</p>
             <p className="text-xs text-surface-500 dark:text-surface-400">{formatDateTime(detection.createdAt)}</p>
           </div>
-          <Badge variant={detection.result === 'safe' ? 'success' : 'danger'}>{detection.result === 'safe' ? t('admin.safe') : t('admin.unsafe')}</Badge>
+          <Badge variant={detection.result === 'safe' ? 'success' : 'danger'}>{formatResult(detection.result)}</Badge>
         </Link>
       ))}
     </div>

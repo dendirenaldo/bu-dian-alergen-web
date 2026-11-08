@@ -11,11 +11,12 @@ import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Allergen } from '@/types';
-import { api, newIdempotencyKey } from '@/lib/api';
+import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
+import { formatSeverity } from '@/lib/format';
 
 const severityVariant = (s: string): 'danger' | 'warning' | 'info' | 'default' => {
   if (s === 'critical') return 'danger';
@@ -23,7 +24,6 @@ const severityVariant = (s: string): 'danger' | 'warning' | 'info' | 'default' =
   if (s === 'medium') return 'info';
   return 'default';
 };
-const severityLabel = (s: string, t: (key: string) => string) => ({ low: t('admin.severity.low'), medium: t('admin.severity.medium'), high: t('admin.severity.high'), critical: t('admin.severity.critical') } as any)[s] ?? s;
 
 export default function AdminAllergensPage() {
   const { token } = useAuth();
@@ -44,7 +44,12 @@ export default function AdminAllergensPage() {
     try {
       await api.post(API_ENDPOINTS.ALLERGENS.LIST, data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.created')); setIsFormOpen(false); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
   const handleUpdate = async (data: any) => {
@@ -53,7 +58,12 @@ export default function AdminAllergensPage() {
     try {
       await api.put(API_ENDPOINTS.ALLERGENS.DETAIL(selectedAllergen.id), data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.updated')); setIsFormOpen(false); setSelectedAllergen(null); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
   const handleDelete = async () => {
@@ -62,14 +72,18 @@ export default function AdminAllergensPage() {
     try {
       await api.delete(API_ENDPOINTS.ALLERGENS.DETAIL(deleteTarget.id), token!);
       toast(t('toast.deleted')); setDeleteTarget(null); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+    }
     finally { setIsDeleting(false); }
   };
 
   const columns = [
-    { key: 'name', label: t('admin.table.name'), render: (item: Allergen) => <span className="font-medium">{item.name}</span> },
-    { key: 'code', label: t('admin.table.code'), render: (a: Allergen) => <span className="font-mono text-xs">{a.code}</span> },
-    { key: 'severityLevel', label: t('admin.table.severity'), render: (item: Allergen) => <Badge variant={severityVariant(item.severityLevel)}>{severityLabel(item.severityLevel, t)}</Badge> },
+    { key: 'name', label: t('admin.table.name'), render: (item: Allergen) => <span className="font-medium">{item.name || '—'}</span> },
+    { key: 'code', label: t('admin.table.code'), render: (a: Allergen) => <span className="font-mono text-xs">{a.code || '—'}</span> },
+    { key: 'severityLevel', label: t('admin.table.severity'), render: (item: Allergen) => <Badge variant={severityVariant(item.severityLevel)}>{item.severityLevel ? formatSeverity(item.severityLevel) : '—'}</Badge> },
     { key: 'color', label: t('admin.table.color'), render: (a: Allergen) => a.color ? <span className="inline-flex items-center gap-2"><span className="h-4 w-4 rounded-full border" style={{ backgroundColor: a.color }} /><span className="font-mono text-xs">{a.color}</span></span> : '—' },
     { key: 'isActive', label: t('admin.table.status'), render: (item: Allergen) => <Badge variant={item.isActive === false ? 'default' : 'success'}>{item.isActive === false ? t('admin.status.inactive') : t('admin.status.active')}</Badge> },
   ];

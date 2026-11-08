@@ -53,8 +53,6 @@ export function useUnsavedGuard(dirty: boolean, message?: string) {
       onConfirmExtraRef.current = null;
       router.push(url).finally(() => setIsConfirming(false));
     } else {
-      // Dipicu dari tombol close modal (bukan navigasi): tutup modal induk
-      // + reset form via callback yang diberikan Dialog.
       const extra = onConfirmExtraRef.current;
       onConfirmExtraRef.current = null;
       try {
@@ -70,7 +68,6 @@ export function useUnsavedGuard(dirty: boolean, message?: string) {
       <ConfirmDialog
         isOpen={showDialog}
         onClose={() => {
-          // Batal: hanya tutup popup, modal induk TETAP terbuka.
           setShowDialog(false);
           pendingUrl.current = null;
           onConfirmExtraRef.current = null;

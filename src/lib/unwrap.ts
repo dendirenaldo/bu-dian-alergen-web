@@ -8,14 +8,10 @@ export interface UnwrappedList<T> {
 }
 
 export function unwrapListApi<T>(res: any, fallbackPage = 1, fallbackLimit = 10): UnwrappedList<T> {
-  // Bentuk fetch (api.ts pakai fetch): res SUDAH body backend
-  // { data: [...], total, page, limit, totalPages, meta? }.
-  // Bentuk axios lama: { data: { data: [...], ... } }. Kenali keduanya.
   const body =
     res && Array.isArray(res.data) && typeof res.total === 'number'
       ? res
       : (res?.data ?? res);
-  // Paginated: { data: [], total, page, limit, totalPages, meta? }
   if (body && Array.isArray(body.data)) {
     const meta = body.meta ?? {};
     const total = Number(body.total ?? meta.total ?? body.data.length ?? 0);
@@ -24,11 +20,9 @@ export function unwrapListApi<T>(res: any, fallbackPage = 1, fallbackLimit = 10)
     const totalPages = Number(body.totalPages ?? meta.totalPages ?? (limit ? Math.ceil(total / limit) : 1));
     return { items: body.data as T[], total, page, limit, totalPages: totalPages || 1 };
   }
-  // Array mentah
   if (Array.isArray(body)) {
     return { items: body as T[], total: body.length, page: 1, limit: body.length || fallbackLimit, totalPages: 1 };
   }
-  // { data: {...} } tunggal
   if (body && typeof body === 'object' && 'data' in body && !Array.isArray((body as any).data)) {
     return { items: [], total: 0, page: fallbackPage, limit: fallbackLimit, totalPages: 1 };
   }

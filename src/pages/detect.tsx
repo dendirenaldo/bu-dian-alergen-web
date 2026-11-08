@@ -11,6 +11,7 @@ import Alert from '@/components/ui/Alert';
 import Card from '@/components/ui/Card';
 import { useLocale } from '@/contexts/LocaleContext';
 import { DetectionModelChoice } from '@/types';
+import { formatApiErrorMessage } from '@/lib/api';
 
 const MODELS: { value: DetectionModelChoice; label: string; descId: string; descEn: string }[] = [
   { value: 'bert', label: 'BERT', descId: 'Akurasi tertinggi', descEn: 'Highest accuracy' },
@@ -21,7 +22,7 @@ const MODELS: { value: DetectionModelChoice; label: string; descId: string; desc
 export default function DetectPage() {
   const { t, locale } = useLocale();
   const { token, isLoading: authLoading } = useAuth();
-  const { isDetecting, currentDetection, detectFromImage, detectFromText, selectedModel, setSelectedModel, quota } = useDetection();
+  const { isDetecting, currentDetection, detectFromImage, detectFromText, selectedModel, setSelectedModel, quota, quotaError } = useDetection();
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'image' | 'text'>('image');
   const [text, setText] = useState('');
@@ -30,8 +31,8 @@ export default function DetectPage() {
     setError('');
     try {
       await detectFromImage(file);
-    } catch (err: any) {
-      setError(err.message || t('api.err.failed'));
+    } catch (err) {
+      setError(formatApiErrorMessage(err));
     }
   };
 
@@ -39,8 +40,8 @@ export default function DetectPage() {
     setError('');
     try {
       await detectFromText(text);
-    } catch (err: any) {
-      setError(err.message || t('api.err.failed'));
+    } catch (err) {
+      setError(formatApiErrorMessage(err));
     }
   };
 
@@ -65,6 +66,11 @@ export default function DetectPage() {
                   {quota
                     ? t('detect.guestQuota', { limit: quota.limit ?? 5, remaining: quota.remaining })
                     : t('detect.guestQuotaNoCount', { limit: 5 })}
+                </p>
+              )}
+              {!authLoading && !token && quotaError && (
+                <p role="alert" className="mt-2 text-sm text-amber-600 dark:text-amber-400">
+                  {quotaError}
                 </p>
               )}
             </div>

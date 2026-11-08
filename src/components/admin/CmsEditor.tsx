@@ -82,7 +82,7 @@ export default function CmsEditor({ isOpen, onClose, content, onSubmit, isSaving
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <Input label={t('admin.form.title')} placeholder="Judul konten" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} error={errors.title} required leftIcon={<Heading3 className="h-4 w-4" />} />
-          <Input label={t('admin.form.slug')} placeholder="judul-konten" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} error={errors.slug} leftIcon={<Link2 className="h-4 w-4" />} />
+          <Input label={t('admin.form.slug')} placeholder="judul-konten" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} error={errors.slug} helperText={t('admin.form.slugHint')} leftIcon={<Link2 className="h-4 w-4" />} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Select label={t('admin.form.type')} value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as ContentType })} options={typeOptions} required />

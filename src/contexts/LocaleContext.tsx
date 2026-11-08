@@ -34,23 +34,17 @@ function readSavedLocale(): Locale | null {
 const LocaleContext = createContext<{ locale: Locale; setLocale: (l: Locale) => void; t: TFunction } | undefined>(undefined);
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
-  // Render PERTAMA selalu 'id' di server DAN client (hydration identik —
-  // tanpa React mismatch). Locale tersimpan dipulihkan SETELAH mount.
   const [locale, setLocaleState] = useState<Locale>('id');
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
     try {
       window.localStorage.setItem(STORAGE_KEY, l);
-      // Cookie juga diset agar konsisten dengan inisiasi _document dan
-      // siap dipakai SSR di masa depan.
       document.cookie = `${STORAGE_KEY}=${l}; path=/; max-age=31536000; SameSite=Lax`;
     } catch {
       /* storage unavailable (private mode) — memory only */
     }
   }, []);
   useEffect(() => {
-    // Restore setelah hydration: server & client render pertama identik ('id'),
-    // baru di efek ini state diselaraskan dengan pilihan pengguna.
     const saved = readSavedLocale();
     if (saved && saved !== 'id') setLocaleState(saved);
   }, []);

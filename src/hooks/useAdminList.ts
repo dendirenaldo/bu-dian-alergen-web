@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, newIdempotencyKey } from '@/lib/api';
+import { api, formatApiErrorMessage, isApiError, newIdempotencyKey } from '@/lib/api';
 import { unwrapListApi } from '@/lib/unwrap';
-import { tr } from '@/lib/i18n';
 
 interface Options {
   token: string | null;
@@ -34,6 +33,7 @@ export function useAdminList<T>(
   const [totalPages, setTotalPages] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const requestIdRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const clampedRef = useRef(false); // cegah loop clamp yang sama berulang
@@ -50,6 +50,7 @@ export function useAdminList<T>(
       abortRef.current = ctrl;
       setIsLoading(true);
       setError(null);
+      setFieldErrors({});
       try {
         const sep = endpoint.includes('?') ? '&' : '?';
         const url = serverPagination
@@ -65,7 +66,6 @@ export function useAdminList<T>(
           setTotal(unwrapped.total);
           setTotalPages(unwrapped.totalPages || 1);
         } else {
-          // Paginasi client-side: API mengembalikan semua item sekaligus.
           const all = unwrapped.items;
           const pages = Math.max(1, Math.ceil(all.length / limit));
           effective = Math.min(pageParam, pages);
@@ -73,8 +73,6 @@ export function useAdminList<T>(
           setTotal(all.length);
           setTotalPages(pages);
         }
-        // Page melebihi total (mis. hapus item terakhir) -> clamp:
-        // beri tahu parent, lalu refetch sekali halaman efektif.
         if (effective !== pageParam && !clampedRef.current) {
           clampedRef.current = true;
           onPageClamp?.(effective);
@@ -88,7 +86,8 @@ export function useAdminList<T>(
         const e = err as { name?: string; message?: string };
         if (e?.name === 'AbortError') return;
         if (requestIdRef.current !== requestId) return;
-        setError(e?.message || tr('api.err.loadFail'));
+        if (isApiError(err)) setFieldErrors(err.fieldErrors);
+        setError(formatApiErrorMessage(err, 'api.err.loadFail'));
       } finally {
         if (requestIdRef.current === requestId) setIsLoading(false);
       }
@@ -106,7 +105,7 @@ export function useAdminList<T>(
 
   const refresh = useCallback(() => fetchPage(page), [fetchPage, page]);
   const effectivePage = Math.min(page, totalPages);
-  return { items, setItems, total, totalPages, effectivePage, isLoading, error, setError, refresh };
+  return { items, setItems, total, totalPages, effectivePage, isLoading, error, setError, fieldErrors, setFieldErrors, refresh };
 }
 
 export { newIdempotencyKey };

@@ -11,12 +11,12 @@ import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Product } from '@/types';
-import { api, newIdempotencyKey } from '@/lib/api';
+import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/format';
 
 export default function AdminProductsPage() {
   const { token } = useAuth();
@@ -46,8 +46,10 @@ export default function AdminProductsPage() {
       toast(t('toast.created'));
       setIsFormOpen(false);
       refresh();
-    } catch (err: any) {
-      setError(err.message || t('toast.failed'));
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
       throw err;
     } finally {
       setIsSaving(false);
@@ -66,8 +68,10 @@ export default function AdminProductsPage() {
       setIsFormOpen(false);
       setSelectedProduct(null);
       refresh();
-    } catch (err: any) {
-      setError(err.message || t('toast.failed'));
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
       throw err;
     } finally {
       setIsSaving(false);
@@ -82,8 +86,10 @@ export default function AdminProductsPage() {
       toast(t('toast.deleted'));
       setDeleteTarget(null);
       refresh();
-    } catch (err: any) {
-      setError(err.message || t('toast.failed'));
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
     } finally {
       setIsDeleting(false);
     }
@@ -93,7 +99,7 @@ export default function AdminProductsPage() {
     {
       key: 'name',
       label: t('admin.table.name'),
-      render: (item: Product) => <span className="font-medium">{item.name}</span>,
+      render: (item: Product) => <span className="font-medium">{item.name || '—'}</span>,
     },
     { key: 'brand', label: t('admin.table.brand'), render: (p: Product) => p.brand || '—' },
     { key: 'barcode', label: t('admin.table.barcode'), render: (p: Product) => p.barcode || '—' },
@@ -110,7 +116,7 @@ export default function AdminProductsPage() {
     {
       key: 'createdAt',
       label: t('admin.table.created'),
-      render: (item: Product) => formatDate(item.createdAt),
+      render: (item: Product) => formatDateTime(item.createdAt),
     },
   ];
 

@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import AdminTableSkeleton from '@/components/ui/AdminTableSkeleton';
 
 interface AdminRouteProps {
   children: ReactNode;
@@ -22,11 +22,7 @@ export default function AdminRoute({ children }: AdminRouteProps) {
   }, [isAuthenticated, isLoading, user, router]);
 
   if (isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary-600" />
-      </div>
-    );
+    return <AdminTableSkeleton columns={5} rows={5} />;
   }
 
   if (!isAuthenticated || user?.role !== 'admin') {

@@ -11,4 +11,17 @@ export const authService = {
 
   getProfile: (token: string) =>
     api.get<ApiResponse<User>>(API_ENDPOINTS.AUTH.PROFILE, token),
+
+  forgotPassword: (email: string) =>
+    api.post<{ message: string }>(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email }),
+
+  resetPassword: (token: string, newPassword: string) =>
+    api.post<{ message: string }>(API_ENDPOINTS.AUTH.RESET_PASSWORD, { token, newPassword }),
+
+  changePassword: (currentPassword: string, newPassword: string, token: string) =>
+    api.post<{ message: string }>(
+      API_ENDPOINTS.AUTH.CHANGE_PASSWORD,
+      { currentPassword, newPassword },
+      token,
+    ),
 };

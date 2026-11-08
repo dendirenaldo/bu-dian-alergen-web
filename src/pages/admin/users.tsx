@@ -11,12 +11,12 @@ import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { User } from '@/types';
-import { api, newIdempotencyKey } from '@/lib/api';
+import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/format';
 
 export default function AdminUsersPage() {
   const { token } = useAuth();
@@ -37,7 +37,12 @@ export default function AdminUsersPage() {
     try {
       await api.post(API_ENDPOINTS.USERS.LIST, data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.created')); setIsFormOpen(false); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
 
@@ -47,7 +52,12 @@ export default function AdminUsersPage() {
     try {
       await api.put(API_ENDPOINTS.USERS.DETAIL(selectedUser.id), data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.updated')); setIsFormOpen(false); setSelectedUser(null); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
 
@@ -57,16 +67,20 @@ export default function AdminUsersPage() {
     try {
       await api.delete(API_ENDPOINTS.USERS.DETAIL(deleteTarget.id), token!);
       toast(t('toast.deleted')); setDeleteTarget(null); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+    }
     finally { setIsDeleting(false); }
   };
 
   const columns = [
-    { key: 'name', label: t('admin.table.name'), render: (item: User) => <span className="font-medium">{item.name}</span> },
-    { key: 'email', label: t('admin.table.email') },
+    { key: 'name', label: t('admin.table.name'), render: (item: User) => <span className="font-medium">{item.name || '—'}</span> },
+    { key: 'email', label: t('admin.table.email'), render: (item: User) => item.email || '—' },
     { key: 'role', label: t('admin.table.role'), render: (item: User) => <Badge variant={item.role === 'admin' ? 'primary' : 'default'}>{item.role === 'admin' ? t('admin.form.roleAdmin') : t('admin.form.roleUser')}</Badge> },
     { key: 'isActive', label: t('admin.table.status'), render: (item: User) => <Badge variant={item.isActive === false ? 'default' : 'success'}>{item.isActive === false ? t('admin.status.inactive') : t('admin.status.active')}</Badge> },
-    { key: 'createdAt', label: t('admin.table.created'), render: (item: User) => formatDate(item.createdAt) },
+    { key: 'createdAt', label: t('admin.table.created'), render: (item: User) => formatDateTime(item.createdAt) },
   ];
 
   return (

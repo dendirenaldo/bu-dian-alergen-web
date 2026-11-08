@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router';
-import { Menu, Settings, LogOut } from 'lucide-react';
+import { Menu, Settings, LogOut, KeyRound } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
 import ThemeToggle from '@/components/shared/ThemeToggle';
@@ -18,7 +18,9 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
   const roleLabel = user?.role === 'admin' ? t('topbar.roleAdmin') : t('topbar.roleUser');
 
   const handleSelect = (id: string) => {
-    if (id === 'settings') {
+    if (id === 'change-password') {
+      router.push('/profile/password');
+    } else if (id === 'settings') {
       router.push('/admin/settings');
     } else if (id === 'logout') {
       logout();
@@ -45,8 +47,6 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
           align="right"
           onSelect={handleSelect}
           trigger={
-            // HTML-valid: <button> hanya berisi konten phrasing (span/img),
-            // bukan <div> dari komponen Avatar.
             <span className="flex items-center gap-3 rounded-lg p-1 hover:bg-surface-100 dark:hover:bg-surface-800">
               {user?.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -77,6 +77,7 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
               disabled: true,
             },
             { id: 'settings', label: t('topbar.settings'), icon: <Settings className="h-4 w-4" /> },
+            { id: 'change-password', label: t('topbar.changePassword'), icon: <KeyRound className="h-4 w-4" /> },
             { id: 'logout', label: t('topbar.logout'), icon: <LogOut className="h-4 w-4" />, danger: true },
           ]}
         />

@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { useAppName, useAppInitials } from '@/contexts/AppConfigContext';
 import { useLocale } from '@/contexts/LocaleContext';
 
@@ -18,6 +19,20 @@ export default function Footer() {
           <p className="text-sm text-surface-500 dark:text-surface-400">
             &copy; {new Date().getFullYear()} {appName}. {t('footer.rights')}
           </p>
+          <nav aria-label={t('common.toc')} className="flex items-center gap-4 text-sm">
+            <Link
+              href="/terms"
+              className="text-surface-500 hover:text-primary-600 dark:text-surface-400 dark:hover:text-primary-400"
+            >
+              {t('terms.title')}
+            </Link>
+            <Link
+              href="/privacy"
+              className="text-surface-500 hover:text-primary-600 dark:text-surface-400 dark:hover:text-primary-400"
+            >
+              {t('privacy.title')}
+            </Link>
+          </nav>
         </div>
       </div>
     </footer>

@@ -11,12 +11,12 @@ import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Content } from '@/types';
-import { api, newIdempotencyKey } from '@/lib/api';
+import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime } from '@/lib/format';
 
 export default function AdminCmsPage() {
   const { token } = useAuth();
@@ -32,15 +32,23 @@ export default function AdminCmsPage() {
   const [isSaving, setIsSaving] = useState(false);
 
   const { items: contents, total, totalPages, effectivePage, isLoading, error, setError, refresh } =
-    // /contents tidak mendukung query page/limit (DTO backend ketat) -> paginasi client-side.
     useAdminList<Content>(API_ENDPOINTS.CONTENTS.LIST, { token, page: currentPage, limit: 10, onPageClamp: setCurrentPage, serverPagination: false });
+
+  const missingLegalSlugs = ['terms', 'privacy'].filter(
+    (slug) => !contents.some((c) => c.slug === slug),
+  );
 
   const handleCreate = async (data: any) => {
     setError(null); setIsSaving(true);
     try {
       await api.post(API_ENDPOINTS.CONTENTS.LIST, data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.created')); setIsFormOpen(false); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
   const handleUpdate = async (data: any) => {
@@ -49,7 +57,12 @@ export default function AdminCmsPage() {
     try {
       await api.put(`${API_ENDPOINTS.CONTENTS.LIST}/${selectedContent.id}`, data, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.updated')); setIsFormOpen(false); setSelectedContent(null); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); throw err; }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+      throw err;
+    }
     finally { setIsSaving(false); }
   };
   const handleDelete = async () => {
@@ -58,16 +71,20 @@ export default function AdminCmsPage() {
     try {
       await api.delete(`${API_ENDPOINTS.CONTENTS.LIST}/${deleteTarget.id}`, token!);
       toast(t('toast.deleted')); setDeleteTarget(null); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+    }
     finally { setIsDeleting(false); }
   };
 
   const columns = [
-    { key: 'title', label: t('admin.table.title'), render: (item: Content) => <span className="font-medium">{item.title}</span> },
+    { key: 'title', label: t('admin.table.title'), render: (item: Content) => <span className="font-medium">{item.title || '—'}</span> },
     { key: 'type', label: t('admin.table.type'), render: (item: Content) => <Badge variant="info">{typeLabel(item.type)}</Badge> },
     { key: 'status', label: t('admin.table.status'), render: (item: Content) => <Badge variant={item.status === 'published' ? 'success' : item.status === 'draft' ? 'warning' : 'default'}>{statusLabel(item.status)}</Badge> },
-    { key: 'publishedAt', label: t('admin.table.publish'), render: (c: Content) => (c as any).publishedAt ? formatDate((c as any).publishedAt) : '—' },
-    { key: 'createdAt', label: t('admin.table.created'), render: (item: Content) => formatDate(item.createdAt) },
+    { key: 'publishedAt', label: t('admin.table.publish'), render: (c: Content) => (c as any).publishedAt ? formatDateTime((c as any).publishedAt) : '—' },
+    { key: 'createdAt', label: t('admin.table.created'), render: (item: Content) => formatDateTime(item.createdAt) },
   ];
 
   return (
@@ -81,6 +98,11 @@ export default function AdminCmsPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.cms')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
+          {!isLoading && !error && missingLegalSlugs.length > 0 && (
+            <Alert variant="info" title={t('admin.cms')}>
+              {t('admin.cms.legalHint')} ({missingLegalSlugs.join(', ')})
+            </Alert>
+          )}
           <AdminTable data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage}
             onAdd={() => { setSelectedContent(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelectedContent(c); setIsFormOpen(true); }}

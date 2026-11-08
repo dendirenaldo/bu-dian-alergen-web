@@ -11,14 +11,15 @@ import Card from '@/components/ui/Card';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
-import Skeleton from '@/components/ui/Skeleton';
-import { api, newIdempotencyKey } from '@/lib/api';
+import DetailSkeleton from '@/components/ui/DetailSkeleton';
+import { api, formatApiErrorMessage, newIdempotencyKey } from '@/lib/api';
+import { formatDateTime } from '@/lib/format';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { unwrapData, unwrapListApi } from '@/lib/unwrap';
 
-interface Setting { key: string; value: string; type: string; description?: string }
+interface Setting { key: string; value: string; type: string; description?: string; updatedAt?: string }
 
 export default function AdminSettingsPage() {
   const { token } = useAuth();
@@ -41,7 +42,7 @@ export default function AdminSettingsPage() {
       const map: any = {};
       list.forEach((s: Setting) => { map[s.key] = { value: s.value ?? '', type: s.type ?? 'string', description: s.description ?? '' }; });
       setEditing(map);
-    } catch (err: any) { setError(err.message || t('api.err.loadFail')); }
+    } catch (err) { setError(formatApiErrorMessage(err, 'api.err.loadFail')); }
     finally { setIsLoading(false); }
   };
 
@@ -56,7 +57,11 @@ export default function AdminSettingsPage() {
       await api.put(API_ENDPOINTS.SETTINGS.DETAIL(key), { value: draft.value, type: draft.type, description: draft.description || undefined }, token!, { idempotencyKey: newIdempotencyKey() });
       toast(t('toast.updated'));
       fetchList();
-    } catch (err: any) { setError(err.message || t('toast.failed')); }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+    }
     finally { setSavingKey(null); }
   };
 
@@ -72,7 +77,7 @@ export default function AdminSettingsPage() {
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
           {isLoading ? (
-            <Card padding="md"><Skeleton width="100%" height="6rem" /></Card>
+            <DetailSkeleton />
           ) : items.length === 0 ? (
             <Card padding="md"><p className="text-sm text-surface-500">{t('admin.emptyTitle.settings')}</p></Card>
           ) : (
@@ -81,8 +86,13 @@ export default function AdminSettingsPage() {
                 <Card key={s.key} padding="md">
                   <div className="mb-3 flex items-center gap-2">
                     <SettingsIcon className="h-4 w-4 text-surface-400" />
-                    <h2 className="font-mono text-sm font-semibold">{s.key}</h2>
+                    <h2 className="font-mono text-sm font-semibold">{s.key || '—'}</h2>
                   </div>
+                  {(s as Setting).updatedAt && (
+                    <p className="mb-3 text-xs text-surface-500 dark:text-surface-400">
+                      {formatDateTime((s as Setting).updatedAt!)}
+                    </p>
+                  )}
                   <div className="grid gap-3 sm:grid-cols-[1fr_160px]">
                     <Input label={t('admin.settings.value')} value={editing[s.key]?.value ?? ''} onChange={(e) => setEditing((p) => ({ ...p, [s.key]: { ...p[s.key], value: e.target.value } }))} required />
                     <Select label={t('admin.settings.type')} value={editing[s.key]?.type ?? 'string'} onChange={(e) => setEditing((p) => ({ ...p, [s.key]: { ...p[s.key], type: e.target.value } }))} options={[{ value: 'string', label: t('admin.settings.text') }, { value: 'number', label: t('admin.settings.number') }, { value: 'boolean', label: t('admin.settings.boolean') }, { value: 'json', label: t('admin.settings.json') }]} required />

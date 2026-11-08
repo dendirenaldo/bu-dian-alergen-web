@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { Detection } from '@/types';
-import { api } from '@/lib/api';
+import { api, formatApiErrorMessage } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { unwrapListApi } from '@/lib/unwrap';
-import { formatDate } from '@/lib/utils';
+import { formatDateTime, formatResult } from '@/lib/format';
 import Badge from '@/components/ui/Badge';
 import Pagination from '@/components/ui/Pagination';
 import EmptyState from '@/components/ui/EmptyState';
-import Skeleton from '@/components/ui/Skeleton';
+import HistorySkeleton from '@/components/ui/HistorySkeleton';
 import Alert from '@/components/ui/Alert';
 import DetectionDetail from './DetectionDetail';
 import { resolveDetectedAllergens } from '@/lib/detection-allergens';
@@ -39,56 +39,19 @@ export default function DetectionHistoryTable() {
         setDetections(u.items);
         setTotal(u.total);
         setTotalPages(u.totalPages);
-        // Clamp: page melebihi total (mis. data berkurang) -> reset halaman.
         if (currentPage > u.totalPages && u.totalPages >= 1) {
           setCurrentPage(u.totalPages);
         }
       })
-      .catch((err: any) => { if (err?.name !== 'AbortError') setError(err?.message || t('history.loadFail')); })
+      .catch((err: unknown) => { if ((err as { name?: string })?.name !== 'AbortError') setError(formatApiErrorMessage(err, 'history.loadFail')); })
       .finally(() => setIsLoading(false));
     return () => ctrl.abort();
   }, [currentPage, token]);
 
   if (isLoading) {
-    return (
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-surface-200 dark:border-surface-800">
-              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                {t('admin.table.date')}
-              </th>
-              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                {t('admin.table.product')}
-              </th>
-              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                {t('admin.table.allergens')}
-              </th>
-              <th className="pb-3 text-left text-sm font-medium text-surface-500 dark:text-surface-400">
-                {t('admin.table.status')}
-              </th>
-              <th className="pb-3 text-right text-sm font-medium text-surface-500 dark:text-surface-400">
-                {t('admin.table.action')}
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-surface-100 dark:divide-surface-800">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i}>
-                <td className="py-3"><Skeleton width="6rem" height="1rem" /></td>
-                <td className="py-3"><Skeleton width="8rem" height="1rem" /></td>
-                <td className="py-3"><Skeleton width="4rem" height="1.25rem" /></td>
-                <td className="py-3"><Skeleton width="4rem" height="1.25rem" /></td>
-                <td className="py-3 text-right"><Skeleton width="3rem" height="1rem" /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    );
+    return <HistorySkeleton rows={5} />;
   }
 
-  // Gagal memuat (tanpa data lama): tampilkan ERROR, bukan EmptyState.
   if (error && detections.length === 0) {
     return (
       <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>
@@ -138,10 +101,10 @@ export default function DetectionHistoryTable() {
                 className="hover:bg-surface-50 dark:hover:bg-surface-800/50"
               >
                 <td className="py-3 text-sm text-surface-600 dark:text-surface-400">
-                  {formatDate(detection.createdAt)}
+                  {formatDateTime(detection.createdAt)}
                 </td>
                 <td className="py-3 text-sm font-medium text-surface-900 dark:text-surface-100">
-                  {detection.product?.name || '-'}
+                  {detection.product?.name || '—'}
                 </td>
                 <td className="py-3">
                   {allergens.length > 0 ? (
@@ -165,7 +128,7 @@ export default function DetectionHistoryTable() {
                 </td>
                 <td className="py-3">
                   <Badge variant={detection.result === 'safe' ? 'success' : 'danger'}>
-                    {detection.result === 'safe' ? t('admin.safe') : t('admin.unsafe')}
+                    {formatResult(detection.result)}
                   </Badge>
                 </td>
                 <td className="py-3 text-right">

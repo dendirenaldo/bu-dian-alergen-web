@@ -1,6 +1,3 @@
-// Fail-fast: env wajib diset oleh .env.production / .env.development
-// (keduanya ter-commit). Tanpa fallback localhost agar misconfig ketahuan
-// saat build/runtime, bukan diam-diam menunjuk mesin developer.
 const _apiBase = process.env.NEXT_PUBLIC_API_URL;
 if (!_apiBase) {
   throw new Error(
@@ -14,6 +11,9 @@ export const API_ENDPOINTS = {
     LOGIN: '/api/v1/auth/login',
     REGISTER: '/api/v1/auth/register',
     PROFILE: '/api/v1/auth/profile',
+    FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
+    RESET_PASSWORD: '/api/v1/auth/reset-password',
+    CHANGE_PASSWORD: '/api/v1/auth/change-password',
   },
   USERS: {
     LIST: '/api/v1/users',

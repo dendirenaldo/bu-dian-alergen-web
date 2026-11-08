@@ -11,12 +11,12 @@ import Alert from '@/components/ui/Alert';
 import Badge from '@/components/ui/Badge';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Detection } from '@/types';
-import { api } from '@/lib/api';
+import { api, formatApiErrorMessage } from '@/lib/api';
 import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useAdminList } from '@/hooks/useAdminList';
-import { formatDate } from '@/lib/utils';
+import { formatConfidence, formatDateTime, formatMethod, formatModelName, formatResult } from '@/lib/format';
 
 export default function AdminDetectionsPage() {
   const { token } = useAuth();
@@ -50,7 +50,11 @@ export default function AdminDetectionsPage() {
     try {
       await api.delete(API_ENDPOINTS.DETECTIONS.DETAIL(deleteTarget.id), token!);
       toast(t('toast.deleted')); setDeleteTarget(null); refresh();
-    } catch (err: any) { setError(err.message || t('toast.failed')); }
+    } catch (err) {
+      const msg = formatApiErrorMessage(err);
+      setError(msg);
+      toast(msg, 'error');
+    }
     finally { setIsDeleting(false); }
   };
 
@@ -72,14 +76,17 @@ export default function AdminDetectionsPage() {
       ),
     },
     { key: 'product', label: t('admin.table.product'), render: (item: Detection) => <span className="font-medium">{item.product?.name || (item.ocrText ? `${String(item.ocrText).slice(0, 30)}…` : '—')}</span> },
-    { key: 'result', label: t('admin.table.result'), render: (item: Detection) => <Badge variant={item.result === 'safe' ? 'success' : 'danger'}>{item.result === 'safe' ? t('admin.safe') : t('admin.unsafe')}</Badge> },
-    { key: 'confidenceScore', label: t('admin.table.confidence'), render: (item: Detection) => <span>{Math.round((item.confidenceScore || 0) * 100)}%</span> },
+    { key: 'result', label: t('admin.table.result'), render: (item: Detection) => <Badge variant={item.result === 'safe' ? 'success' : 'danger'}>{formatResult(item.result)}</Badge> },
+    { key: 'confidenceScore', label: t('admin.table.confidence'), render: (item: Detection) => <span>{formatConfidence(item.confidenceScore)}</span> },
     {
-      key: 'model', label: 'Model',
-      render: (item: Detection) => <span className="font-mono text-xs uppercase">{item.modelName || (item.rawModelOutput as any)?.model_name || '—'}</span>,
+      key: 'model', label: t('admin.table.model'),
+      render: (item: Detection) => {
+        const raw = item.modelName || (item.rawModelOutput as any)?.model_name;
+        return <span className="font-mono text-xs">{raw ? formatModelName(raw) : '—'}</span>;
+      },
     },
-    { key: 'detectionMethod', label: t('admin.table.method'), render: (d: Detection) => <span className="text-xs">{d.detectionMethod === 'image_ocr' ? t('admin.method.image') : t('admin.method.text')}</span> },
-    { key: 'createdAt', label: t('admin.table.date'), render: (item: Detection) => formatDate(item.createdAt) },
+    { key: 'detectionMethod', label: t('admin.table.method'), render: (d: Detection) => <span className="text-xs">{d.detectionMethod ? formatMethod(d.detectionMethod) : '—'}</span> },
+    { key: 'createdAt', label: t('admin.table.date'), render: (item: Detection) => formatDateTime(item.createdAt) },
   ];
 
   return (

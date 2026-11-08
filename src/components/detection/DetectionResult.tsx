@@ -1,7 +1,7 @@
 'use client';
 
 import { Detection } from '@/types';
-import { formatDate } from '@/lib/utils';
+import { formatConfidence, formatDateTime, formatDuration, formatModelName } from '@/lib/format';
 import { ShieldCheck, ShieldAlert, Clock } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import AllergenTag from './AllergenTag';
@@ -36,12 +36,12 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
           <div className="flex items-center gap-3 text-sm text-surface-500 dark:text-surface-400">
             <span className="flex items-center gap-1">
               <Clock className="h-3.5 w-3.5" />
-              {formatDate(detection.createdAt)}
+              {formatDateTime(detection.createdAt)}
             </span>
-            <span>{detection.processingTimeMs}ms</span>
+            <span>{formatDuration(detection.processingTimeMs)}</span>
             {(detection.modelName || (detection.rawModelOutput as any)?.model_name) && (
-              <span className="rounded-md bg-surface-100 px-2 py-0.5 font-mono text-xs uppercase dark:bg-surface-800">
-                {detection.modelName || (detection.rawModelOutput as any)?.model_name}
+              <span className="rounded-md bg-surface-100 px-2 py-0.5 font-mono text-xs dark:bg-surface-800">
+                {formatModelName(detection.modelName || (detection.rawModelOutput as any)?.model_name)}
               </span>
             )}
           </div>
@@ -67,7 +67,7 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
             : t('detection.unsafeMsg')}
         </p>
         <p className="mt-1 text-xs text-surface-500 dark:text-surface-400">
-          {t('detection.confidence')} {Math.round((detection.confidenceScore || 0) * 100)}%
+          {t('detection.confidence')} {formatConfidence(detection.confidenceScore)}
         </p>
       </div>
 

@@ -21,8 +21,6 @@ export function AppConfigProvider({ children }: { children: ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        // Endpoint publik (tanpa auth). Dulu pakai DETAIL('app_name')
-        // yang dikunci admin → selalu 401 → nama backend tak pernah tampil.
         const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.SETTINGS.PUBLIC}`);
         if (!res.ok) return;
         const data = await res.json();

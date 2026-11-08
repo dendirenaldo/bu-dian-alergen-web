@@ -12,6 +12,7 @@ import StepPersonalInfo from './StepPersonalInfo';
 import StepCredentials from './StepCredentials';
 import StepConfirmation from './StepConfirmation';
 import { validators } from '@/lib/validation';
+import { formatApiErrorMessage } from '@/lib/api';
 import { useLocale } from '@/contexts/LocaleContext';
 
 export default function RegisterWizard() {
@@ -87,14 +88,13 @@ export default function RegisterWizard() {
         phone: personalInfo.phone || undefined,
       });
       router.push(user?.role === 'admin' ? '/admin' : '/detect');
-    } catch (err: any) {
-      setApiError(err.message || 'Registrasi gagal. Silakan coba lagi.');
+    } catch (err) {
+      setApiError(formatApiErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Enter → lanjut / daftar (dukungan keyboard).
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();

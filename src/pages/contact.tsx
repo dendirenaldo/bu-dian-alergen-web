@@ -67,7 +67,6 @@ export default function ContactPage() {
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length > 0) return;
     setIsSending(true);
-    // Simulasi kirim + anti double-click; ganti dengan POST /api/v1/contact bila tersedia.
     timer.current = setTimeout(() => {
       setIsSending(false);
       setIsSubmitted(true);
