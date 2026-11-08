@@ -1,8 +1,9 @@
 'use client';
 
+import { useCallback, useState } from 'react';
 import { Detection } from '@/types';
 import { formatConfidence, formatDateTime, formatDuration, formatModelName } from '@/lib/format';
-import { ShieldCheck, ShieldAlert, Clock } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, Clock, Share2 } from 'lucide-react';
 import Card from '@/components/ui/Card';
 import AllergenTag from './AllergenTag';
 import { resolveDetectedAllergens } from '@/lib/detection-allergens';
@@ -14,8 +15,41 @@ interface DetectionResultProps {
 
 export default function DetectionResult({ detection }: DetectionResultProps) {
   const { t } = useLocale();
+  const [shareNote, setShareNote] = useState<string | null>(null);
   const isSafe = detection.result === 'safe';
   const allergens = resolveDetectedAllergens(detection);
+
+  const handleShare = useCallback(async () => {
+    setShareNote(null);
+    const title = detection.product?.name || t('detection.unknownProduct');
+    const text = `${title} — ${isSafe ? t('detection.safeMsg') : t('detection.unsafeMsg')}`;
+    const url = typeof window !== 'undefined' ? window.location.href : '';
+    try {
+      if (typeof navigator !== 'undefined' && 'share' in navigator) {
+        await (navigator as any).share({ title, text, url });
+        return;
+      }
+      throw new Error('no-share');
+    } catch {
+      // Fallback: salin ke clipboard.
+      try {
+        const payload = url ? `${text}\n${url}` : text;
+        if (navigator?.clipboard?.writeText) {
+          await navigator.clipboard.writeText(payload);
+        } else {
+          const ta = document.createElement('textarea');
+          ta.value = payload;
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+        }
+        setShareNote(t('detect.shareCopied'));
+      } catch {
+        /* abaikan: clipboard tak tersedia */
+      }
+    }
+  }, [detection.product?.name, isSafe, t]);
 
   return (
     <Card padding="md">
@@ -29,7 +63,7 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
         >
           {isSafe ? <ShieldCheck className="h-5 w-5" /> : <ShieldAlert className="h-5 w-5" />}
         </div>
-        <div>
+        <div className="min-w-0 flex-1">
           <h3 className="text-lg font-semibold text-surface-900 dark:text-surface-100">
             {detection.product?.name || t('detection.unknownProduct')}
           </h3>
@@ -46,7 +80,20 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
             )}
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleShare}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-xl border border-surface-200 px-3 py-1.5 text-xs font-medium text-surface-600 transition-colors hover:border-primary-400 hover:text-primary-700 dark:border-surface-700 dark:text-surface-300"
+        >
+          <Share2 className="h-3.5 w-3.5" />
+          {t('detect.share')}
+        </button>
       </div>
+      {shareNote && (
+        <p role="status" className="mb-3 text-xs text-surface-500 dark:text-surface-400">
+          {shareNote}
+        </p>
+      )}
 
       <div
         className={`mb-4 rounded-xl p-4 ${
@@ -90,15 +137,19 @@ export default function DetectionResult({ detection }: DetectionResultProps) {
       )}
 
       {detection.ocrText && (
-        <div className="mt-4">
-          <h4 className="mb-2 text-sm font-medium text-surface-700 dark:text-surface-300">
-            {t('detection.ocrText')}
-          </h4>
-          <p className="rounded-lg bg-surface-50 p-3 text-sm text-surface-600 dark:bg-surface-800 dark:text-surface-400">
+        <details className="mt-4 rounded-xl border border-surface-200 dark:border-surface-700">
+          <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-surface-700 dark:text-surface-300">
+            {t('detect.ocrTitle')}
+          </summary>
+          <p className="border-t border-surface-200 px-3 py-2 text-sm text-surface-600 dark:border-surface-700 dark:text-surface-400">
             {detection.ocrText}
           </p>
-        </div>
+        </details>
       )}
+
+      <p className="mt-4 rounded-xl bg-surface-100 p-3 text-xs leading-relaxed text-surface-500 dark:bg-surface-800 dark:text-surface-400">
+        {t('detect.disclaimer')}
+      </p>
     </Card>
   );
 }

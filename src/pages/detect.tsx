@@ -7,12 +7,12 @@ import ImageUploader from '@/components/detection/ImageUploader';
 import DetectionResult from '@/components/detection/DetectionResult';
 import { useDetection } from '@/contexts/DetectionContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { BookOpen, FlaskConical, ShieldCheck } from 'lucide-react';
+import { BookOpen, FlaskConical, ShieldCheck, XCircle, RotateCcw } from 'lucide-react';
 import Alert from '@/components/ui/Alert';
 import Card from '@/components/ui/Card';
 import { useLocale } from '@/contexts/LocaleContext';
 import { DetectionModelChoice } from '@/types';
-import { formatApiErrorMessage } from '@/lib/api';
+import { formatApiErrorMessage, isApiError } from '@/lib/api';
 import { DEMO_SAMPLE_MAP, isDemoDetection, type DemoSampleKey } from '@/lib/demoSamples';
 import { maybeStartGuidedTourAuto, startGuidedTour } from '@/lib/guidedTour';
 
@@ -28,26 +28,66 @@ const DEMO_BUTTONS: { key: DemoSampleKey; labelId: string; labelEn: string; hint
   { key: 'moderate', labelId: 'Sedang • Kue cokelat', labelEn: 'Medium • Choco cookies', hintId: '0,85 • sedang', hintEn: '0.85 • medium' },
 ];
 
+function formatMmSs(totalSec: number): string {
+  const s = Math.max(0, Math.floor(totalSec));
+  const m = Math.floor(s / 60);
+  const r = s % 60;
+  return `${String(m).padStart(2, '0')}:${String(r).padStart(2, '0')}`;
+}
+
 export default function DetectPage() {
   const { t, locale } = useLocale();
   const { token, isLoading: authLoading } = useAuth();
-  const { isDetecting, currentDetection, detectFromImage, detectFromText, selectedModel, setSelectedModel, quota, quotaError, setCurrentDetection } = useDetection();
+  const {
+    isDetecting, currentDetection, detectFromImage, detectFromText,
+    selectedModel, setSelectedModel, quota, quotaError, setCurrentDetection,
+    progress, currentStage, stageMessage, etaMs,
+    fallbackNotice, qualityWarning, retryAfterSec,
+    retryLastDetection, canRetry, cancelDetection,
+  } = useDetection();
   const [error, setError] = useState('');
   const [mode, setMode] = useState<'image' | 'text'>('image');
   const [text, setText] = useState('');
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const isDemo = isDemoDetection(currentDetection);
+  const showProgress = isDetecting && progress !== null && progress !== undefined;
+  const pct = showProgress ? Math.round((progress ?? 0) * 100) : 0;
+  const etaSec = typeof etaMs === 'number' && Number.isFinite(etaMs) ? Math.max(0, Math.ceil(etaMs / 1000)) : null;
+  const stageKey = currentStage ? `detect.stage.${currentStage}` : null;
+  const stageLabel = stageKey ? t(stageKey) : '';
+  const stageName = stageLabel && !stageLabel.startsWith('detect.stage.')
+    ? stageLabel
+    : (stageMessage || currentStage || '');
 
   // Tur panduan otomatis — sekali per browser (localStorage guided_tour_v1).
   useEffect(() => {
     return maybeStartGuidedTourAuto(locale === 'en' ? 'en' : 'id');
   }, [locale]);
 
+  // Countdown 429 dari header Retry-After (format Mm:Ss).
+  useEffect(() => {
+    if (typeof retryAfterSec === 'number' && retryAfterSec >= 0) {
+      setCountdown(retryAfterSec);
+    } else {
+      setCountdown(null);
+    }
+  }, [retryAfterSec]);
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown <= 0) return;
+    const timer = setTimeout(() => setCountdown((c) => (c !== null && c > 0 ? c - 1 : c)), 1000);
+    return () => clearTimeout(timer);
+  }, [countdown]);
+
   const handleImageSelect = async (file: File) => {
     setError('');
     try {
       await detectFromImage(file);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      if (err && typeof err === 'object' && (err as any).name === 'AbortError') return;
       setError(formatApiErrorMessage(err));
     }
   };
@@ -57,8 +97,24 @@ export default function DetectPage() {
     try {
       await detectFromText(text);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      if (err && typeof err === 'object' && (err as any).name === 'AbortError') return;
       setError(formatApiErrorMessage(err));
     }
+  };
+
+  const handleRetry = async () => {
+    setError('');
+    try {
+      await retryLastDetection();
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setError(formatApiErrorMessage(err));
+    }
+  };
+
+  const handleCancel = () => {
+    cancelDetection();
   };
 
   /**
@@ -80,6 +136,8 @@ export default function DetectPage() {
   const handleClearDemo = () => {
     setCurrentDetection(null);
   };
+
+  const showRetryButton = !!error && canRetry && !isDetecting;
 
   return (
     <>
@@ -258,6 +316,76 @@ export default function DetectPage() {
               </button>
             </div>
 
+            {showProgress && (
+              <Card padding="md" className="mb-4">
+                <div className="mb-1 flex items-center justify-between text-sm">
+                  <p className="font-medium text-surface-800 dark:text-surface-200">
+                    {stageName || t('detect.detecting')}
+                  </p>
+                  <p className="font-semibold text-surface-800 dark:text-surface-200">{pct}%</p>
+                </div>
+                <div
+                  role="progressbar"
+                  aria-label={t('detect.progressLabel')}
+                  aria-valuenow={pct}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                  className="h-2.5 w-full overflow-hidden rounded-full bg-surface-200 dark:bg-surface-700"
+                >
+                  <div
+                    className="h-full rounded-full bg-primary-600 transition-all duration-300"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                <div className="mt-2 flex items-center justify-between">
+                  <p className="text-xs text-surface-500 dark:text-surface-400">
+                    {etaSec !== null ? t('detect.etaLabel', { s: etaSec }) : stageMessage || ''}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="inline-flex items-center gap-1.5 rounded-xl border border-surface-200 px-3 py-1.5 text-xs font-medium text-surface-600 transition-colors hover:border-red-400 hover:text-red-600 dark:border-surface-700 dark:text-surface-300"
+                  >
+                    <XCircle className="h-3.5 w-3.5" />
+                    {t('detect.cancel')}
+                  </button>
+                </div>
+              </Card>
+            )}
+
+            {isDetecting && !showProgress && (
+              <div className="mb-4 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-surface-200 bg-white px-3 py-1.5 text-xs font-medium text-surface-600 transition-colors hover:border-red-400 hover:text-red-600 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-300"
+                >
+                  <XCircle className="h-3.5 w-3.5" />
+                  {t('detect.cancel')}
+                </button>
+              </div>
+            )}
+
+            {countdown !== null && countdown > 0 && (
+              <div className="mb-4">
+                <Alert variant="warning">
+                  {t('detect.retryIn', { s: formatMmSs(countdown) })}
+                </Alert>
+              </div>
+            )}
+
+            {!isDetecting && fallbackNotice && currentDetection && !isDemo && (
+              <div className="mb-4">
+                <Alert variant="info">{t('detect.fallbackNotice')}</Alert>
+              </div>
+            )}
+
+            {!isDetecting && qualityWarning && currentDetection && !isDemo && (
+              <div className="mb-4">
+                <Alert variant="warning">{t('detect.qualityWarn')}</Alert>
+              </div>
+            )}
+
             {mode === 'image' ? (
               <div data-tour="dropzone">
                 <ImageUploader onImageSelect={handleImageSelect} isProcessing={isDetecting} />
@@ -310,8 +438,21 @@ export default function DetectPage() {
             )}
 
             {error && (
-              <div className="mt-4">
+              <div className="mt-4 space-y-2">
                 <Alert variant="error">{error}</Alert>
+                {showRetryButton && (
+                  <button
+                    type="button"
+                    onClick={handleRetry}
+                    disabled={countdown !== null && countdown > 0}
+                    className="inline-flex w-full items-center justify-center gap-1.5 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    {countdown !== null && countdown > 0
+                      ? t('detect.retryIn', { s: formatMmSs(countdown) })
+                      : t('detect.retryNow')}
+                  </button>
+                )}
               </div>
             )}
 
@@ -320,9 +461,7 @@ export default function DetectPage() {
                 <>
                   <DetectionResult detection={currentDetection} />
                   <p className="mt-3 rounded-xl bg-surface-100 p-3 text-xs leading-relaxed text-surface-500 dark:bg-surface-800 dark:text-surface-400">
-                    {locale === 'id'
-                      ? 'Catatan: hasil ini hanya perkiraan awal, bukan vonis medis. Selalu baca ulang label kemasan dan konsultasikan ke dokter bila Anda punya alergi serius.'
-                      : 'Note: this result is only an early estimate, not a medical diagnosis. Always re-check the package label and consult a doctor if you have a serious allergy.'}
+                    {t('detect.disclaimer')}
                   </p>
                 </>
               ) : (

@@ -45,6 +45,8 @@ export const API_ENDPOINTS = {
     PUBLIC_TEXT: '/api/v1/detections/public/text',
     PUBLIC_QUOTA: '/api/v1/detections/public/quota',
     ADMIN_ALL: '/api/v1/detections/admin/all',
+    STREAM: '/api/v1/detections/stream',
+    JOB_CANCEL: (id: string) => `/api/v1/detections/job/${encodeURIComponent(id)}`,
   },
   CONTENTS: {
     LIST: '/api/v1/contents',

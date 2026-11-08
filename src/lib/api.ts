@@ -26,7 +26,16 @@ export interface ApiError {
   code?: string;
   /** Petakan field -> pesan (dari errors[] / fields[]). */
   fieldErrors: Record<string, string>;
+  /** Nilai header Retry-After (detik) saat 429, bila ada. */
+  retryAfterSec?: number;
   raw?: unknown;
+}
+
+/** Hasil request beserta header respons (untuk X-Job-Id, Retry-After, dsb). */
+export interface ApiResultWithHeaders<T> {
+  data: T;
+  headers: Headers;
+  status: number;
 }
 
 export function isApiError(err: unknown): err is ApiError {
@@ -132,7 +141,7 @@ export function toFieldErrors(payload: any): Record<string, string> {
   return out;
 }
 
-function toApiError(status: number, payload: any): ApiError {
+function toApiError(status: number, payload: any, retryAfterSec?: number): ApiError {
   const message =
     typeof payload?.message === 'string' && payload.message
       ? friendlyMessage(status, payload.message)
@@ -144,8 +153,23 @@ function toApiError(status: number, payload: any): ApiError {
     message,
     ...(code ? { code } : {}),
     fieldErrors: toFieldErrors(payload),
+    ...(typeof retryAfterSec === 'number' && Number.isFinite(retryAfterSec)
+      ? { retryAfterSec }
+      : {}),
     raw: payload,
   };
+}
+
+function parseRetryAfter(headers: Headers): number | undefined {
+  try {
+    const raw = headers.get('Retry-After') ?? headers.get('retry-after');
+    if (!raw) return undefined;
+    const n = Number(String(raw).trim());
+    if (Number.isFinite(n) && n >= 0) return Math.floor(n);
+  } catch {
+    /* abaikan */
+  }
+  return undefined;
 }
 
 class ApiClient {
@@ -155,7 +179,7 @@ class ApiClient {
     this.baseUrl = baseUrl;
   }
 
-  private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+  private async requestRaw<T>(endpoint: string, options: RequestOptions = {}): Promise<ApiResultWithHeaders<T>> {
     const { method = 'GET', body, token, anonId, isFormData = false, signal, idempotencyKey } = options;
 
     const headers: Record<string, string> = {};
@@ -186,18 +210,32 @@ class ApiClient {
 
     if (!response.ok) {
       const errorPayload = await response.json().catch(() => ({ message: 'Request failed' }));
-      throw toApiError(response.status, errorPayload);
+      throw toApiError(response.status, errorPayload, parseRetryAfter(response.headers));
     }
 
-    return response.json();
+    const data = (await response.json().catch(() => null)) as T;
+    return { data, headers: response.headers, status: response.status };
+  }
+
+  private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    const res = await this.requestRaw<T>(endpoint, options);
+    return res.data;
   }
 
   get<T>(endpoint: string, token?: string, signal?: AbortSignal, anonId?: string) {
     return this.request<T>(endpoint, { token, signal, anonId });
   }
 
+  getWithHeaders<T>(endpoint: string, token?: string, opts?: { signal?: AbortSignal; anonId?: string }) {
+    return this.requestRaw<T>(endpoint, { token, ...opts });
+  }
+
   post<T>(endpoint: string, body?: any, token?: string, opts?: { isFormData?: boolean; signal?: AbortSignal; idempotencyKey?: string; anonId?: string }) {
     return this.request<T>(endpoint, { method: 'POST', body, token, ...opts });
+  }
+
+  postWithHeaders<T>(endpoint: string, body?: any, token?: string, opts?: { isFormData?: boolean; signal?: AbortSignal; idempotencyKey?: string; anonId?: string }) {
+    return this.requestRaw<T>(endpoint, { method: 'POST', body, token, ...opts });
   }
 
   put<T>(endpoint: string, body?: any, token?: string, opts?: { signal?: AbortSignal; idempotencyKey?: string }) {
@@ -208,8 +246,12 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'PATCH', body, token, ...opts });
   }
 
-  delete<T>(endpoint: string, token?: string) {
-    return this.request<T>(endpoint, { method: 'DELETE', token });
+  delete<T>(endpoint: string, token?: string, opts?: { signal?: AbortSignal; anonId?: string; idempotencyKey?: string }) {
+    return this.request<T>(endpoint, { method: 'DELETE', token, ...opts });
+  }
+
+  deleteWithHeaders<T>(endpoint: string, token?: string, opts?: { signal?: AbortSignal; anonId?: string; idempotencyKey?: string }) {
+    return this.requestRaw<T>(endpoint, { method: 'DELETE', token, ...opts });
   }
 }
 

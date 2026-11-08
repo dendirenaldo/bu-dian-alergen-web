@@ -6,6 +6,7 @@ import { Upload, Image as ImageIcon, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Skeleton from '@/components/ui/Skeleton';
 import { useLocale } from '@/contexts/LocaleContext';
+import { useDetection } from '@/contexts/DetectionContext';
 
 interface ImageUploaderProps {
   onImageSelect: (file: File) => void;
@@ -16,6 +17,7 @@ const MAX_SIZE = 5 * 1024 * 1024;
 
 export default function ImageUploader({ onImageSelect, isProcessing }: ImageUploaderProps) {
   const { t } = useLocale();
+  const { progress, currentStage } = useDetection();
   const [preview, setPreview] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,14 +60,35 @@ export default function ImageUploader({ onImageSelect, isProcessing }: ImageUplo
     if (inputRef.current) inputRef.current.value = '';
   };
 
+  const showProgress = isProcessing && progress !== null && progress !== undefined;
+  const pct = showProgress ? Math.round((progress ?? 0) * 100) : 0;
+
   if (preview) {
     return (
       <div className="relative">
         <div className="relative h-80 w-full overflow-hidden rounded-xl border border-surface-200 dark:border-surface-700">
-          {isProcessing ? (
+          {isProcessing && !showProgress ? (
             <Skeleton width="100%" height="100%" variant="rectangular" aria-label={t('common.loading')} />
           ) : (
-            <Image src={preview} alt={t('upload.previewAlt')} fill className="object-contain" unoptimized sizes="100vw" />
+            <Image src={preview} alt={t('upload.previewAlt')} fill className={cn('object-contain', isProcessing && showProgress && 'opacity-60')} unoptimized sizes="100vw" />
+          )}
+          {showProgress && (
+            <div className="absolute inset-x-0 bottom-0 bg-white/90 p-3 dark:bg-surface-900/90">
+              <div className="mb-1 flex items-center justify-between text-xs text-surface-600 dark:text-surface-300">
+                <span>{t(`detect.stage.${currentStage ?? 'received'}`)}</span>
+                <span>{pct}%</span>
+              </div>
+              <div
+                role="progressbar"
+                aria-label={t('detect.progressLabel')}
+                aria-valuenow={pct}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                className="h-2 w-full overflow-hidden rounded-full bg-surface-200 dark:bg-surface-700"
+              >
+                <div className="h-full rounded-full bg-primary-600 transition-all" style={{ width: `${pct}%` }} />
+              </div>
+            </div>
           )}
         </div>
         <button
