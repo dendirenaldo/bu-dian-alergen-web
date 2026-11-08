@@ -3,19 +3,30 @@ import { useRouter } from 'next/router';
 import { useAuth } from '@/contexts/AuthContext';
 import Skeleton from '@/components/ui/Skeleton';
 
+const BYPASS_PATHS = ['/verify-email', '/check-email', '/forgot-password', '/reset-password'];
+
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
+  const isUnverified = !!user && user.emailVerified === false;
+  const isBypass = BYPASS_PATHS.some((p) => router.pathname === p || router.pathname.startsWith(`${p}/`));
+
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    if (isLoading || !router.isReady || isBypass) return;
+    if (!user) {
+      router.replace('/login');
+    } else if (isUnverified) {
+      const email = user.email ? `?email=${encodeURIComponent(user.email)}` : '';
+      router.replace(`/check-email${email}`);
+    } else if (!isAuthenticated) {
       router.replace('/login');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, user, isUnverified, isBypass, router]);
 
   if (isLoading) {
     return (
@@ -27,9 +38,10 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!isAuthenticated) {
-    return null;
-  }
+  if (isBypass) return <>{children}</>;
+  if (!user) return null;
+  if (isUnverified) return null;
+  if (!isAuthenticated) return null;
 
   return <>{children}</>;
 }

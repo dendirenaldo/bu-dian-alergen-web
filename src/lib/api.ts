@@ -204,6 +204,10 @@ class ApiClient {
     return this.request<T>(endpoint, { method: 'PUT', body, token, ...opts });
   }
 
+  patch<T>(endpoint: string, body?: any, token?: string, opts?: { signal?: AbortSignal; idempotencyKey?: string }) {
+    return this.request<T>(endpoint, { method: 'PATCH', body, token, ...opts });
+  }
+
   delete<T>(endpoint: string, token?: string) {
     return this.request<T>(endpoint, { method: 'DELETE', token });
   }

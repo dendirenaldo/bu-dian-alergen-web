@@ -87,7 +87,7 @@ export default function RegisterWizard() {
         password: credentials.password,
         phone: personalInfo.phone || undefined,
       });
-      router.push(user?.role === 'admin' ? '/admin' : '/detect');
+      router.push(`/check-email?email=${encodeURIComponent(user?.email ?? credentials.email)}`);
     } catch (err) {
       setApiError(formatApiErrorMessage(err));
     } finally {

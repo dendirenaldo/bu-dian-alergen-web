@@ -9,17 +9,20 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 import Alert from '@/components/ui/Alert';
 import { validators } from '@/lib/validation';
-import { formatApiErrorMessage } from '@/lib/api';
+import { formatApiErrorMessage, isApiError } from '@/lib/api';
 import { useLocale } from '@/contexts/LocaleContext';
 
 export default function LoginForm() {
   const { t } = useLocale();
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, resendVerification } = useAuth();
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [unverified, setUnverified] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
 
   const handleBlur = (field: string, value: string) => {
     let result;
@@ -49,9 +52,25 @@ export default function LoginForm() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleResend = async () => {
+    if (!form.email.trim()) return;
+    setIsResending(true);
+    setResendMsg('');
+    try {
+      const msg = await resendVerification(form.email.trim());
+      setResendMsg(msg || t('auth.resentGeneric'));
+    } catch (err) {
+      setResendMsg(formatApiErrorMessage(err));
+    } finally {
+      setIsResending(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setApiError('');
+    setUnverified(false);
+    setResendMsg('');
 
     if (!validate()) return;
 
@@ -60,7 +79,12 @@ export default function LoginForm() {
       const user = await login(form.email, form.password);
       router.push(user?.role === 'admin' ? '/admin' : '/detect');
     } catch (err) {
-      setApiError(formatApiErrorMessage(err));
+      if (isApiError(err) && err.code === 'EMAIL_NOT_VERIFIED') {
+        setUnverified(true);
+        setApiError(err.message || t('auth.unverifiedAlert'));
+      } else {
+        setApiError(formatApiErrorMessage(err));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -69,6 +93,25 @@ export default function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {apiError && <Alert variant="error" title="Login gagal">{apiError}</Alert>}
+
+      {unverified && (
+        <div className="space-y-2">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleResend}
+            isLoading={isResending}
+            className="w-full"
+          >
+            {t('auth.resendCta')}
+          </Button>
+          {resendMsg && (
+            <Alert variant="success" title={t('auth.resendCta')}>
+              {resendMsg}
+            </Alert>
+          )}
+        </div>
+      )}
 
       <Input
         label={t('auth.form.email')}

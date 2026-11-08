@@ -6,6 +6,8 @@ export interface User {
   avatarUrl?: string;
   role: 'admin' | 'user';
   isActive?: boolean;
+  emailVerified?: boolean;
+  emailVerifiedAt?: string | null;
   createdAt: string;
 }
 
@@ -25,6 +27,25 @@ export interface AuthResponse {
   data: {
     user: User;
     token: string;
+  };
+}
+
+export interface RegisterResponse {
+  data: {
+    user: User;
+    message: string;
+  };
+}
+
+export interface VerifyEmailResponse {
+  data: {
+    message: string;
+  };
+}
+
+export interface ResendVerificationResponse {
+  data: {
+    message: string;
   };
 }
 

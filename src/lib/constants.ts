@@ -14,10 +14,15 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: '/api/v1/auth/forgot-password',
     RESET_PASSWORD: '/api/v1/auth/reset-password',
     CHANGE_PASSWORD: '/api/v1/auth/change-password',
+    VERIFY_EMAIL: '/api/v1/auth/verify-email',
+    RESEND_VERIFICATION: '/api/v1/auth/resend-verification',
   },
   USERS: {
     LIST: '/api/v1/users',
     DETAIL: (id: number) => `/api/v1/users/${id}`,
+    VERIFY: (id: number) => `/api/v1/users/${id}/verify`,
+    UNVERIFY: (id: number) => `/api/v1/users/${id}/unverify`,
+    RESEND_VERIFICATION: (id: number) => `/api/v1/users/${id}/resend-verification`,
   },
   CATEGORIES: {
     LIST: '/api/v1/categories',
