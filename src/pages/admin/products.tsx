@@ -143,6 +143,7 @@ export default function AdminProductsPage() {
 
           <div data-tour="products-table">
           <AdminTable
+            tourId="products"
             data={products}
             columns={columns}
             isLoading={isLoading}

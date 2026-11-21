@@ -101,7 +101,7 @@ export default function AdminAllergensPage() {
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
           <div data-tour="allergens-table">
-          <AdminTable data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
+          <AdminTable tourId="allergens" data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedAllergen(null); setIsFormOpen(true); }}
             onEdit={(a) => { setSelectedAllergen(a); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.allergens')} emptyDescription={t('admin.emptyDesc.allergens')} addLabel={t('admin.addLabel.allergens')} />

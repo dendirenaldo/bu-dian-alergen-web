@@ -129,6 +129,14 @@ export default function TourOverlay() {
     if (tipRef.current) setTipHeight(tipRef.current.offsetHeight);
   }, [currentStep?.id, actionSatisfied, missing, viewport.h]);
 
+  // Fokus berpindah ke tooltip saat langkah berubah agar pembaca layar dan
+  // pengguna keyboard langsung mendapat konteks. Target tetap dapat difokus
+  // dengan Tab; fokus tidak dijebak.
+  useEffect(() => {
+    if (!isSimulation) return;
+    tipRef.current?.focus({ preventScroll: true });
+  }, [currentStep?.id, isSimulation]);
+
   useEffect(() => {
     if (!isSimulation) return;
     const onKey = (e: KeyboardEvent) => {
@@ -169,10 +177,11 @@ export default function TourOverlay() {
     <div
       role="dialog"
       aria-modal="false"
+      tabIndex={-1}
       aria-label={t(currentStep.titleKey)}
       data-testid="tour-tooltip"
       ref={tipRef}
-      className="fixed z-[1101] w-[380px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border border-surface-200 bg-white p-4 shadow-2xl dark:border-surface-700 dark:bg-surface-900"
+      className="fixed z-[1101] w-[380px] max-w-[calc(100vw-24px)] overflow-y-auto rounded-2xl border border-surface-200 bg-white p-4 shadow-2xl outline-none focus:ring-2 focus:ring-primary-500 dark:border-surface-700 dark:bg-surface-900"
       style={{ top: position?.top ?? 80, left: position?.left ?? 12, maxHeight: 'calc(100vh - 24px)' }}
     >
       <div className="mb-2 flex items-center justify-between gap-2">

@@ -383,7 +383,7 @@ export default function DatasetDetailPage() {
                   </datalist>
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
-                  <Button type="button" data-tour="review-save" isLoading={saving} onClick={() => void save()} disabled={!dirty && !saving}>
+                  <Button type="button" data-tour="review-save" isLoading={saving} onClick={() => void save()} disabled={(!dirty && !saving) || !!acting}>
                     <Save className="mr-1.5 h-4 w-4" />
                     {t('common.save')}
                   </Button>
@@ -429,6 +429,7 @@ export default function DatasetDetailPage() {
                         size="sm"
                         variant={danger ? 'danger' : primary ? 'primary' : 'secondary'}
                         isLoading={acting === action}
+                        disabled={!!acting && acting !== action}
                         data-tour={action === 'approve' ? 'review-approve' : undefined}
                         onClick={() => void applyReview(action)}
                       >

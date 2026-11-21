@@ -148,7 +148,16 @@ export default function CreateDatasetPage() {
     try {
       const created = await service.create({ ...payload, status, allow_incomplete: status === 'draft' });
       if (file) {
-        await service.uploadImage(created.id, file, imageType);
+        try {
+          await service.uploadImage(created.id, file, imageType);
+        } catch (uploadErr: any) {
+          // Record sudah tersimpan; jangan biarkan pengguna mengulang submit
+          // dan membuat duplikat hanya karena gambar gagal.
+          toast(uploadErr?.message ?? t('dataset.imageUploadFailed'), 'error');
+          if (status === 'draft') emitTourAction('create-save-draft');
+          void router.push(`/admin/dataset/${created.id}`);
+          return;
+        }
       }
       if (status === 'draft') emitTourAction('create-save-draft');
       toast(t('dataset.createSuccess'));

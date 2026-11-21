@@ -192,7 +192,7 @@ export default function AdminUsersPage() {
             />
           </div>
           <div data-tour="users-table">
-          <AdminTable data={users} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
+          <AdminTable tourId="users" data={users} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedUser(null); setIsFormOpen(true); }}
             onEdit={(user) => { setSelectedUser(user); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.users')} emptyDescription={t('admin.emptyDesc.users')} addLabel={t('admin.addLabel.users')} />

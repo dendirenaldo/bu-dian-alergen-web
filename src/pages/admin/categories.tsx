@@ -98,7 +98,7 @@ export default function AdminCategoriesPage() {
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
           <div data-tour="categories-table">
-          <AdminTable data={items} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
+          <AdminTable tourId="categories" data={items} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelected(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelected(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.categories')} emptyDescription={t('admin.emptyDesc.categories')} addLabel={t('admin.addLabel.categories')} />

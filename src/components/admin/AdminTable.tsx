@@ -11,6 +11,7 @@ import PageSizeSelect from '@/components/ui/PageSizeSelect';
 import EmptyState from '@/components/ui/EmptyState';
 import { useLocale } from '@/contexts/LocaleContext';
 import type { SortState } from '@/hooks/useTableControls';
+import { emitTourAction } from '@/onboarding/types';
 
 interface Column<T> {
   key: string;
@@ -43,6 +44,8 @@ interface AdminTableProps<T> {
   onSort?: (key: string) => void;
   limit?: number;
   onLimitChange?: (size: number) => void;
+  /** Prefix data-tour/event untuk panduan interaktif (mis. "products"). */
+  tourId?: string;
 }
 
 export default function AdminTable<T extends { id: number }>({
@@ -66,6 +69,7 @@ export default function AdminTable<T extends { id: number }>({
   onSort,
   limit,
   onLimitChange,
+  tourId,
 }: AdminTableProps<T>) {
   const { t } = useLocale();
   const searchPh = searchPlaceholder ?? t('admin.search.default');
@@ -94,9 +98,11 @@ export default function AdminTable<T extends { id: number }>({
           <form onSubmit={handleSearch} className="flex-1 sm:max-w-xs">
             <Input
               label=""
+              data-tour={tourId ? `${tourId}-search` : undefined}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
+                if (tourId) emitTourAction(`${tourId}-search`);
                 if (e.target.value === '') onSearch('');
               }}
               placeholder={searchPh}

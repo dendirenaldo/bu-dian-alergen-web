@@ -111,7 +111,7 @@ export default function AdminDetectionsPage() {
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
           <div data-tour="detections-table">
-          <AdminTable data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
+          <AdminTable tourId="detections" data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onView={setSelectedDetection} onDelete={setDeleteTarget}
             emptyTitle={t('admin.emptyTitle.detections')} emptyDescription={t('admin.emptyDesc.detections')} />
           </div>

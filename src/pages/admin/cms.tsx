@@ -105,7 +105,7 @@ export default function AdminCmsPage() {
             </Alert>
           )}
           <div data-tour="cms-table">
-          <AdminTable data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
+          <AdminTable tourId="cms" data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedContent(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelectedContent(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.cms')} emptyDescription={t('admin.emptyDesc.cms')} addLabel={t('admin.addLabel.cms')} />

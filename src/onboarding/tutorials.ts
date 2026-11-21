@@ -286,6 +286,15 @@ export const TUTORIALS: Tutorial[] = [
         route: '/admin/users',
       },
       {
+        id: 'search',
+        titleKey: 'tour.step.users.search.title',
+        bodyKey: 'tour.step.users.search.body',
+        target: '[data-tour="users-search"]',
+        route: '/admin/users',
+        action: { type: 'input', event: 'users-search', hintKey: 'tour.step.users.search.hint' },
+      },
+
+      {
         id: 'verify',
         titleKey: 'tour.step.users.verify.title',
         bodyKey: 'tour.step.users.verify.body',
@@ -440,6 +449,14 @@ export const TUTORIALS: Tutorial[] = [
         route: '/admin/products',
       },
       {
+        id: 'search',
+        titleKey: 'tour.step.products.search.title',
+        bodyKey: 'tour.step.products.search.body',
+        target: '[data-tour="products-search"]',
+        route: '/admin/products',
+        action: { type: 'input', event: 'products-search', hintKey: 'tour.step.products.search.hint' },
+      },
+      {
         id: 'usage',
         titleKey: 'tour.step.products.usage.title',
         bodyKey: 'tour.step.products.usage.body',
@@ -463,6 +480,15 @@ export const TUTORIALS: Tutorial[] = [
         target: '[data-tour="categories-table"]',
         route: '/admin/categories',
       },
+      {
+        id: 'search',
+        titleKey: 'tour.step.categories.search.title',
+        bodyKey: 'tour.step.categories.search.body',
+        target: '[data-tour="categories-search"]',
+        route: '/admin/categories',
+        action: { type: 'input', event: 'categories-search', hintKey: 'tour.step.categories.search.hint' },
+      },
+
     ],
   },
   {
@@ -480,6 +506,15 @@ export const TUTORIALS: Tutorial[] = [
         target: '[data-tour="allergens-table"]',
         route: '/admin/allergens',
       },
+      {
+        id: 'search',
+        titleKey: 'tour.step.allergens.search.title',
+        bodyKey: 'tour.step.allergens.search.body',
+        target: '[data-tour="allergens-search"]',
+        route: '/admin/allergens',
+        action: { type: 'input', event: 'allergens-search', hintKey: 'tour.step.allergens.search.hint' },
+      },
+
     ],
   },
   {
@@ -497,6 +532,15 @@ export const TUTORIALS: Tutorial[] = [
         target: '[data-tour="detections-table"]',
         route: '/admin/detections',
       },
+      {
+        id: 'search',
+        titleKey: 'tour.step.detections.search.title',
+        bodyKey: 'tour.step.detections.search.body',
+        target: '[data-tour="detections-search"]',
+        route: '/admin/detections',
+        action: { type: 'input', event: 'detections-search', hintKey: 'tour.step.detections.search.hint' },
+      },
+
     ],
   },
   {
@@ -514,6 +558,15 @@ export const TUTORIALS: Tutorial[] = [
         target: '[data-tour="cms-table"]',
         route: '/admin/cms',
       },
+      {
+        id: 'search',
+        titleKey: 'tour.step.cms.search.title',
+        bodyKey: 'tour.step.cms.search.body',
+        target: '[data-tour="cms-search"]',
+        route: '/admin/cms',
+        action: { type: 'input', event: 'cms-search', hintKey: 'tour.step.cms.search.hint' },
+      },
+
     ],
   },
   {

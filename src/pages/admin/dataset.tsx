@@ -116,6 +116,11 @@ export default function AdminDatasetPage() {
         setTotal(res.total);
         setTotalPages(res.totalPages);
         if (res.page !== currentPage) setCurrentPage(res.page);
+        // Setelah filter/penghapusan, halaman aktif bisa melewati total.
+        if (currentPage > res.totalPages) {
+          setCurrentPage(res.totalPages);
+          return;
+        }
       })
       .catch((err: any) => {
         if (!cancelled) setError(err?.message ?? t('api.err.loadFail'));
