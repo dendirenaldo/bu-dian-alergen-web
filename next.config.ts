@@ -11,6 +11,8 @@ if (process.env.NODE_ENV === 'production' && !process.env.NEXT_PUBLIC_API_URL) {
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Jangan menulis AGENTS.md/CLAUDE.md otomatis ke repo saat dev/build.
+  agentRules: false,
 };
 
 export default nextConfig;

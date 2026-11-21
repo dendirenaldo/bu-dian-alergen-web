@@ -21,7 +21,7 @@ export interface DatasetCorrectionPayload {
   gold_label: 'safe' | 'unsafe';
   corrected_allergens: Array<{ name: string; severity: AllergenSeverity; confidence: number }>;
   notes: string;
-  status: 'draft' | 'verified';
+  status?: 'draft' | 'verified';
 }
 
 interface Row {
@@ -91,7 +91,6 @@ export default function DatasetCorrectionModal({
   const [goldLabel, setGoldLabel] = useState<'safe' | 'unsafe'>('safe');
   const [rows, setRows] = useState<Row[]>([]);
   const [notes, setNotes] = useState('');
-  const [status, setStatus] = useState<'draft' | 'verified'>('draft');
   const [knownNames, setKnownNames] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -101,7 +100,6 @@ export default function DatasetCorrectionModal({
     setGoldLabel(item.goldLabel ?? item.gold_label ?? 'safe');
     setRows(toRows(item));
     setNotes(String(item.notes ?? ''));
-    setStatus(item.status ?? 'draft');
     setErrors({});
   }, [isOpen, item]);
 
@@ -167,7 +165,6 @@ export default function DatasetCorrectionModal({
         confidence: Number(r.confidence),
       })),
       notes: notes.trim(),
-      status,
     });
   };
 
@@ -329,18 +326,6 @@ export default function DatasetCorrectionModal({
           error={errors.notes}
           rows={2}
         />
-        <div className="max-w-xs">
-          <MenuSelect
-            label={t('dataset.status')}
-            value={status}
-            onChange={(e) => setStatus(e.target.value as 'draft' | 'verified')}
-            options={[
-              { value: 'draft', label: t('dataset.statusDraft') },
-              { value: 'verified', label: t('dataset.statusVerified') },
-            ]}
-          />
-        </div>
-
         <div className="flex justify-end gap-3 pt-2">
           <Button type="button" variant="secondary" onClick={onClose} disabled={isSaving}>
             {t('common.cancel')}

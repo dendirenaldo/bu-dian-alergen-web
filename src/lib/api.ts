@@ -1,5 +1,6 @@
 import { API_BASE_URL } from './constants';
 import { tr } from './i18n';
+import { assertLiveRequest } from '@/onboarding/runtime';
 
 interface RequestOptions {
   method?: string;
@@ -182,6 +183,10 @@ class ApiClient {
   private async requestRaw<T>(endpoint: string, options: RequestOptions = {}): Promise<ApiResultWithHeaders<T>> {
     const { method = 'GET', body, token, anonId, isFormData = false, signal, idempotencyKey } = options;
 
+    // Penjaga struktural: selama simulasi onboarding aktif, permintaan tulis
+    // dan endpoint ekspor/deteksi tidak pernah mencapai jaringan.
+    assertLiveRequest(method, endpoint);
+
     const headers: Record<string, string> = {};
 
     if (token) {
@@ -256,6 +261,15 @@ class ApiClient {
 }
 
 export const api = new ApiClient(API_BASE_URL);
+
+/**
+ * fetch terbungkus untuk unduhan/streaming yang tidak lewat ApiClient.
+ * Tetap terkena larangan simulasi.
+ */
+export async function apiFetch(endpoint: string, init: RequestInit = {}): Promise<Response> {
+  assertLiveRequest(init.method ?? 'GET', endpoint);
+  return fetch(`${API_BASE_URL}${endpoint}`, { credentials: 'include', ...init });
+}
 
 export function newIdempotencyKey() {
   return typeof crypto !== 'undefined' && 'randomUUID' in crypto

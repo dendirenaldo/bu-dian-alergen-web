@@ -1,4 +1,5 @@
 import { ReactElement, useEffect, useState } from 'react';
+import Link from 'next/link';
 import PublicLayout from '@/components/layout/PublicLayout';
 import PageTransition from '@/components/shared/PageTransition';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
@@ -106,12 +107,19 @@ export default function ProfilePage() {
               <p className="text-sm text-surface-500 dark:text-surface-400">
                 {t('profile.desc')}
               </p>
+              <Link
+                href="/profile/password"
+                data-tour="profile-password-link"
+                className="inline-block text-sm text-primary-600 hover:text-primary-700"
+              >
+                {t('topbar.changePassword')}
+              </Link>
             </div>
             <Card padding="md">
               {isLoading ? (
                 <p className="text-sm text-surface-500 dark:text-surface-400">{t('common.loading')}</p>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-4" data-tour="profile-form">
                   {apiError && (
                     <Alert variant="error" title={t('profile.title')}>
                       {apiError}

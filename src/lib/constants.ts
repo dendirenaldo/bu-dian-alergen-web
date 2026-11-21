@@ -47,6 +47,7 @@ export const API_ENDPOINTS = {
     ADMIN_ALL: '/api/v1/detections/admin/all',
     STREAM: '/api/v1/detections/stream',
     JOB_CANCEL: (id: string) => `/api/v1/detections/job/${encodeURIComponent(id)}`,
+    CONTRIBUTE: (id: number) => `/api/v1/detections/${id}/contribute`,
   },
   CONTENTS: {
     LIST: '/api/v1/contents',
@@ -72,6 +73,13 @@ export const API_ENDPOINTS = {
     EXPORT: '/api/v1/dataset-items/export',
     DOWNLOAD: '/api/v1/dataset-items/download',
     ESTIMATE: '/api/v1/dataset-items/download/estimate',
+    STATISTICS: '/api/v1/dataset-items/statistics',
+    REVIEW: (id: number) => `/api/v1/dataset-items/${id}/review`,
+    IMAGE: (id: number) => `/api/v1/dataset-items/${id}/image`,
+    EXPORTS: '/api/v1/dataset-items/exports',
+    EXPORT_PREVIEW: '/api/v1/dataset-items/exports/preview',
+    EXPORT_SUMMARY: '/api/v1/dataset-items/exports/summary',
+    EXPORT_DOWNLOAD: (id: number) => `/api/v1/dataset-items/exports/${id}/download`,
   },
 };
 

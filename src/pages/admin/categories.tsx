@@ -97,10 +97,12 @@ export default function AdminCategoriesPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.categories')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
+          <div data-tour="categories-table">
           <AdminTable data={items} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelected(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelected(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.categories')} emptyDescription={t('admin.emptyDesc.categories')} addLabel={t('admin.addLabel.categories')} />
+          </div>
           <CategoryForm isOpen={isFormOpen} onClose={() => { setIsFormOpen(false); setSelected(null); }} category={selected} onSubmit={selected ? handleUpdate : handleCreate} isSaving={isSaving} />
           <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title={t('delete.title')} description={deleteTarget ? t('delete.category', { name: deleteTarget.name }) : undefined} confirmLabel={t('delete.confirm')} cancelLabel={t('delete.cancel')} isLoading={isDeleting} />
         </div>

@@ -141,6 +141,7 @@ export default function AdminProductsPage() {
 
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
 
+          <div data-tour="products-table">
           <AdminTable
             data={products}
             columns={columns}
@@ -171,6 +172,7 @@ export default function AdminProductsPage() {
             emptyDescription={t('admin.emptyDesc.products')}
             addLabel={t('admin.addLabel.products')}
           />
+          </div>
 
           <ProductForm
             isOpen={isFormOpen}

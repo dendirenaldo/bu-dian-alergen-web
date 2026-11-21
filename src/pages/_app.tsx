@@ -7,6 +7,8 @@ import { ToastProvider } from '@/contexts/ToastContext';
 import { LocaleProvider } from '@/contexts/LocaleContext';
 import { AppConfigProvider } from '@/contexts/AppConfigContext';
 import { AppPropsWithLayout } from '@/layouts/types';
+import { OnboardingProvider } from '@/onboarding/OnboardingContext';
+import TourOverlay from '@/onboarding/TourOverlay';
 
 import { jakarta } from '@/lib/fonts';
 
@@ -31,9 +33,12 @@ export default function App({ Component, pageProps }: AppPropsWithLayout) {
           <AppConfigProvider>
           <ToastProvider>
             <AuthProvider>
-              <DetectionProvider>
-                {getLayout(<Component {...pageProps} />)}
-              </DetectionProvider>
+              <OnboardingProvider>
+                <DetectionProvider>
+                  {getLayout(<Component {...pageProps} />)}
+                </DetectionProvider>
+                <TourOverlay />
+              </OnboardingProvider>
             </AuthProvider>
           </ToastProvider>
           </AppConfigProvider>

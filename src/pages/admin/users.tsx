@@ -147,11 +147,11 @@ export default function AdminUsersPage() {
       render: (item: User) => (
         <div className="flex flex-wrap gap-1">
           {item.emailVerified ? (
-            <Button size="sm" variant="secondary" disabled={busyId === item.id} onClick={() => void handleUnverify(item)}>
+            <Button size="sm" variant="secondary" data-tour="users-verify" disabled={busyId === item.id} onClick={() => void handleUnverify(item)}>
               {t('users.verified.unverify')}
             </Button>
           ) : (
-            <Button size="sm" variant="secondary" disabled={busyId === item.id} onClick={() => void handleVerify(item)}>
+            <Button size="sm" variant="secondary" data-tour="users-verify" disabled={busyId === item.id} onClick={() => void handleVerify(item)}>
               {t('users.verified.verify')}
             </Button>
           )}
@@ -191,10 +191,12 @@ export default function AdminUsersPage() {
               ]}
             />
           </div>
+          <div data-tour="users-table">
           <AdminTable data={users} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedUser(null); setIsFormOpen(true); }}
             onEdit={(user) => { setSelectedUser(user); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.users')} emptyDescription={t('admin.emptyDesc.users')} addLabel={t('admin.addLabel.users')} />
+          </div>
           <UserForm isOpen={isFormOpen} onClose={() => { setIsFormOpen(false); setSelectedUser(null); }} user={selectedUser} onSubmit={selectedUser ? handleUpdate : handleCreate} isSaving={isSaving} />
           <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title={t('delete.title')} description={deleteTarget ? t('delete.user', { name: deleteTarget.name }) : undefined} confirmLabel={t('delete.confirm')} cancelLabel={t('delete.cancel')} isLoading={isDeleting} />
         </div>

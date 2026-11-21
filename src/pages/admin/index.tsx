@@ -62,7 +62,7 @@ export default function AdminDashboard() {
 
           {error && <Alert variant="error" title={t('api.err.loadFail')} onClose={() => setError(null)}>{error} <button onClick={() => window.location.reload()} className="ml-2 underline">{t('common.retry')}</button></Alert>}
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4" data-tour="admin-stats">
             {isLoading ? (
               Array.from({ length: 4 }).map((_, i) => (
                 <Card key={i} padding="md"><Skeleton width="100%" height="4rem" /></Card>
@@ -78,7 +78,9 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <TrendChart days={14} />
+          <div data-tour="admin-trend">
+            <TrendChart days={14} />
+          </div>
 
           <div className="grid gap-6 lg:grid-cols-2">
             <Card padding="md">

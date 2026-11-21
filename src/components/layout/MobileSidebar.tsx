@@ -6,7 +6,8 @@ import { ChevronLeft, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAppName, useAppInitials } from '@/contexts/AppConfigContext';
 import { useLocale } from '@/contexts/LocaleContext';
-import { LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings, Database } from 'lucide-react';
+import { emitTourAction } from '@/onboarding/types';
+import { LayoutDashboard, Package, Tags, AlertTriangle, ScanSearch, Users, FileText, Settings, Database, Compass } from 'lucide-react';
 
 interface MobileSidebarProps {
   isOpen: boolean;
@@ -19,15 +20,15 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
   const router = useRouter();
   const { t } = useLocale();
   const sidebarLinks = [
-    { href: '/admin', label: t('sidebar.dashboard'), icon: LayoutDashboard },
-    { href: '/admin/products', label: t('sidebar.products'), icon: Package },
-    { href: '/admin/categories', label: t('sidebar.categories'), icon: Tags },
-    { href: '/admin/allergens', label: t('sidebar.allergens'), icon: AlertTriangle },
-    { href: '/admin/detections', label: t('sidebar.detections'), icon: ScanSearch },
-    { href: '/admin/dataset', label: t('sidebar.dataset'), icon: Database },
-    { href: '/admin/users', label: t('sidebar.users'), icon: Users },
-    { href: '/admin/cms', label: t('sidebar.cms'), icon: FileText },
-    { href: '/admin/settings', label: t('sidebar.settings'), icon: Settings },
+    { href: '/admin', slug: 'dashboard', label: t('sidebar.dashboard'), icon: LayoutDashboard },
+    { href: '/admin/products', slug: 'products', label: t('sidebar.products'), icon: Package },
+    { href: '/admin/categories', slug: 'categories', label: t('sidebar.categories'), icon: Tags },
+    { href: '/admin/allergens', slug: 'allergens', label: t('sidebar.allergens'), icon: AlertTriangle },
+    { href: '/admin/detections', slug: 'detections', label: t('sidebar.detections'), icon: ScanSearch },
+    { href: '/admin/dataset', slug: 'dataset', label: t('sidebar.dataset'), icon: Database },
+    { href: '/admin/users', slug: 'users', label: t('sidebar.users'), icon: Users },
+    { href: '/admin/cms', slug: 'cms', label: t('sidebar.cms'), icon: FileText },
+    { href: '/admin/settings', slug: 'settings', label: t('sidebar.settings'), icon: Settings },
   ];
 
   const reduce = useReducedMotion();
@@ -92,7 +93,11 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
               <Link
                 key={link.href}
                 href={link.href}
-                onClick={onClose}
+                data-tour={`nav-${link.slug}`}
+                onClick={() => {
+                  emitTourAction(`nav-${link.slug}`);
+                  onClose();
+                }}
                 className={cn(
                   'flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors',
                   isActive
@@ -109,8 +114,20 @@ export default function MobileSidebar({ isOpen, onClose }: MobileSidebarProps) {
 
         <div className="absolute bottom-0 left-0 right-0 border-t border-surface-200 p-3 dark:border-surface-800">
           <Link
-            href="/"
+            href="/panduan"
             onClick={onClose}
+            className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-amber-700 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-900/20"
+          >
+            <Compass className="h-5 w-5 flex-shrink-0" />
+            <span>{t('sidebar.panduan')}</span>
+          </Link>
+          <Link
+            href="/"
+            data-tour="nav-home"
+            onClick={() => {
+              emitTourAction('nav-home');
+              onClose();
+            }}
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
           >
             <ChevronLeft className="h-5 w-5 flex-shrink-0" />

@@ -100,10 +100,12 @@ export default function AdminAllergensPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.allergens')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
+          <div data-tour="allergens-table">
           <AdminTable data={allergens} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedAllergen(null); setIsFormOpen(true); }}
             onEdit={(a) => { setSelectedAllergen(a); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.allergens')} emptyDescription={t('admin.emptyDesc.allergens')} addLabel={t('admin.addLabel.allergens')} />
+          </div>
           <AllergenForm isOpen={isFormOpen} onClose={() => { setIsFormOpen(false); setSelectedAllergen(null); }} allergen={selectedAllergen} onSubmit={selectedAllergen ? handleUpdate : handleCreate} isSaving={isSaving} />
           <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title={t('delete.title')} description={deleteTarget ? t('delete.allergen', { name: deleteTarget.name }) : undefined} confirmLabel={t('delete.confirm')} cancelLabel={t('delete.cancel')} isLoading={isDeleting} />
         </div>

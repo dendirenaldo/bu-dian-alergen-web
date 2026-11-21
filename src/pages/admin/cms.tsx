@@ -104,10 +104,12 @@ export default function AdminCmsPage() {
               {t('admin.cms.legalHint')} ({missingLegalSlugs.join(', ')})
             </Alert>
           )}
+          <div data-tour="cms-table">
           <AdminTable data={contents} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onAdd={() => { setSelectedContent(null); setIsFormOpen(true); }}
             onEdit={(c) => { setSelectedContent(c); setIsFormOpen(true); }}
             onDelete={setDeleteTarget} emptyTitle={t('admin.emptyTitle.cms')} emptyDescription={t('admin.emptyDesc.cms')} addLabel={t('admin.addLabel.cms')} />
+          </div>
           <CmsEditor isOpen={isFormOpen} onClose={() => { setIsFormOpen(false); setSelectedContent(null); }} content={selectedContent} onSubmit={selectedContent ? handleUpdate : handleCreate} isSaving={isSaving} />
           <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title={t('delete.title')} description={deleteTarget ? t('delete.content', { name: deleteTarget.title }) : undefined} confirmLabel={t('delete.confirm')} cancelLabel={t('delete.cancel')} isLoading={isDeleting} />
         </div>

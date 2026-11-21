@@ -110,9 +110,11 @@ export default function AdminDetectionsPage() {
             />
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
+          <div data-tour="detections-table">
           <AdminTable data={detections} columns={columns} isLoading={isLoading} total={total} totalPages={totalPages} currentPage={effectivePage} onPageChange={setCurrentPage} sort={sort} onSort={toggleSort} limit={limit} onLimitChange={changeLimit}
             onView={setSelectedDetection} onDelete={setDeleteTarget}
             emptyTitle={t('admin.emptyTitle.detections')} emptyDescription={t('admin.emptyDesc.detections')} />
+          </div>
           {selectedDetection && <DetectionDetail detection={selectedDetection} onClose={() => setSelectedDetection(null)} />}
           <ConfirmDialog isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} onConfirm={handleDelete} title={t('delete.title')} description={t('delete.detection')} confirmLabel={t('delete.confirm')} cancelLabel={t('delete.cancel')} isLoading={isDeleting} />
         </div>

@@ -31,7 +31,9 @@ export default function HistoryPage() {
           </div>
 
           <Card padding="md">
-            <DetectionHistoryTable />
+            <div data-tour="history-table">
+              <DetectionHistoryTable />
+            </div>
           </Card>
         </div>
       </PageTransition>

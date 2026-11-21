@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
-import { Menu, Settings, LogOut, KeyRound, User } from 'lucide-react';
+import { Menu, Settings, LogOut, KeyRound, User, Compass } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
 import ThemeToggle from '@/components/shared/ThemeToggle';
@@ -51,6 +51,16 @@ export default function Topbar({ onToggleSidebar }: TopbarProps) {
       <div className="hidden lg:block" />
 
       <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.push('/panduan')}
+          data-tour="help-launcher"
+          aria-label={t('onboarding.launcher')}
+          title={t('onboarding.launcher')}
+          className="rounded-lg p-2 text-surface-600 hover:bg-surface-100 dark:text-surface-400 dark:hover:bg-surface-800"
+        >
+          <Compass className="h-5 w-5" />
+        </button>
         <LocaleToggle />
         <ThemeToggle />
         <Dropdown

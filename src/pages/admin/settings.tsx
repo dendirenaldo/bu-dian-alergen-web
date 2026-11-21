@@ -76,6 +76,7 @@ export default function AdminSettingsPage() {
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.settings')}</p>
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
+          <div data-tour="settings-form" className="space-y-4">
           {isLoading ? (
             <DetailSkeleton />
           ) : items.length === 0 ? (
@@ -101,12 +102,13 @@ export default function AdminSettingsPage() {
                     <Input label={t('admin.settings.desc')} value={editing[s.key]?.description ?? ''} onChange={(e) => setEditing((p) => ({ ...p, [s.key]: { ...p[s.key], description: e.target.value } }))} />
                   </div>
                   <div className="mt-4 flex justify-end">
-                    <Button size="sm" isLoading={savingKey === s.key} onClick={() => save(s.key)}><Save className="mr-1.5 h-4 w-4" />{t('common.save')}</Button>
+                    <Button size="sm" data-tour="settings-save" isLoading={savingKey === s.key} onClick={() => save(s.key)}><Save className="mr-1.5 h-4 w-4" />{t('common.save')}</Button>
                   </div>
                 </Card>
               ))}
             </div>
           )}
+          </div>
         </div>
       </PageTransition>
     </AdminRoute>

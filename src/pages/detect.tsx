@@ -14,7 +14,8 @@ import { useLocale } from '@/contexts/LocaleContext';
 import { DetectionModelChoice } from '@/types';
 import { formatApiErrorMessage, isApiError } from '@/lib/api';
 import { DEMO_SAMPLE_MAP, isDemoDetection, type DemoSampleKey } from '@/lib/demoSamples';
-import { maybeStartGuidedTourAuto, startGuidedTour } from '@/lib/guidedTour';
+import { emitTourAction } from '@/onboarding/types';
+import { useOnboarding } from '@/onboarding/OnboardingContext';
 
 const MODELS: { value: DetectionModelChoice; label: string; descId: string; descEn: string }[] = [
   { value: 'bert', label: 'BERT', descId: 'Paling teliti', descEn: 'Most thorough' },
@@ -37,6 +38,7 @@ function formatMmSs(totalSec: number): string {
 
 export default function DetectPage() {
   const { t, locale } = useLocale();
+  const { isSimulation, startTutorial } = useOnboarding();
   const { token, isLoading: authLoading } = useAuth();
   const {
     isDetecting, currentDetection, detectFromImage, detectFromText,
@@ -60,11 +62,6 @@ export default function DetectPage() {
     ? stageLabel
     : (stageMessage || currentStage || '');
 
-  // Tur panduan otomatis — sekali per browser (localStorage guided_tour_v1).
-  useEffect(() => {
-    return maybeStartGuidedTourAuto(locale === 'en' ? 'en' : 'id');
-  }, [locale]);
-
   // Countdown 429 dari header Retry-After (format Mm:Ss).
   useEffect(() => {
     if (typeof retryAfterSec === 'number' && retryAfterSec >= 0) {
@@ -83,6 +80,11 @@ export default function DetectPage() {
 
   const handleImageSelect = async (file: File) => {
     setError('');
+    if (isSimulation) {
+      // Mode panduan: tampilkan contoh, tanpa unggah/OCR/inferensi nyata.
+      setCurrentDetection(DEMO_SAMPLE_MAP.moderate);
+      return;
+    }
     try {
       await detectFromImage(file);
     } catch (err) {
@@ -94,6 +96,12 @@ export default function DetectPage() {
 
   const handleTextDetect = async () => {
     setError('');
+    if (isSimulation) {
+      setCurrentDetection(
+        /susu|keju|mentega|whey/i.test(text) ? DEMO_SAMPLE_MAP.moderate : DEMO_SAMPLE_MAP.dangerous,
+      );
+      return;
+    }
     try {
       await detectFromText(text);
     } catch (err) {
@@ -105,6 +113,10 @@ export default function DetectPage() {
 
   const handleRetry = async () => {
     setError('');
+    if (isSimulation) {
+      setCurrentDetection(DEMO_SAMPLE_MAP.dangerous);
+      return;
+    }
     try {
       await retryLastDetection();
     } catch (err) {
@@ -158,7 +170,7 @@ export default function DetectPage() {
               <div className="mt-3 flex items-center justify-center gap-2">
                 <button
                   type="button"
-                  onClick={() => startGuidedTour(locale === 'en' ? 'en' : 'id')}
+                  onClick={() => startTutorial('detect')}
                   className="inline-flex items-center gap-1.5 rounded-full border border-surface-200 bg-white px-3 py-1.5 text-xs font-medium text-surface-600 transition-colors hover:border-primary-300 hover:text-primary-700 dark:border-surface-700 dark:bg-surface-900 dark:text-surface-300"
                 >
                   <BookOpen className="h-3.5 w-3.5" />
@@ -281,7 +293,10 @@ export default function DetectPage() {
                     type="button"
                     role="radio"
                     aria-checked={selectedModel === m.value}
-                    onClick={() => setSelectedModel(m.value)}
+                    onClick={() => {
+                      setSelectedModel(m.value);
+                      emitTourAction('detect-model');
+                    }}
                     className={`rounded-xl border px-3 py-2 text-left transition ${
                       selectedModel === m.value
                         ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
@@ -301,7 +316,10 @@ export default function DetectPage() {
               <button
                 type="button"
                 data-tour="tab-image"
-                onClick={() => setMode('image')}
+                onClick={() => {
+                  setMode('image');
+                  emitTourAction('detect-image-tab');
+                }}
                 className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium ${mode === 'image' ? 'bg-primary-600 text-white' : 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300'}`}
               >
                 {t('admin.method.image')}
@@ -309,7 +327,10 @@ export default function DetectPage() {
               <button
                 type="button"
                 data-tour="tab-text"
-                onClick={() => setMode('text')}
+                onClick={() => {
+                  setMode('text');
+                  emitTourAction('detect-text-tab');
+                }}
                 className={`flex-1 rounded-xl px-4 py-2 text-sm font-medium ${mode === 'text' ? 'bg-primary-600 text-white' : 'bg-surface-100 text-surface-600 dark:bg-surface-800 dark:text-surface-300'}`}
               >
                 {t('admin.method.text')}
@@ -418,8 +439,12 @@ export default function DetectPage() {
             ) : (
               <Card padding="md">
                 <textarea
+                  data-tour="detect-text-input"
                   value={text}
-                  onChange={(e) => setText(e.target.value)}
+                  onChange={(e) => {
+                    setText(e.target.value);
+                    emitTourAction('detect-text-input');
+                  }}
                   rows={5}
                   maxLength={5000}
                   placeholder={locale === 'id' ? 'Masukkan teks komposisi bahan...' : 'Enter ingredient composition text...'}
@@ -428,7 +453,10 @@ export default function DetectPage() {
                 <button
                   type="button"
                   data-tour="detect-button"
-                  onClick={handleTextDetect}
+                  onClick={() => {
+                    emitTourAction('detect-submit');
+                    void handleTextDetect();
+                  }}
                   disabled={isDetecting || !text.trim()}
                   className="mt-3 w-full rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
                 >
