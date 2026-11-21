@@ -245,13 +245,13 @@ export default function DatasetExportModal({
             <input
               type="checkbox"
               checked={includeImages}
-              disabled={profile === 'image_classification'}
+              disabled={profile === 'image_classification' || profile === 'nlp'}
               onChange={(e) => setIncludeImages(e.target.checked)}
               className="h-4 w-4 accent-primary-600 disabled:opacity-50"
             />
             {t('dataset.export.includeImages')}
-            {profile === 'image_classification' && (
-              <span className="text-xs text-surface-500">({t('dataset.field.required')})</span>
+            {(profile === 'image_classification' || profile === 'nlp') && (
+              <span className="text-xs text-surface-500">({profile === 'nlp' ? 'N/A' : t('dataset.field.required')})</span>
             )}
           </label>
           <label className="inline-flex items-center gap-2">

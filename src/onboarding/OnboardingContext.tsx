@@ -77,13 +77,15 @@ const OnboardingContext = createContext<OnboardingContextValue | undefined>(unde
 
 export function OnboardingProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, token, isLoading: authLoading } = useAuth();
   const role = user?.role === 'admin' ? 'admin' : 'user';
   // Jangan tampilkan tutorial sebelum peran diketahui: mencegah admin
   // melihat daftar tutorial pengguna biasa lalu berkedip saat profil termuat.
+  // Jangan tebak peran: bila token ada tetapi profil belum termuat (mis.
+  // 429/5xx sementara), jangan tampilkan tutorial pengguna biasa.
   const tutorials = useMemo(
-    () => (authLoading ? [] : tutorialsForRole(role)),
-    [authLoading, role],
+    () => (authLoading || (!!token && !user) ? [] : tutorialsForRole(role)),
+    [authLoading, role, token, user],
   );
 
   const [activeId, setActiveId] = useState<string | null>(null);

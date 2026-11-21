@@ -3,8 +3,8 @@
 import { useCallback, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOnboarding } from './OnboardingContext';
-import { api } from '@/lib/api';
-import { API_BASE_URL, API_ENDPOINTS } from '@/lib/constants';
+import { api, apiFetch } from '@/lib/api';
+import { API_ENDPOINTS } from '@/lib/constants';
 import { unwrapData, unwrapListApi } from '@/lib/unwrap';
 import type {
   CorrectedAllergenItem,
@@ -490,9 +490,8 @@ export function useDatasetService() {
         downloadSimExport(simRecords, record.config as unknown as SimExportConfig);
         return;
       }
-      const res = await fetch(`${API_BASE_URL}${API_ENDPOINTS.DATASET.EXPORT_DOWNLOAD(record.id)}`, {
+      const res = await apiFetch(API_ENDPOINTS.DATASET.EXPORT_DOWNLOAD(record.id), {
         headers: { Authorization: `Bearer ${token}` },
-        credentials: 'include',
       });
       if (!res.ok) throw new Error(`Gagal mengunduh ekspor (HTTP ${res.status})`);
       const blob = await res.blob();

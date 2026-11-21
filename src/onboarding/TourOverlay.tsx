@@ -60,7 +60,17 @@ export default function TourOverlay() {
     const el = document.querySelector(selector) as HTMLElement | null;
     if (!el) return false;
     const r = el.getBoundingClientRect();
-    setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
+    const next = { top: r.top, left: r.left, width: r.width, height: r.height };
+    // Hindari re-render tiap 350 ms bila posisi tidak berubah.
+    setRect((prev) =>
+      prev &&
+      Math.abs(prev.top - next.top) < 0.5 &&
+      Math.abs(prev.left - next.left) < 0.5 &&
+      Math.abs(prev.width - next.width) < 0.5 &&
+      Math.abs(prev.height - next.height) < 0.5
+        ? prev
+        : next,
+    );
     return true;
   }, []);
 

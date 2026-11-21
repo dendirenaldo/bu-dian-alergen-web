@@ -154,7 +154,7 @@ function TutorialCenter() {
               </p>
               <p className="text-xs text-surface-500 dark:text-surface-400">
                 Role: {user?.role === 'admin' ? t('onboarding.role.admin') : t('onboarding.role.user')} •{' '}
-                {isSimulation ? t('onboarding.simulationBadge') : 'Live'}
+                {isSimulation ? t('onboarding.simulationBadge') : t('onboarding.live')}
               </p>
             </div>
           </div>
@@ -163,7 +163,7 @@ function TutorialCenter() {
               {t('onboarding.resetSim')}
             </Button>
             <Button size="sm" variant="ghost" onClick={resetProgress}>
-              Reset progres
+              {t('onboarding.resetProgress')}
             </Button>
           </div>
         </div>

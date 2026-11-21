@@ -921,5 +921,7 @@
   "tour.step.users.search.title": "Search users",
   "tour.step.users.search.body": "Use search to find users quickly. Search runs server-side and respects active filters.",
   "tour.step.users.search.hint": "Type a keyword in the users search field.",
-  "dataset.imageUploadFailed": "Record created, but the image upload failed. You can retry from the detail page."
+  "dataset.imageUploadFailed": "Record created, but the image upload failed. You can retry from the detail page.",
+  "onboarding.resetProgress": "Reset progress",
+  "onboarding.live": "Live mode"
 }

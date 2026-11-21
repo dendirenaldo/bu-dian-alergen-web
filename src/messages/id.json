@@ -921,5 +921,7 @@
   "tour.step.users.search.title": "Cari pengguna",
   "tour.step.users.search.body": "Gunakan pencarian untuk menemukan pengguna dengan cepat. Pencarian berjalan di server dan mengikuti filter aktif.",
   "tour.step.users.search.hint": "Ketik kata kunci di kolom pencarian pengguna.",
-  "dataset.imageUploadFailed": "Record dibuat, tetapi gambar gagal diunggah. Anda dapat mengunggah ulang di halaman detail."
+  "dataset.imageUploadFailed": "Record dibuat, tetapi gambar gagal diunggah. Anda dapat mengunggah ulang di halaman detail.",
+  "onboarding.resetProgress": "Reset progres",
+  "onboarding.live": "Mode normal"
 }

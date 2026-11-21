@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
 import { User } from '@/types';
 import { authService } from '@/lib/auth';
+import { isApiError } from '@/lib/api';
 
 const PENDING_EMAIL_KEY = 'pendingEmail';
 
@@ -44,9 +45,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       authService
         .getProfile(storedToken)
         .then((res) => setUser(res.data))
-        .catch(() => {
-          localStorage.removeItem('token');
-          setToken(null);
+        .catch((err) => {
+          // Hanya sesi yang benar-benar tidak valid yang dihapus. 429/5xx
+          // atau gangguan jaringan tidak boleh memaksa logout pengguna.
+          if (isApiError(err) && (err.status === 401 || err.status === 403)) {
+            localStorage.removeItem('token');
+            setToken(null);
+          }
         })
         .finally(() => setIsLoading(false));
     } else {
