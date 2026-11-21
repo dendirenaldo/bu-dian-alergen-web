@@ -854,7 +854,7 @@
   "tour.step.full.export.hint": "Click “Export dataset”.",
   "tour.step.full.detect.title": "Try the user flow",
   "tour.step.full.detect.body": "The main menu takes you to the detection page users see.",
-  "tour.step.full.detect.hint": "Click the “Home” menu.",
+  "tour.step.full.detect.hint": "Click the “Detection” menu.",
   "tour.step.full.detectPage.title": "Detection page",
   "tour.step.full.detectPage.body": "This is where users upload photos or paste text. The full tour is complete.",
   "dataset.quality": "Quality",
@@ -896,5 +896,11 @@
   "tour.step.history.table.title": "Your history",
   "tour.step.history.table.body": "Open details to see OCR, allergens, and confidence. History only shows your own data.",
   "tour.step.history.contribute.title": "Help the dataset",
-  "tour.step.history.contribute.body": "In detection detail, use “Contribute” to submit text corrections. An admin reviews it before use."
+  "tour.step.history.contribute.body": "In detection detail, use “Contribute” to submit text corrections. An admin reviews it before use.",
+  "tour.step.full.home.title": "Back to the site",
+  "tour.step.full.home.body": "This menu takes you out of admin into the public site where the user flow starts.",
+  "tour.step.full.home.hint": "Click “Back to the site”.",
+  "tour.step.full.closeExport.title": "Close export",
+  "tour.step.full.closeExport.body": "After exporting, close the panel to continue to the public site.",
+  "tour.step.full.closeExport.hint": "Click “Close”."
 }

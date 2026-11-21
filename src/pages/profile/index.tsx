@@ -14,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { authService } from '@/lib/auth';
 import { formatApiErrorMessage } from '@/lib/api';
+import { emitTourAction } from '@/onboarding/types';
 import { validators } from '@/lib/validation';
 import { User as UserIcon } from 'lucide-react';
 import type { User } from '@/types';
@@ -110,6 +111,7 @@ export default function ProfilePage() {
               <Link
                 href="/profile/password"
                 data-tour="profile-password-link"
+                onClick={() => emitTourAction('profile-password-link')}
                 className="inline-block text-sm text-primary-600 hover:text-primary-700"
               >
                 {t('topbar.changePassword')}

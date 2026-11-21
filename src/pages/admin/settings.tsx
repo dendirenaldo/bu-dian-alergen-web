@@ -18,6 +18,8 @@ import { API_ENDPOINTS } from '@/lib/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { unwrapData, unwrapListApi } from '@/lib/unwrap';
+import { useOnboarding } from '@/onboarding/OnboardingContext';
+import { emitTourAction } from '@/onboarding/types';
 
 interface Setting { key: string; value: string; type: string; description?: string; updatedAt?: string }
 
@@ -25,6 +27,7 @@ export default function AdminSettingsPage() {
   const { token } = useAuth();
   const { toast } = useToast();
   const { t } = useLocale();
+  const { isSimulation } = useOnboarding();
   const [items, setItems] = useState<Setting[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +56,17 @@ export default function AdminSettingsPage() {
     const draft = editing[key];
     if (!draft) return;
     setSavingKey(key);
+    if (isSimulation) {
+      // Mode panduan: perubahan hanya di state lokal, tanpa PUT nyata.
+      setItems((prev) => prev.map((x) => (x.key === key ? { ...x, value: draft.value, type: draft.type, description: draft.description } : x)));
+      emitTourAction('settings-save');
+      toast(t('toast.updated'));
+      setSavingKey(null);
+      return;
+    }
     try {
       await api.put(API_ENDPOINTS.SETTINGS.DETAIL(key), { value: draft.value, type: draft.type, description: draft.description || undefined }, token!, { idempotencyKey: newIdempotencyKey() });
+      emitTourAction('settings-save');
       toast(t('toast.updated'));
       fetchList();
     } catch (err) {
@@ -74,6 +86,11 @@ export default function AdminSettingsPage() {
             <Breadcrumb items={[{ label: t('admin.settings') }]} />
             <h1 className="text-xl font-bold text-surface-900 dark:text-surface-100">{t('admin.settings')}</h1>
             <p className="text-sm text-surface-500 dark:text-surface-400">{t('admin.pageDesc.settings')}</p>
+            {isSimulation && (
+              <p className="inline-flex rounded-full bg-amber-100 px-2.5 py-1 text-[11px] font-semibold text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                {t('onboarding.simulationBadge')}
+              </p>
+            )}
           </div>
           {error && <Alert variant="error" title={t('api.err.loadFail')}>{error}</Alert>}
           <div data-tour="settings-form" className="space-y-4">

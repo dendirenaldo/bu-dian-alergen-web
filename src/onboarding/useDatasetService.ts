@@ -60,6 +60,7 @@ export interface DatasetCreatePayload {
 
 export interface DatasetUpdatePayload extends Omit<Partial<DatasetCreatePayload>, 'status'> {
   review_note?: string;
+  expected_updated_at?: string;
   status?: string;
   export_eligible?: boolean;
 }
@@ -346,10 +347,14 @@ export function useDatasetService() {
   );
 
   const review = useCallback(
-    async (id: number, action: DatasetReviewAction, note?: string): Promise<DatasetItem> => {
+    async (id: number, action: DatasetReviewAction, note?: string, expectedUpdatedAt?: string): Promise<DatasetItem> => {
       if (!isSimulation) {
         return unwrapData<DatasetItem>(
-          await api.patch(API_ENDPOINTS.DATASET.REVIEW(id), { action, note }, token ?? undefined),
+          await api.patch(
+            API_ENDPOINTS.DATASET.REVIEW(id),
+            { action, note, expected_updated_at: expectedUpdatedAt },
+            token ?? undefined,
+          ),
         );
       }
       const target = REVIEW_TARGET[action];

@@ -150,7 +150,10 @@ export default function AdminDatasetPage() {
     setIsSaving(true);
     setModalError(null);
     try {
-      await service.update(correctTarget.id, payload);
+      await service.update(correctTarget.id, {
+        ...payload,
+        expected_updated_at: correctTarget.updatedAt,
+      });
       toast(t('toast.updated'));
       setCorrectTarget(null);
       refresh();

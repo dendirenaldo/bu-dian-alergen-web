@@ -30,6 +30,7 @@ import {
   datasetQualityVariant,
   datasetStatusKey,
   datasetStatusVariant,
+  mediaUrl,
 } from '@/lib/dataset-meta';
 import type { AllergenPresence, AllergenSeverity, CorrectedAllergenItem, DatasetAuditEntry, DatasetItem } from '@/types';
 import { FlaskConical, ImagePlus, Plus, Save, Trash2 } from 'lucide-react';
@@ -154,6 +155,7 @@ export default function DatasetDetailPage() {
         notes: notes.trim() || undefined,
         image_type: imageType,
         export_eligible: exportEligible,
+        expected_updated_at: item.updatedAt,
       });
       setItem(updated);
       setDirty(false);
@@ -176,7 +178,7 @@ export default function DatasetDetailPage() {
     setActing(action);
     setError(null);
     try {
-      const updated = await service.review(item.id, action, note.trim() || undefined);
+      const updated = await service.review(item.id, action, note.trim() || undefined, item.updatedAt);
       setItem(updated);
       setNote('');
       if (action === 'approve') emitTourAction('review-approve');
@@ -230,7 +232,7 @@ export default function DatasetDetailPage() {
     );
   }
 
-  const img = item.imageUrl ?? item.detection?.imageUrl ?? null;
+  const img = mediaUrl(item.imageUrl ?? item.detection?.imageUrl ?? null);
 
   return (
     <AdminRoute>

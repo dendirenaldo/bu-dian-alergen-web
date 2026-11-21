@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 import { Menu, X, LogIn, UserPlus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLocale } from '@/contexts/LocaleContext';
+import { emitTourAction } from '@/onboarding/types';
 import { cn } from '@/lib/utils';
 import ThemeToggle from '@/components/shared/ThemeToggle';
 import LocaleToggle from '@/components/shared/LocaleToggle';
@@ -20,11 +21,11 @@ export default function Navbar() {
   const router = useRouter();
 
   const navLinks = [
-    { href: '/', label: t('nav.home') },
-    { href: '/detect', label: t('nav.detection') },
-    { href: '/history', label: t('nav.history') },
-    { href: '/about', label: t('nav.about') },
-    { href: '/contact', label: t('nav.contact') },
+    { href: '/', slug: 'home', label: t('nav.home') },
+    { href: '/detect', slug: 'detect', label: t('nav.detection') },
+    { href: '/history', slug: 'history', label: t('nav.history') },
+    { href: '/about', slug: 'about', label: t('nav.about') },
+    { href: '/contact', slug: 'contact', label: t('nav.contact') },
   ];
 
   return (
@@ -42,6 +43,8 @@ export default function Navbar() {
             <Link
               key={link.href}
               href={link.href}
+              data-tour={`nav-public-${link.slug}`}
+              onClick={() => emitTourAction(`nav-public-${link.slug}`)}
               className={cn(
                 'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
                 router.pathname === link.href

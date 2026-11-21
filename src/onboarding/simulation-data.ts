@@ -164,7 +164,10 @@ export function simText(item: DatasetItem): string {
 
 export function simLabelSet(item: DatasetItem): string[] {
   const labels = new Set<string>([item.goldLabel]);
-  for (const a of item.correctedAllergens ?? []) labels.add(`allergen_${slug(a.name)}`);
+  for (const a of item.correctedAllergens ?? []) {
+    if (!['present', 'may_contain', 'cross_contamination'].includes(a.presence ?? 'present')) continue;
+    labels.add(`allergen_${slug(a.name)}`);
+  }
   return [...labels].sort();
 }
 
@@ -369,6 +372,7 @@ export function computeSimPreview(records: DatasetItem[], config: SimExportConfi
   for (const r of eligible) {
     labelDistribution[r.goldLabel] = (labelDistribution[r.goldLabel] ?? 0) + 1;
     for (const a of r.correctedAllergens ?? []) {
+      if (!['present', 'may_contain', 'cross_contamination'].includes(a.presence ?? 'present')) continue;
       allergenMap.set(a.name, (allergenMap.get(a.name) ?? 0) + 1);
       labelDistribution[`allergen_${slug(a.name)}`] = (labelDistribution[`allergen_${slug(a.name)}`] ?? 0) + 1;
     }

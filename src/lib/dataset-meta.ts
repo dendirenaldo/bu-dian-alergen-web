@@ -1,4 +1,5 @@
 import type { DatasetQualityStatus, DatasetStatus } from '@/types';
+import { API_BASE_URL } from '@/lib/constants';
 
 /** Urutan tampilan status pada filter & badge. */
 export const DATASET_STATUSES: DatasetStatus[] = [
@@ -126,6 +127,18 @@ export const REVIEW_ACTION_KEYS: Record<string, string> = {
   archive: 'dataset.review.archive',
   restore: 'dataset.review.restore',
 };
+
+/**
+ * URL media dataset. Path `/uploads/...` dilayani backend, bukan origin web.
+ * URL absolut/data: dibiarkan; null/undefined dikembalikan null.
+ */
+export function mediaUrl(url: string | null | undefined): string | null {
+  const value = String(url ?? '').trim();
+  if (!value) return null;
+  if (/^(https?:|data:|blob:)/i.test(value)) return value;
+  if (value.startsWith('/uploads/')) return `${API_BASE_URL}${value}`;
+  return value;
+}
 
 export function formatBytes(n: number): string {
   if (!Number.isFinite(n) || n < 0) return '—';

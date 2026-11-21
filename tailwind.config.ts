@@ -5,6 +5,8 @@ const config: Config = {
   content: [
     './src/pages/**/*.{ts,tsx}',
     './src/components/**/*.{ts,tsx}',
+    './src/onboarding/**/*.{ts,tsx}',
+    './src/layouts/**/*.{ts,tsx}',
   ],
   theme: {
     extend: {

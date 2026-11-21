@@ -130,6 +130,8 @@ export default function DatasetExportModal({
   const chooseProfile = (p: ExportProfile) => {
     setProfile(p);
     setFormat(DEFAULT_FORMAT[p]);
+    // Profil gambar tidak bermakna tanpa gambar.
+    if (p === 'image_classification') setIncludeImages(true);
     emitTourAction('export-profile-select', { profile: p });
   };
 
@@ -240,8 +242,17 @@ export default function DatasetExportModal({
 
         <div className="flex flex-wrap gap-4 text-sm text-surface-700 dark:text-surface-300">
           <label className="inline-flex items-center gap-2">
-            <input type="checkbox" checked={includeImages} onChange={(e) => setIncludeImages(e.target.checked)} className="h-4 w-4 accent-primary-600" />
+            <input
+              type="checkbox"
+              checked={includeImages}
+              disabled={profile === 'image_classification'}
+              onChange={(e) => setIncludeImages(e.target.checked)}
+              className="h-4 w-4 accent-primary-600 disabled:opacity-50"
+            />
             {t('dataset.export.includeImages')}
+            {profile === 'image_classification' && (
+              <span className="text-xs text-surface-500">({t('dataset.field.required')})</span>
+            )}
           </label>
           <label className="inline-flex items-center gap-2">
             <input type="checkbox" checked={includeSplits} onChange={(e) => setIncludeSplits(e.target.checked)} className="h-4 w-4 accent-primary-600" />
@@ -399,6 +410,20 @@ export default function DatasetExportModal({
             </ul>
           )}
         </section>
+
+        <div className="flex justify-end border-t border-surface-200 pt-3 dark:border-surface-700">
+          <Button
+            type="button"
+            variant="secondary"
+            data-tour="export-close"
+            onClick={() => {
+              emitTourAction('export-close');
+              onClose();
+            }}
+          >
+            {t('common.close')}
+          </Button>
+        </div>
 
         {preview && preview.integrity.validationErrors > 0 && (
           <Alert variant="warning" title={t('dataset.export.validationErrors')}>
